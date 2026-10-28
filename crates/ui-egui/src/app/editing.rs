@@ -82,6 +82,7 @@ impl SheetApp {
     /// another workbook or write this one to a file, so a draft never lands in another workbook.
     /// A draft its workbook refuses stays open with the reason shown, and the command doesn't run.
     pub(crate) fn settle_drafts(&mut self) -> Result<(), String> {
+        crate::developer::commit_sources(self)?;
         if !self.commit_edit(0, 0, false, false) {
             return Err(self.message.as_ref().map(|(_, m)| m.clone()).unwrap_or_else(|| "The cell being edited can't be entered.".into()));
         }

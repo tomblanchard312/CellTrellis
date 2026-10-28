@@ -14,6 +14,7 @@ pub mod code_editor;
 pub mod control;
 mod craft_fonts_policy;
 pub mod credits;
+pub mod developer;
 pub mod dialogs;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod doc_windows;
@@ -189,6 +190,7 @@ pub struct Perf {
 
 pub struct SheetApp {
     pub session: Session,
+    pub developer: developer::State,
     pub ui: UiState,
     /// The window chrome to draw (see [`Chrome`]).
     pub chrome: Chrome,
@@ -284,9 +286,6 @@ pub struct SheetApp {
     pub native_windows: bool,
     /// View › Arrange All's layout and windows, waiting for the native windows to move.
     pub arrange_windows: Option<(String, Vec<u64>)>,
-    /// The update check, the startup prompt and a running self-update (desktop only).
-    #[cfg(not(target_arch = "wasm32"))]
-    updates_rt: updates_ui::Runtime,
 }
 
 /// Strips the engine's error prefixes for message boxes.

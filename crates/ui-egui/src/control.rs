@@ -189,6 +189,13 @@ pub fn handle(app: &mut SheetApp, ctx: &egui::Context, method: &str, p: &Json) -
             let language_params = format!("{{language: {}}} (alias: code)", crate::i18n::Language::code_list("|"));
             for (id, label, params) in [
                 ("ui.ribbonTab", "Ribbon Tab", ""),
+                ("view.developer", "Developer", ""),
+                ("ui.developerPreview", "Run script preview", ""),
+                ("ui.developerStatus", "Script and Scribe status", ""),
+                ("ui.developerStop", "Stop script or Scribe", ""),
+                ("ui.scribeModels", "Refresh Scribe models", ""),
+                ("ui.scribeAsk", "Ask Scribe", ""),
+                ("view.scribe", "Scribe", ""),
                 ("app.checkForUpdates", "Check for Updates…", ""),
                 ("view.collapseRibbon", "Collapse Ribbon", ""),
                 ("view.expandFormulaBar", "Expand Formula Bar", "{on?: bool} (toggles without it) → {on}"),

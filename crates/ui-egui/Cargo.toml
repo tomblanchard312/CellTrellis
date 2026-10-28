@@ -13,6 +13,7 @@ workspace = true
 # craft-libs dependency uses (see the root Cargo.toml).
 craft-ui = { git = "https://github.com/storytold/craft-libs", rev = "92d392cff132eaf53e13afff77f38b5c11b73aa0" }
 gridcraft-engine = { workspace = true }
+gridcraft-enki = { workspace = true }
 gridcraft-chart = { workspace = true }
 # `monochrome_emoji_fonts` restores the Noto Emoji and emoji-icon faces that 0.37 moved behind
 # this feature. The UI draws ✕, ◀, ↘ and 📋 as text; without these faces the strict kittest
