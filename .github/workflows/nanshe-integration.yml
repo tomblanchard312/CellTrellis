@@ -36,8 +36,9 @@ jobs:
       - run: dotnet build vba/src/Nanshe.Vba -c Release -m:1 -o "$RUNNER_TEMP/nanshe-vba"
       - run: |
           export NANSHE_VBA_TEST_RUNNER="$RUNNER_TEMP/nanshe-vba/Nanshe.Vba"
-          export NANSHE_PYTHON="$(command -v python)"
-          export NANSHE_RSCRIPT="$(command -v Rscript)"
+          NANSHE_PYTHON="$(command -v python)"
+          NANSHE_RSCRIPT="$(command -v Rscript)"
+          export NANSHE_PYTHON NANSHE_RSCRIPT
           cargo +stable test -p gridcraft-ui-egui developer --lib
           cargo +stable test -p gridcraft-engine cmd::developer --lib
           cargo +stable test -p gridcraft-enki
