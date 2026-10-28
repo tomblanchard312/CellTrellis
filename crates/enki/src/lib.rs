@@ -1,13 +1,13 @@
-//! A small, blocking client for the [SharedAI](https://github.com/tomblanchard312/SharedAI)
+//! A small, blocking client for the [SharedAI](https://github.com/tomblanchard312/Enki)
 //! daemon: list its models and stream a chat reply.
 //!
 //! SharedAI runs models on the user's own machine. Its wire contract (docs/INFERENCE.md there) is
-//! newline-delimited JSON over a private Unix socket: negotiate a protocol version, send one
+//! newline-delimited JSON over a private Unix socket or per-user Windows pipe: negotiate a protocol version, send one
 //! request, read frames until exactly one terminal frame (`done`, `busy`, `inference_error`).
 //!
-//! This crate speaks that contract with `std` only (no async runtime), so the editor can run a
+//! This crate speaks that contract without an async runtime, so the editor can run a
 //! request on a plain thread. It is a clean implementation of the published contract, not a copy
-//! of the SharedAI SDK. On targets without Unix sockets (Windows, wasm) every call returns
+//! of the SharedAI SDK. On targets without local IPC (wasm) every call returns
 //! [`Error::Unsupported`].
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
@@ -74,7 +74,7 @@ pub struct Summary {
 pub enum Error {
     /// No socket path: neither the setting, `SHAREDAI_SOCKET` nor `$XDG_RUNTIME_DIR` gave one.
     NoEndpoint,
-    /// This platform has no Unix sockets.
+    /// This platform has no supported local transport.
     Unsupported,
     Io(std::io::Error),
     /// A frame that isn't valid JSON, is too large, or isn't the expected reply.
@@ -130,18 +130,24 @@ impl From<std::io::Error> for Error {
 }
 
 /// The socket to use: `configured` if non-empty, else `$SHAREDAI_SOCKET`, else
-/// `$XDG_RUNTIME_DIR/sharedai/ipc.sock` (the Nisaba desktop's convention).
+/// `$XDG_RUNTIME_DIR/sharedai/ipc.sock`. On Windows: configured pipe, `$SHAREDAI_PIPE`,
+/// then `\\.\pipe\SharedAI-<current-user-SID>-default`; remote/other-user pipes are refused.
 pub fn endpoint(configured: &str) -> Result<PathBuf, Error> {
-    let configured = configured.trim();
-    if !configured.is_empty() {
-        return Ok(PathBuf::from(configured));
-    }
-    if let Some(p) = std::env::var_os("SHAREDAI_SOCKET").filter(|p| !p.is_empty()) {
-        return Ok(PathBuf::from(p));
-    }
-    match std::env::var_os("XDG_RUNTIME_DIR").filter(|p| !p.is_empty()) {
-        Some(dir) => Ok(PathBuf::from(dir).join("sharedai").join("ipc.sock")),
-        None => Err(Error::NoEndpoint),
+    #[cfg(windows)]
+    return windows::endpoint(configured);
+    #[cfg(not(windows))]
+    {
+        let configured = configured.trim();
+        if !configured.is_empty() {
+            return Ok(PathBuf::from(configured));
+        }
+        if let Some(p) = std::env::var_os("SHAREDAI_SOCKET").filter(|p| !p.is_empty()) {
+            return Ok(PathBuf::from(p));
+        }
+        match std::env::var_os("XDG_RUNTIME_DIR").filter(|p| !p.is_empty()) {
+            Some(dir) => Ok(PathBuf::from(dir).join("sharedai").join("ipc.sock")),
+            None => Err(Error::NoEndpoint),
+        }
     }
 }
 
@@ -335,7 +341,7 @@ pub fn find_daemon() -> Option<std::path::PathBuf> {
 
 /// The places [`find_daemon`] looks, in order, for a program at `exe` and a `PATH` value.
 pub fn daemon_candidates(exe: Option<&std::path::Path>, path: Option<&std::ffi::OsStr>) -> Vec<std::path::PathBuf> {
-    let name = "sharedai-daemon";
+    let name = if cfg!(windows) { "sharedai-daemon.exe" } else { "sharedai-daemon" };
     let mut out = Vec::new();
     if let Some(exe) = exe
         && let Some(dir) = exe.parent()
@@ -351,18 +357,24 @@ pub fn daemon_candidates(exe: Option<&std::path::Path>, path: Option<&std::ffi::
     out
 }
 
-#[cfg(unix)]
+#[cfg(windows)]
+mod windows;
+
+#[cfg(any(unix, windows))]
 mod net {
+    #[cfg(windows)]
+    use super::windows::Stream;
     use super::{
         AtomicBool, Duration, Error, FrameReader, MAX_FRAME_V1, MAX_FRAME_V2, Message, POLL, Params, Summary, Timeouts, VERSION_BASE,
-        VERSION_INFERENCE, Value, chat_request, drive, encode, find_daemon, hash_file, json,
+        VERSION_INFERENCE, Value, chat_request, drive, encode, hash_file, json,
     };
     use std::io::Write;
-    use std::os::unix::net::UnixStream;
+    #[cfg(unix)]
+    use std::os::unix::net::UnixStream as Stream;
     use std::path::Path;
 
-    fn connect(endpoint: &Path, app: &str, version: u64) -> Result<FrameReader<UnixStream>, Error> {
-        let mut stream = UnixStream::connect(endpoint)?;
+    fn connect(endpoint: &Path, app: &str, version: u64) -> Result<FrameReader<Stream>, Error> {
+        let mut stream = Stream::connect(endpoint)?;
         stream.set_read_timeout(Some(Duration::from_secs(5)))?;
         stream.set_write_timeout(Some(Duration::from_secs(30)))?;
         stream.write_all(&encode(&json!({"type": "negotiate", "versions": [version], "app": app}), MAX_FRAME_V1)?)?;
@@ -381,13 +393,14 @@ mod net {
 
     /// Start the daemon unless something already listens on `endpoint`. `socket_env` is passed as
     /// `SHAREDAI_SOCKET` when set (otherwise the daemon uses its default, the same path).
+    #[cfg(unix)]
     #[allow(clippy::disallowed_methods)] // Unix-only module: these clocks never reach wasm.
     pub fn ensure_running(endpoint: &Path, socket_env: Option<&Path>, envs: &[(&str, &std::ffi::OsStr)]) -> Result<(), Error> {
         use std::os::unix::process::CommandExt;
-        if UnixStream::connect(endpoint).is_ok() {
+        if Stream::connect(endpoint).is_ok() {
             return Ok(());
         }
-        let daemon = find_daemon().ok_or(Error::NotInstalled)?;
+        let daemon = super::find_daemon().ok_or(Error::NotInstalled)?;
         if let Some(dir) = socket_env.and_then(Path::parent) {
             use std::os::unix::fs::DirBuilderExt;
             match std::fs::DirBuilder::new().mode(0o700).recursive(true).create(dir) {
@@ -408,7 +421,7 @@ mod net {
         let mut child = cmd.spawn().map_err(|e| Error::StartFailed(e.to_string()))?;
         let deadline = std::time::Instant::now() + Duration::from_secs(10);
         loop {
-            if UnixStream::connect(endpoint).is_ok() {
+            if Stream::connect(endpoint).is_ok() {
                 return Ok(());
             }
             if let Ok(Some(status)) = child.try_wait() {
@@ -420,6 +433,9 @@ mod net {
             std::thread::sleep(Duration::from_millis(100));
         }
     }
+
+    #[cfg(windows)]
+    pub use super::windows::ensure_running;
 
     /// Register a model file: its checksum is computed here, the daemon checks it before loading.
     pub fn register_file(endpoint: &Path, app: &str, id: &str, path: &Path) -> Result<(), Error> {
@@ -481,7 +497,9 @@ mod net {
 pub fn is_listening(endpoint: &std::path::Path) -> bool {
     #[cfg(unix)]
     return std::os::unix::net::UnixStream::connect(endpoint).is_ok();
-    #[cfg(not(unix))]
+    #[cfg(windows)]
+    return windows::Stream::connect(endpoint).is_ok();
+    #[cfg(not(any(unix, windows)))]
     {
         let _ = endpoint;
         false
@@ -491,10 +509,11 @@ pub fn is_listening(endpoint: &std::path::Path) -> bool {
 /// Start the daemon unless something already listens on `endpoint`; see [`find_daemon`].
 /// `socket_env` is handed to it as `SHAREDAI_SOCKET` (its parent is created, mode 0700), and
 /// `envs` as further environment (e.g. `XDG_DATA_HOME`, which picks its models folder).
+/// Windows passes `endpoint` as `SHAREDAI_PIPE` and starts the helper without a console or elevation.
 pub fn ensure_running(endpoint: &std::path::Path, socket_env: Option<&std::path::Path>, envs: &[(&str, &std::ffi::OsStr)]) -> Result<(), Error> {
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     return net::ensure_running(endpoint, socket_env, envs);
-    #[cfg(not(unix))]
+    #[cfg(not(any(unix, windows)))]
     {
         let _ = (endpoint, socket_env, envs);
         Err(Error::Unsupported)
@@ -503,9 +522,9 @@ pub fn ensure_running(endpoint: &std::path::Path, socket_env: Option<&std::path:
 
 /// Register the model file at `path` (absolute) under `id`, with its size and SHA-256.
 pub fn register_file(endpoint: &std::path::Path, app: &str, id: &str, path: &std::path::Path) -> Result<(), Error> {
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     return net::register_file(endpoint, app, id, path);
-    #[cfg(not(unix))]
+    #[cfg(not(any(unix, windows)))]
     {
         let _ = (endpoint, app, id, path);
         Err(Error::Unsupported)
@@ -514,9 +533,9 @@ pub fn register_file(endpoint: &std::path::Path, app: &str, id: &str, path: &std
 
 /// The ids of the models registered with the daemon.
 pub fn list_models(endpoint: &std::path::Path, app: &str) -> Result<Vec<String>, Error> {
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     return net::list_models(endpoint, app);
-    #[cfg(not(unix))]
+    #[cfg(not(any(unix, windows)))]
     {
         let _ = (endpoint, app);
         Err(Error::Unsupported)
@@ -536,9 +555,9 @@ pub fn chat(
     cancel: &AtomicBool,
     on_chunk: impl FnMut(&str),
 ) -> Result<Summary, Error> {
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     return net::chat(endpoint, app, model, messages, params, timeouts, cancel, on_chunk);
-    #[cfg(not(unix))]
+    #[cfg(not(any(unix, windows)))]
     {
         let _ = (endpoint, app, model, messages, params, timeouts, cancel, on_chunk);
         Err(Error::Unsupported)

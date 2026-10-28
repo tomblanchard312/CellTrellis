@@ -86,6 +86,7 @@ fn drive_sends_cancel_when_asked() {
     assert_eq!(sent, b"{\"type\":\"cancel\"}\n");
 }
 
+#[cfg(not(windows))]
 #[test]
 fn a_configured_endpoint_wins() {
     assert_eq!(endpoint(" /run/x.sock ").unwrap(), PathBuf::from("/run/x.sock"));
@@ -148,6 +149,7 @@ fn a_missing_daemon_says_so() {
     assert!(e.to_string().contains("isn't running"), "{e}");
 }
 
+#[cfg(unix)]
 #[test]
 fn the_daemon_is_looked_for_in_the_private_helper_folder_first() {
     let c = daemon_candidates(Some(std::path::Path::new("/usr/bin/nisaba")), Some(std::ffi::OsStr::new("/opt/x:/usr/local/bin")));
@@ -178,4 +180,31 @@ fn files_hash_to_their_sha256() {
 fn oversized_newline_terminated_frames_are_rejected() {
     let mut reader = FrameReader::new(Cursor::new(b"123456789\n"), 4);
     assert!(matches!(reader.next_frame(), Err(Error::Protocol(_))));
+}
+
+/// Opt-in real daemon/worker check; the caller supplies an isolated running Enki and GGUF.
+#[test]
+#[ignore = "requires local Enki and NANSHE_ENKI_TEST_MODEL"]
+fn live_enki_registers_streams_and_cancels() {
+    let path = std::env::var_os("NANSHE_ENKI_TEST_MODEL").expect("set NANSHE_ENKI_TEST_MODEL");
+    let endpoint = endpoint("").unwrap();
+    register_file(&endpoint, "nanshe-live-test", "nanshe-smoke", std::path::Path::new(&path)).unwrap();
+    assert!(list_models(&endpoint, "nanshe-live-test").unwrap().contains(&"nanshe-smoke".into()));
+    let messages = [Message::new("system", "Be brief."), Message::new("user", "Say hello in one short sentence.")];
+    let params = Params { max_tokens: Some(64), temperature: Some(0.0), seed: Some(7) };
+    let mut reply = String::new();
+    let result =
+        chat(&endpoint, "nanshe-live-test", "nanshe-smoke", &messages, &params, Timeouts::default(), &AtomicBool::new(false), |s| reply.push_str(s))
+            .unwrap();
+    assert!(!reply.trim().is_empty());
+    assert!(result.prompt_tokens > 0 && result.completion_tokens > 0);
+    assert_eq!(result.reason, "stop", "{reply}");
+    eprintln!("live Enki: {result:?}; reply: {reply}");
+    let cancel = AtomicBool::new(false);
+    let result = chat(&endpoint, "nanshe-live-test", "nanshe-smoke", &messages, &params, Timeouts::default(), &cancel, |_| {
+        cancel.store(true, Ordering::Relaxed);
+    });
+    assert!(matches!(result, Err(Error::Cancelled)), "{result:?}");
+    let result = chat(&endpoint, "nanshe-live-test", "missing-model", &messages, &params, Timeouts::default(), &AtomicBool::new(false), |_| {});
+    assert!(matches!(result, Err(Error::Inference { kind, .. }) if kind == "model_not_found"));
 }

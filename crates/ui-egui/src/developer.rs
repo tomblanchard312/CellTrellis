@@ -384,8 +384,8 @@ fn macro_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool
 fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool) {
     ui.label("Scribe · local Enki");
     ui.weak("Ask about the selected cells, write a formula, or draft a macro.");
-    #[cfg(not(unix))]
-    ui.weak("Enki transport in this port currently requires Linux, macOS or BSD. Windows named-pipe integration is pending.");
+    #[cfg(not(any(unix, windows)))]
+    ui.weak("Local Enki requires the desktop app.");
     ui.add_enabled_ui(!busy, |ui| {
         craft_ui::ComboBox::from_id_salt("scribe_mode")
             .selected_text(&draft.mode)
@@ -418,13 +418,18 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
     ui.horizontal(|ui| {
         #[cfg(not(target_arch = "wasm32"))]
         {
-            if ui.add_enabled(!busy && cfg!(unix), egui::Button::new("Refresh models")).clicked() {
+            if ui.add_enabled(!busy && cfg!(any(unix, windows)), egui::Button::new("Refresh models")).clicked() {
                 match app.run("ui.scribeModels", json!({})) {
                     Ok(_) => draft.status = "Finding local models…".into(),
                     Err(e) => draft.status = e,
                 }
             }
-            if ui.add_enabled(!busy && cfg!(unix) && !draft.model.is_empty() && !draft.prompt.trim().is_empty(), egui::Button::new("Send")).clicked()
+            if ui
+                .add_enabled(
+                    !busy && cfg!(any(unix, windows)) && !draft.model.is_empty() && !draft.prompt.trim().is_empty(),
+                    egui::Button::new("Send"),
+                )
+                .clicked()
             {
                 draft.reply.clear();
                 draft.suggestion = None;
@@ -705,5 +710,43 @@ mod tests {
             assert!(scribe_instruction("Write Python").contains("nanshe.read"));
             assert!(scribe_instruction("Write R").contains("sheet_read"));
         }
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    #[ignore = "requires local Enki with the registered nanshe-smoke model"]
+    #[allow(clippy::disallowed_methods)]
+    fn live_enki_scribe_streams_without_changing_the_workbook() {
+        fn wait(app: &mut SheetApp, context: &egui::Context) {
+            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
+            while app.developer.job.is_some() {
+                tick(app, context);
+                assert!(std::time::Instant::now() < deadline, "Scribe did not finish");
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            }
+        }
+        let mut session = gridcraft_engine::Session::new();
+        session.new_workbook();
+        let mut app = SheetApp::new(session, Default::default());
+        let uid = app.session.doc().unwrap().uid;
+        let revision = app.session.doc().unwrap().revision;
+        let context = egui::Context::default();
+        command(&mut app, "ui.scribeModels", &json!({})).unwrap();
+        wait(&mut app, &context);
+        assert!(app.developer.drafts[&uid].models.contains(&"nanshe-smoke".into()));
+        command(&mut app, "ui.scribeAsk", &json!({"model":"nanshe-smoke","mode":"Explain selection","prompt":"Say hello in one short sentence."}))
+            .unwrap();
+        wait(&mut app, &context);
+        let draft = &app.developer.drafts[&uid];
+        assert_eq!(draft.status, "Ready for review", "{}", draft.reply);
+        assert!(!answer(&draft.reply).is_empty());
+        assert!(draft.suggestion.as_ref().is_some_and(Json::is_null));
+        assert_eq!(app.session.doc().unwrap().revision, revision);
+        eprintln!("live Scribe reply: {}", answer(&draft.reply));
+        command(&mut app, "ui.scribeAsk", &json!({"model":"nanshe-smoke","mode":"Write Python","prompt":"Write a very long script."})).unwrap();
+        command(&mut app, "ui.developerStop", &json!({})).unwrap();
+        wait(&mut app, &context);
+        assert_eq!(app.developer.drafts[&uid].status, "Stopped; no changes prepared");
+        assert!(app.developer.drafts[&uid].suggestion.is_none());
+        assert_eq!(app.session.doc().unwrap().revision, revision);
     }
 }

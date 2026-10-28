@@ -131,6 +131,13 @@ local code safe. The GUI and helpers never request administrator rights.
 Run a configured local Enki service and register a chat model using Enki's model workflow.
 Refresh models connects to `SHAREDAI_SOCKET` or `$XDG_RUNTIME_DIR/sharedai/ipc.sock`, starting
 `sharedai-daemon` from `SHAREDAI_DAEMON`, the executable's helper directory, or PATH if needed.
+On Windows, the default is `\\.\pipe\SharedAI-<your-user-SID>-default`, overridden by
+`SHAREDAI_PIPE`. Only local pipe names in your account's namespace are accepted; Nanshe checks
+the server process's token SID before sending requests and opens the pipe with identification-only
+security quality of service. Keep `sharedai-worker.exe` beside `sharedai-daemon.exe`; set
+`SHAREDAI_DAEMON` to the daemon executable when it is not in a helper directory or on PATH.
+Autostart runs as the current user without elevation or a console window. Pipe connection attempts,
+reads and writes have deadlines; streaming polls for Stop every 200 ms.
 No models are downloaded by Nanshe.
 
 Scribe sends only the user's request and at most 100 cells (32 KiB) from the captured selection to
@@ -145,13 +152,15 @@ Developer editor and must be reviewed and run explicitly.
 - Desktop scripting uses standard child-process pipes on Linux, macOS, Windows and BSD, with
   separately installed runtimes. Runtime paths containing spaces are passed as executable paths,
   never shell strings.
-- The copied Enki client currently uses Unix sockets: Linux, macOS and BSD. Windows named-pipe
-  support remains pending, and Scribe controls clearly report that limit.
+- The Enki client uses Unix sockets on Linux/macOS/BSD and per-user named pipes on Windows.
+  The Windows transport shares negotiation, model registration/listing, framing and chat handling
+  with Unix. Its Windows-only dependencies expose safe pipe and process-token operations.
 - Web builds retain source editing/storage. Local subprocess execution and local Enki are disabled.
-- Cross-platform workflow checks the .NET object model on Linux/macOS/Windows, and the complete
-  Rust-to-runtime bridge on Linux. CI configuration is not evidence that a hosted run passed.
-- A real Enki/model smoke test and native Windows/macOS/FreeBSD GUI execution remain required
-  before claiming those end-to-end integrations validated.
+- Cross-platform workflow checks the .NET object model on Linux/macOS/Windows, the complete
+  Rust-to-runtime bridge on Linux, and real Windows named-pipe fixtures plus clippy on Windows.
+- Local Linux Enki inference and the Scribe command path were exercised with a real daemon,
+  CPU worker and chat model. Native Windows/macOS/FreeBSD GUI execution and Windows against
+  the real Enki daemon remain separate acceptance checks.
 
 ## Testing
 
@@ -170,7 +179,19 @@ cargo xtask ci
 The Python bridge test runs with the configured interpreter or system Python. The real R/.NET
 bridge tests are conditional on their explicit runtime environment variables; omitting those
 variables is not evidence that the runtimes were exercised. The Enki test server is a local
-protocol fixture, not a live model. See the PR for actual validation results.
+protocol fixture by default. Opt-in real-service checks require an isolated running Enki:
+
+```sh
+export SHAREDAI_SOCKET=/path/to/private-test-dir/ipc.sock # Windows: SHAREDAI_PIPE
+export NANSHE_ENKI_TEST_MODEL=/absolute/path/to/chat-model.gguf
+cargo test -p gridcraft-enki live_enki -- --ignored --nocapture
+# The preceding test registers nanshe-smoke in the test daemon's registry.
+cargo test -p gridcraft-ui-egui live_enki --lib -- --ignored --nocapture
+```
+
+Use a separate `SHAREDAI_REGISTRY` and data directory when starting this test daemon. The tests
+register a model, run inference, cancel requests and check that Scribe leaves the workbook unchanged.
+They do not download a model or start/stop an existing service. See the PR for hosted results.
 
 ## Control commands
 
@@ -194,6 +215,17 @@ the strict accessibility check is also covered by a regression test.
 
 The actual VBA helper, system Python 3, and R 4.3.3 with jsonlite 1.8.8 were exercised. R was
 extracted into a temporary workspace from distribution packages and launched through a local
-wrapper; it was not installed on the host. Enki was checked against a real Unix-socket protocol
-fixture, not a live model. The inherited fresh-file permission test expects a restrictive mask;
+wrapper; it was not installed on the host.
+
+A follow-up test built the current Enki daemon and CPU worker, used an isolated private socket,
+registry and data directories, and loaded `bartowski/SmolLM2-135M-Instruct-GGUF` Q4_K_M from
+[the model publisher](https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF). The opt-in
+client test passed registration, discovery, real chat streaming (terminal `stop`, 24 prompt tokens,
+2 completion tokens, `Hello.`), cancellation after a chunk, and missing-model error handling.
+The opt-in Scribe test passed Refresh, asynchronous reply, Stop, and unchanged workbook revision.
+This 135M model is a transport smoke test, not validation of generated formulas or code quality.
+The model and Enki binaries stay outside the repository. Windows transport/tests also passed
+local cross-target compilation and clippy; native hosted pipe test results are tracked in the PR.
+
+The inherited fresh-file permission test expects a restrictive mask;
 it fails under this host's `umask 0002`. No file-saving implementation was changed in this port.

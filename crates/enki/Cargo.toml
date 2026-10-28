@@ -11,3 +11,7 @@ workspace = true
 [dependencies]
 serde_json.workspace = true
 sha2.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+interprocess = { version = "2.4.7", default-features = false }
+winsafe = { version = "0.0.29", default-features = false, features = ["advapi"] }

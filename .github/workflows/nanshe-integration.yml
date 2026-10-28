@@ -19,6 +19,13 @@ jobs:
           dotnet-version: '10.0.x'
       - run: dotnet build vba/NansheVba.sln -m:1
       - run: dotnet run --project vba/tests/Nanshe.Vba.Tests --no-build
+  windows-scribe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install stable --profile minimal --component clippy
+      - run: cargo +stable test -p gridcraft-enki --all-targets
+      - run: cargo +stable clippy -p gridcraft-enki --all-targets -- -D warnings
   runtime-bridge:
     runs-on: ubuntu-latest
     steps:
