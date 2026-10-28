@@ -21,6 +21,7 @@ jobs:
       - run: dotnet run --project vba/tests/Nanshe.Vba.Tests --no-build
   windows-scribe:
     runs-on: windows-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - run: rustup toolchain install stable --profile minimal --component clippy

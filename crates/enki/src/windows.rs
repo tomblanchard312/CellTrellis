@@ -96,20 +96,27 @@ fn pending(error: &io::Error) -> bool {
 
 impl Read for Stream {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if buf.is_empty() {
+            return Ok(0);
+        }
         let deadline = Instant::now() + self.read_timeout;
         loop {
             match (&*self.pipe).read(buf) {
-                Err(e) if pending(&e) => {
-                    if Instant::now() >= deadline {
-                        return Err(io::ErrorKind::TimedOut.into());
-                    }
-                    std::thread::sleep(Duration::from_millis(10));
+                // PIPE_NOWAIT can report an idle byte pipe as a successful zero-byte read.
+                Ok(0) => {
+                    self.pipe.server_process_id()?;
                 }
+                Err(e) if pending(&e) => {}
                 other => return other,
             }
+            if Instant::now() >= deadline {
+                return Err(io::ErrorKind::TimedOut.into());
+            }
+            std::thread::sleep(Duration::from_millis(10));
         }
     }
 }
+
 impl Write for Stream {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         if buf.is_empty() {
