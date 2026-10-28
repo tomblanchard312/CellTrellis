@@ -36,6 +36,7 @@ pub const TABLE: &[(&str, Class)] = &[
     ("xlsx", Class::Layer(2)),
     ("chart", Class::Layer(3)),
     ("engine", Class::Layer(5)),
+    ("enki", Class::Layer(0)),
     ("ui-egui", Class::Layer(6)),
     ("mcp", Class::Layer(6)),
     // L7 apps (exempt) and tooling (unchecked)

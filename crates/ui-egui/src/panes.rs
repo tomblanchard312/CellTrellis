@@ -19,11 +19,16 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     // Capped at half the window so a pane can never cover the sheet, whatever its content asks for.
     let max = (ui.available_width() / 2.0).max(300.0);
-    let panel = egui::Panel::right("task_pane").default_size(300.0).max_size(max).resizable(true);
+    let panel = egui::Panel::right("task_pane")
+        .default_size(if pane == "developer" || pane == "scribe" { 480.0 } else { 300.0 })
+        .max_size(max)
+        .resizable(true);
     panel.frame(egui::Frame::NONE.fill(t.ribbon).inner_margin(10)).show(ui, |ui| {
         ui.horizontal(|ui| {
             let title = match pane.as_str() {
                 "comments" => "Comments",
+                "developer" => "Developer",
+                "scribe" => "Scribe",
                 "watch" => "Watch Window",
                 "selection" => "Selection",
                 "formatChart" => "Format Chart Area",
@@ -42,6 +47,8 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
         ui.separator();
         egui::ScrollArea::vertical().show(ui, |ui| match pane.as_str() {
             "comments" => comments(app, ui),
+            "developer" => crate::developer::show(app, ui, false),
+            "scribe" => crate::developer::show(app, ui, true),
             "watch" => watch(app, ui),
             "selection" => selection(app, ui),
             "formatChart" => format_chart(app, ui),

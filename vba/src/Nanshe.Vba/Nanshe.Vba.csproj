@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>
+<TargetFramework>net$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>
+<ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+<OutputType>Exe</OutputType></PropertyGroup><ItemGroup><ProjectReference Include="../Nanshe.ObjectModel/Nanshe.ObjectModel.csproj" />
+<Reference Include="Microsoft.CodeAnalysis"><HintPath>$(RoslynTargetsPath)/bincore/Microsoft.CodeAnalysis.dll</HintPath></Reference>
+<Reference Include="Microsoft.CodeAnalysis.VisualBasic"><HintPath>$(RoslynTargetsPath)/bincore/Microsoft.CodeAnalysis.VisualBasic.dll</HintPath></Reference></ItemGroup></Project>

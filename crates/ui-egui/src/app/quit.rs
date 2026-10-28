@@ -8,7 +8,7 @@ impl SheetApp {
             return;
         }
         // A cell still being edited is part of the workbook, as for File › Close.
-        if !self.commit_edit(0, 0, false, false) {
+        if self.settle_drafts().is_err() {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
             return;
         }
@@ -58,7 +58,7 @@ impl SheetApp {
             }
             SaveAnswer::Save => {
                 // File operations include the cell still being edited, as File › Save does.
-                if !self.commit_edit(0, 0, false, false) {
+                if self.settle_drafts().is_err() {
                     return false;
                 }
                 self.run_or_alert("file.save", json!({}));
@@ -77,6 +77,10 @@ impl SheetApp {
     /// about each unsaved workbook in its window; Cancel on any of them stops the quit. A draft its
     /// workbook refuses stops the quit too, with its window in front and the reason shown.
     pub fn request_quit(&mut self, ctx: &egui::Context) {
+        if let Err(error) = crate::developer::commit_all_sources(self) {
+            self.alert(error);
+            return;
+        }
         while let Some(window) = self.parked_window_with_draft() {
             self.enter_window(window);
             if self.settle_drafts().is_err() {

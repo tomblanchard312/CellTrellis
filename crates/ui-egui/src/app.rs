@@ -28,6 +28,7 @@ impl SheetApp {
     pub fn new(session: Session, services: Services) -> SheetApp {
         SheetApp {
             session,
+            developer: Default::default(),
             ui: UiState::default(),
             chrome: Chrome::default(),
             views: HashMap::new(),
@@ -79,8 +80,6 @@ impl SheetApp {
             parked: HashMap::new(),
             native_windows: false,
             arrange_windows: None,
-            #[cfg(not(target_arch = "wasm32"))]
-            updates_rt: Default::default(),
         }
     }
 
@@ -129,6 +128,7 @@ impl SheetApp {
         // Printing feedback is polled once per frame, here, so hidden windows and logic-only
         // frames still see worker completion. `ui` and the desktop app no longer poll it.
         self.poll_printing(ctx);
+        crate::developer::tick(self, ctx);
         self.guard_window_close(ctx);
         #[cfg(not(target_arch = "wasm32"))]
         updates_ui::tick(self, ctx);

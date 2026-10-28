@@ -1,0 +1,13 @@
+[package]
+name = "gridcraft-enki"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "A small blocking client for the SharedAI local inference daemon (protocol v2 chat streaming), used by Nanshe's Scribe pane"
+
+[lints]
+workspace = true
+
+[dependencies]
+serde_json.workspace = true
+sha2.workspace = true

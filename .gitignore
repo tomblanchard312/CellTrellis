@@ -1,6 +1,8 @@
 *~
 plan/
 /target
+**/bin/
+**/obj/
 /dist
 /corpus
 /log

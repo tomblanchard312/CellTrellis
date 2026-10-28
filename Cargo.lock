@@ -2029,6 +2029,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "gridcraft-enki"
+version = "0.13.0"
+dependencies = [
+ "serde_json",
+ "sha2 0.11.1",
+]
+
+[[package]]
 name = "gridcraft-formula"
 version = "0.13.0"
 dependencies = [
@@ -2089,6 +2097,7 @@ dependencies = [
  "epaint_default_fonts",
  "gridcraft-chart",
  "gridcraft-engine",
+ "gridcraft-enki",
  "gridcraft-xlsx",
  "image",
  "log",

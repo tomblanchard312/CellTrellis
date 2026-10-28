@@ -294,3 +294,9 @@ Ranked; estimates in Opus 5.5 agent-hours. Detail and the full beta-gate list in
 | 2026-10-10 | minor | Checked against the alpha gate (six core workflows pass): stays alpha |
 | 2026-10-10 | major | Re-measured against Excel for Mac 16.113.4: stage alpha, breadth ~75%, ready ~50%, ~160–240 h to beta, ~700–1,100 h to full parity; restructured to the progress-docs standard; detail moved to `docs/` |
 | 2026-10-07 | major | First estimates: catalog 89%, functions ~93%, depth ~65%, ~35 h to alpha, ~215 h to full parity |
+
+## Nanshe fork · 2026-10-28
+
+Developer source editor with VBA, Python and R preview/apply; Excel-style VBA object model;
+Scribe via local Enki. See [scope and platform limits](docs/nanshe-developer.md). Native Windows
+Enki transport and platform GUI acceptance remain pending.

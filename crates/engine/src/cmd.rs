@@ -3,6 +3,7 @@
 
 pub mod analysis;
 pub mod data;
+pub mod developer;
 pub mod draw;
 pub mod edit;
 pub mod extra;
@@ -133,6 +134,7 @@ pub fn command_specs() -> &'static [CommandSpec] {
     SPECS.get_or_init(|| {
         let mut v = Vec::new();
         v.extend(file::specs());
+        v.extend(developer::specs());
         v.extend(edit::specs());
         v.extend(format::specs());
         v.extend(sheet::specs());

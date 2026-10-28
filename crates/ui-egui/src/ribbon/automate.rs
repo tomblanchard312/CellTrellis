@@ -20,12 +20,12 @@ pub(super) fn automate(app: &mut SheetApp, ui: &mut Ui) {
     if __k.clicked() {
         app.open_dialog("journal", json!({}));
     }
-    let __k = big_button(ui, Icon::Script, "Check for\nUpdates…", "Look for a newer GridCraft release", false);
+    let __k = big_button(ui, Icon::Script, "Check for\nUpdates…", "Look for a newer Nanshe release", false);
     control_keytip(app, ui, &__k, "checkForUpdates");
     if __k.clicked() {
         app.run_or_alert("app.checkForUpdates", json!({}));
     }
-    let __k = big_button(ui, Icon::Script, "About\nGridCraft", "Version, contributors and the AI models that helped", false);
+    let __k = big_button(ui, Icon::Script, "About\nNanshe", "Version, contributors and the AI models that helped", false);
     control_keytip(app, ui, &__k, "about");
     if __k.clicked() {
         app.open_dialog("about", json!({}));
