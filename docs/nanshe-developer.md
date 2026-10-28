@@ -136,7 +136,10 @@ On Windows, the default is `\\.\pipe\SharedAI-<your-user-SID>-default`, overridd
 the server process's token SID before sending requests and opens the pipe with identification-only
 security quality of service. Keep `sharedai-worker.exe` beside `sharedai-daemon.exe`; set
 `SHAREDAI_DAEMON` to the daemon executable when it is not in a helper directory or on PATH.
-Autostart runs as the current user without elevation or a console window. Pipe connection attempts,
+Autostart runs as the current user without elevation or a console window. Enki creates its protected
+registry under `%LOCALAPPDATA%\SharedAI` by default. An explicit `SHAREDAI_REGISTRY` override
+must have a parent satisfying Enki's private-storage ACL checks; ordinary inherited permissions
+are rejected. Use the default private location in a fresh test profile. Pipe connection attempts,
 reads and writes have deadlines; streaming polls for Stop every 200 ms.
 No models are downloaded by Nanshe.
 
@@ -145,7 +148,9 @@ that local endpoint. It streams replies off the UI thread and supports Stop. Nis
 tag filtering is reused; truncated, failed or cancelled replies never become actionable
 suggestions. Formula proposals use canonical English formula syntax and target the cell captured
 when the request began. A workbook revision change makes Apply fail. Code drafts only open in the
-Developer editor and must be reviewed and run explicitly.
+Developer editor and must be reviewed and run explicitly. Task panes retain keyboard ownership
+when a running job disables an editor, preventing pending keystrokes from editing worksheet cells.
+An explicit click on the worksheet restores its normal keyboard handling.
 
 ## Platforms and evidence boundaries
 

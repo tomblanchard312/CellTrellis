@@ -54,6 +54,12 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
             "formatChart" => format_chart(app, ui),
             _ => {}
         });
+        // Disabling a focused field must leave input in the pane, not fall back to the sheet.
+        let keyboard_owner = ui.interact(ui.max_rect(), ui.scope_id().with("keyboard_owner"), egui::Sense::focusable_noninteractive());
+        keyboard_owner.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Pane, true, "Task pane"));
+        if ui.memory(|m| m.focused()).is_none() && ui.input(|i| i.pointer.latest_pos()).is_some_and(|p| ui.max_rect().contains(p)) {
+            keyboard_owner.request_focus();
+        }
     });
 }
 

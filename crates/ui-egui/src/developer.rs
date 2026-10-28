@@ -749,4 +749,63 @@ mod tests {
         assert!(app.developer.drafts[&uid].suggestion.is_none());
         assert_eq!(app.session.doc().unwrap().revision, revision);
     }
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn disabled_pane_fields_keep_pending_typing_out_of_cells() {
+        use egui_kittest::kittest::Queryable as _;
+        for (pane, label) in [("scribe", "Scribe request"), ("developer", "Code Editor")] {
+            let mut session = nanshe_engine::Session::new();
+            session.new_workbook();
+            let mut app = SheetApp::new(session, Default::default());
+            app.use_prepared_fonts();
+            app.grid.pane = Some(pane.into());
+            let uid = app.session.doc().unwrap().uid;
+            let revision = app.session.doc().unwrap().revision;
+            let mut h = egui_kittest::Harness::builder()
+                .with_size(egui::vec2(1280.0, 800.0))
+                .with_os(egui::os::OperatingSystem::Windows)
+                .with_context_setup(|ctx| {
+                    ctx.set_fonts(crate::theme::pinned_font_definitions());
+                    crate::theme::apply(ctx, true);
+                })
+                .build_ui_state(
+                    |ui, app: &mut SheetApp| {
+                        app.logic(ui.ctx());
+                        app.ui(ui);
+                    },
+                    app,
+                );
+            h.run_steps(4);
+            h.get_by_label(label).click();
+            h.run_steps(2);
+            assert!(h.ctx.text_edit_focused(), "{pane} editor must own input");
+            for c in "Return exactly =1+1".chars() {
+                h.input_mut().events.push(egui::Event::Text(c.to_string()));
+                h.run_steps(2);
+                assert!(h.state().editor.is_none(), "{pane} typing entered a cell");
+            }
+            let (_tx, rx) = std::sync::mpsc::sync_channel(1);
+            h.state_mut().developer.job = Some(Job { doc: uid, rx, cancel: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)) });
+            h.input_mut().events.push(egui::Event::Text("=late".into()));
+            h.run_steps(2);
+            assert!(h.state().editor.is_none(), "{pane} disabled field leaked typing into a cell");
+            assert_eq!(h.state().session.doc().unwrap().revision, revision);
+            let pos = h.state().grid.rect.unwrap().center();
+            h.input_mut().events.extend([
+                egui::Event::PointerMoved(pos),
+                egui::Event::PointerButton { pos, button: egui::PointerButton::Primary, pressed: true, modifiers: egui::Modifiers::NONE },
+            ]);
+            h.step();
+            h.input_mut().events.push(egui::Event::PointerButton {
+                pos,
+                button: egui::PointerButton::Primary,
+                pressed: false,
+                modifiers: egui::Modifiers::NONE,
+            });
+            h.run_steps(2);
+            h.input_mut().events.push(egui::Event::Text("cell".into()));
+            h.run_steps(2);
+            assert!(h.state().editor.is_some(), "clicking the sheet must restore normal typing");
+        }
+    }
 }
