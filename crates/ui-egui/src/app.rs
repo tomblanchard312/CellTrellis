@@ -166,7 +166,7 @@ impl SheetApp {
     /// minimized request has no size, so no hidden pass can reach issuance: the restore pass issues
     /// it instead. Native eframe honours `RequestPaintWhileHidden`; the web runner does not (hidden
     /// tabs only run `run_logic`), so a hidden web tab queues the work until it is shown again.
-    /// This is a shared eframe web follow-up, not a GridCraft-local workaround, and the control
+    /// This is a shared eframe web follow-up, not a Nanshe-local workaround, and the control
     /// protocol documents the limitation.
     fn request_hidden_paint(&self, ctx: &egui::Context) {
         if !(self.shots.needs_hidden_paint() || self.synthetic_pending || !self.synthetic.is_empty()) {
@@ -276,7 +276,7 @@ impl SheetApp {
             for n in &d.wb.names {
                 let target = n.formula.replace('$', "");
                 let (sheet, body) = match target.rsplit_once('!') {
-                    Some((s, b)) => (Some(gridcraft_engine::core::unquote_sheet(s)), b.to_string()),
+                    Some((s, b)) => (Some(nanshe_engine::core::unquote_sheet(s)), b.to_string()),
                     None => (None, target.clone()),
                 };
                 if sheet.as_deref().is_none_or(|s| s.eq_ignore_ascii_case(&sh.name)) && RangeRef::parse(&body) == Some(cur) {
@@ -456,7 +456,7 @@ mod lifecycle_tests {
     fn a_logic_only_tick_autosaves_a_dirty_workbook_once() {
         let ctx = egui::Context::default();
         let mut app = app();
-        let dir = std::env::temp_dir().join(format!("gridcraft-logic-autosave-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("nanshe-logic-autosave-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("autosave.xlsx");

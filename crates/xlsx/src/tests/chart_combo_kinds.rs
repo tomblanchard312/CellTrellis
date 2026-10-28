@@ -1,6 +1,6 @@
 //! Importing a combination chart keeps each series' own group kind, the first group's included.
 
-use gridcraft_model::ChartKind;
+use nanshe_model::ChartKind;
 
 use crate::chart::read_chart;
 use crate::xml::parse;

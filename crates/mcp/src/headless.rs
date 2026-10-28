@@ -1,13 +1,13 @@
 //! An in-process engine session that answers the engine-level control-channel methods itself.
 
-use gridcraft_engine::{Session, Target};
+use nanshe_engine::{Session, Target};
 use serde_json::{Value, json};
 
 use crate::backend::Backend;
 
 /// Error for methods that need a window.
-pub(crate) const NO_UI: &str = "no UI in headless mode: start the app with `gridcraft --control 7979` and run the MCP server \
-with `gridcraft-cli mcp --connect 7979`";
+pub(crate) const NO_UI: &str = "no UI in headless mode: start the app with `nanshe --control 7979` and run the MCP server \
+with `nanshe-cli mcp --connect 7979`";
 
 /// Headless backend: a [`Session`] with one blank workbook to start with.
 pub struct Headless {
@@ -78,8 +78,8 @@ impl Backend for Headless {
             // commands with the same id.
             // Their params may name a `window` or `doc` to act in, except for the window commands,
             // whose own params those are.
-            m if gridcraft_engine::find_command(m).is_some() => {
-                if gridcraft_engine::windows::is_window_command(m) {
+            m if nanshe_engine::find_command(m).is_some() => {
+                if nanshe_engine::windows::is_window_command(m) {
                     return self.execute(Target::Active, m, params);
                 }
                 let target = Target::from_json(&params).map_err(|e| e.to_string())?;

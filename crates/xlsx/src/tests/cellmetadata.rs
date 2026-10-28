@@ -1,7 +1,7 @@
 //! Dynamic-array cell metadata (`cm`) read from a file is written back, so Excel keeps
 //! evaluating those formulas as arrays rather than with implicit intersection.
 
-use gridcraft_core::CellRef;
+use nanshe_core::CellRef;
 
 use crate::package::Package;
 use crate::xml::El;
@@ -11,7 +11,7 @@ const METADATA: &str = r#"<?xml version="1.0"?><metadata xmlns="http://schemas.o
 const METADATA_REL: &str =
     r#"<Relationship Id="rId9" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sheetMetadata" Target="metadata.xml"/>"#;
 
-/// Formulas Excel saves with `cm` although they return one value, and which GridCraft's own
+/// Formulas Excel saves with `cm` although they return one value, and which Nanshe's own
 /// shape analysis would save without it.
 const DYNAMIC: [(&str, &str); 5] = [
     ("D1", "SUMPRODUCT(B1:B3*C1:C3)"),
@@ -90,7 +90,7 @@ fn dynamic_array_metadata_survives_saving_scalar_results() {
     let (wb, _) = read_xlsx(&source()).unwrap();
     let bytes = write_xlsx(&wb).unwrap();
     assert_written_dynamic(&bytes);
-    // And again: the mark read from GridCraft's own file is kept too.
+    // And again: the mark read from Nanshe's own file is kept too.
     let (back, report) = read_xlsx(&bytes).unwrap();
     assert!(report.warnings.is_empty(), "{:?}", report.warnings);
     assert_written_dynamic(&write_xlsx(&back).unwrap());

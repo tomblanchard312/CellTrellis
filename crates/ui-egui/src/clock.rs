@@ -2,7 +2,7 @@
 /// changed", toasts). It can jump when the system clock is adjusted, so it must not drive
 /// deadlines or pacing; use [`monotonic_ms`] for those.
 pub fn now_ms() -> f64 {
-    gridcraft_engine::core::date::unix_now_ms().unwrap_or(0.0)
+    nanshe_engine::core::date::unix_now_ms().unwrap_or(0.0)
 }
 
 /// Monotonic milliseconds since the first call, for screenshot deadlines and AutoSave pacing.

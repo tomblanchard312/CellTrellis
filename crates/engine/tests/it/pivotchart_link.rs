@@ -2,7 +2,7 @@
 
 use std::io::Read;
 
-use gridcraft_engine::Session;
+use nanshe_engine::Session;
 use serde_json::{Value as Json, json};
 
 fn run(s: &mut Session, command: &str, params: Json) -> Json {
@@ -26,7 +26,7 @@ fn pivot_chart_link_names_the_workbook_in_brackets() {
     run(&mut s, "selection.set", json!({"range": "A1"}));
     run(&mut s, "insert.pivotTable", json!({"rows": ["Region"], "values": ["Sales"]}));
     run(&mut s, "insert.pivotChart", json!({}));
-    let bytes = gridcraft_engine::io::save_bytes(&s.doc().unwrap().wb, "Q1 Report.xlsx").unwrap();
+    let bytes = nanshe_engine::io::save_bytes(&s.doc().unwrap().wb, "Q1 Report.xlsx").unwrap();
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
     let mut chart = String::new();
     zip.by_name("xl/charts/chart1.xml").unwrap().read_to_string(&mut chart).unwrap();

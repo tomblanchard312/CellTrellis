@@ -20,7 +20,7 @@ pub struct HfContext {
 
 /// Today's date and the current time as headers and footers show them (`&D`, `&T`).
 pub fn hf_date_time(wb: &Workbook) -> (String, String) {
-    let now = gridcraft_core::date::serial_in_system(wb.date_system, gridcraft_calc::now_serial());
+    let now = nanshe_core::date::serial_in_system(wb.date_system, nanshe_calc::now_serial());
     let date = crate::display::format(&Value::Number(now.floor()), "m/d/yyyy", wb).text;
     let time = crate::display::format(&Value::Number(now), "h:mm AM/PM", wb).text;
     (date, time)
@@ -227,7 +227,7 @@ pub fn expand_header_footer(spec: &str, cx: &HfContext) -> [HfSection; 3] {
     out
 }
 
-pub(super) fn draw_header_footer(pg: &mut Page, lay: &SheetLayout, which: gridcraft_model::HfPage, cx: &HfContext) {
+pub(super) fn draw_header_footer(pg: &mut Page, lay: &SheetLayout, which: nanshe_model::HfPage, cx: &HfContext) {
     let [_, _, _, _, hm, fm] = lay.margins;
     let (l, r) = lay.hf_sides();
     let text_scale = lay.hf_text_scale();
@@ -243,11 +243,11 @@ pub(super) fn draw_header_footer(pg: &mut Page, lay: &SheetLayout, which: gridcr
                 continue;
             }
             let size = sec.size.unwrap_or(10.0).clamp(1.0, 72.0) * text_scale;
-            let font = Font::styled(gridcraft_pdf::Family::Sans, sec.bold, sec.italic);
+            let font = Font::styled(nanshe_pdf::Family::Sans, sec.bold, sec.italic);
             let lines: Vec<&str> = sec.text.split('\n').take(20).collect();
             let n = lines.len() as f32;
             for (j, line) in lines.iter().enumerate() {
-                let lw = gridcraft_pdf::text_width(font, size, line);
+                let lw = nanshe_pdf::text_width(font, size, line);
                 let x = match i {
                     0 => l,
                     1 => (pw - lw) / 2.0,

@@ -3,8 +3,8 @@
 use std::cmp::Ordering;
 use std::sync::Arc;
 
-use gridcraft_core::{CellRef, RangeRef, Value, sort_compare};
-use gridcraft_model::{
+use nanshe_core::{CellRef, RangeRef, Value, sort_compare};
+use nanshe_model::{
     Anchor, AnchorMode, AutoFilter, Cell, CfOperator, Comment, ErrorStyle, FilterCriterion, Formula, Hyperlink, LineInfo, Sheet, Validation,
     ValidationKind, Workbook,
 };
@@ -154,7 +154,7 @@ pub fn specs() -> Vec<CommandSpec> {
 
 fn col_param(v: Option<&Json>, base: u32) -> Option<u32> {
     match v? {
-        Json::String(s) => gridcraft_core::letters_to_col(s.trim_start_matches('$')),
+        Json::String(s) => nanshe_core::letters_to_col(s.trim_start_matches('$')),
         Json::Number(n) => n.as_u64().and_then(|o| u32::try_from(o).ok()).and_then(|o| base.checked_add(o)),
         _ => None,
     }

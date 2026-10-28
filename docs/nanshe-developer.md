@@ -4,11 +4,11 @@ Last updated: 2026-10-28.
 
 ## Compared implementations
 
-The port starts at GridCraft `70327cd3d9b7de9af1bcaa33488c0736a0d346d8` and takes the reusable
+The port starts at upstream GridCraft `70327cd3d9b7de9af1bcaa33488c0736a0d346d8` and takes the reusable
 language/compiler and local-service client from Nisaba
 `a4298e6fc1ecfdedac64cfe763943737c608b33a`.
 
-| Area | Nisaba | GridCraft at the fork | Nanshe |
+| Area | Nisaba | Upstream GridCraft at the fork | Nanshe |
 |---|---|---|---|
 | Developer interface | Optional VBA CLI; no integrated editor | Recorded command scripts; preserves VBA projects | In-app source editor, language selector, runtime output, review and apply |
 | VBA | VBA → VB.NET → Roslyn; Word object model | Preserved but not executed | Reused transpiler/security checks, Excel-style object model, isolated preview process |
@@ -30,7 +30,7 @@ Install a .NET SDK 8 or later and build:
 dotnet build vba/NansheVba.sln -m:1
 # Use the directory for your SDK's target framework (net8.0, net9.0, net10.0...).
 export NANSHE_VBA_RUNNER="$PWD/vba/src/Nanshe.Vba/bin/Debug/net10.0/Nanshe.Vba"
-cargo run -p gridcraft
+cargo run -p nanshe
 ```
 
 Windows: set `NANSHE_VBA_RUNNER` to `Nanshe.Vba.exe`. Keep the helper executable beside its
@@ -43,7 +43,7 @@ Selection, ActiveCell, Value/Value2, Formula, Select, ClearContents, Offset, Res
 Font setters and NumberFormat setter. Multiple-cell reads return 1-based two-dimensional arrays;
 array writes must match the destination dimensions. Value writes preserve text literally, while
 Formula explicitly parses formulas. Sheet activation and reads see earlier changes through
-GridCraft's actual calculation engine in the preview session.
+Nanshe's actual calculation engine in the preview session.
 
 ```vb
 Sub Main()
@@ -115,7 +115,7 @@ the workbook, or dropping the job cancels the runner. Unix runners start in thei
 `taskkill /T /F`. The child is reaped even on protocol failure. Deliberately detached processes
 and external side effects remain outside this lifecycle; this is not an OS resource sandbox.
 
-Source for VBA, Python and R is stored separately using GridCraft's existing hidden-name storage.
+Source for VBA, Python and R is stored separately using Nanshe's existing hidden-name storage.
 It survives XLSX saves; edited drafts join the normal Save/Close flow. CSV exports cannot retain
 script source. Code is never executed on open. Switching source language, editing code, or
 accepting a Scribe code draft clears the run acknowledgement and invalidates the old preview.
@@ -170,9 +170,9 @@ dotnet run --project vba/tests/Nanshe.Vba.Tests --no-build
 # Set this to exercise the real .NET subprocess in the Rust integration test.
 export NANSHE_VBA_TEST_RUNNER="$NANSHE_VBA_RUNNER"
 # Set NANSHE_RSCRIPT to exercise the R subprocess test (requires jsonlite).
-cargo test -p gridcraft-ui-egui developer --lib
-cargo test -p gridcraft-engine cmd::developer --lib
-cargo test -p gridcraft-enki
+cargo test -p nanshe-ui-egui developer --lib
+cargo test -p nanshe-engine cmd::developer --lib
+cargo test -p nanshe-enki
 cargo xtask ci
 ```
 
@@ -184,9 +184,9 @@ protocol fixture by default. Opt-in real-service checks require an isolated runn
 ```sh
 export SHAREDAI_SOCKET=/path/to/private-test-dir/ipc.sock # Windows: SHAREDAI_PIPE
 export NANSHE_ENKI_TEST_MODEL=/absolute/path/to/chat-model.gguf
-cargo test -p gridcraft-enki live_enki -- --ignored --nocapture
+cargo test -p nanshe-enki live_enki -- --ignored --nocapture
 # The preceding test registers nanshe-smoke in the test daemon's registry.
-cargo test -p gridcraft-ui-egui live_enki --lib -- --ignored --nocapture
+cargo test -p nanshe-ui-egui live_enki --lib -- --ignored --nocapture
 ```
 
 Use a separate `SHAREDAI_REGISTRY` and data directory when starting this test daemon. The tests

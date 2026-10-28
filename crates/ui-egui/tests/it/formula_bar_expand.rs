@@ -1,9 +1,9 @@
 //! Ctrl+Shift+U (Control+Shift+U in Excel for Mac) expands and collapses the formula bar.
 
 use egui::{Event, Key, Modifiers};
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::SheetApp;
-use gridcraft_ui_egui::keymap::{Shortcut, lookup};
+use nanshe_engine::Session;
+use nanshe_ui_egui::SheetApp;
+use nanshe_ui_egui::keymap::{Shortcut, lookup};
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;

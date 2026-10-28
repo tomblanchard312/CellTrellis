@@ -4,9 +4,9 @@ use std::collections::{HashMap, HashSet};
 use std::io::Read;
 use std::sync::Arc;
 
-use gridcraft_core::date::serial_from_ymd;
-use gridcraft_core::{CellRef, RangeRef, Value};
-use gridcraft_model::*;
+use nanshe_core::date::serial_from_ymd;
+use nanshe_core::{CellRef, RangeRef, Value};
+use nanshe_model::*;
 
 use super::minimal;
 use crate::xml;
@@ -20,7 +20,7 @@ fn rr(a: &str) -> RangeRef {
 }
 
 fn date(y: i64, m: i64, d: i64) -> f64 {
-    serial_from_ymd(gridcraft_core::DateSystem::D1900, y, m, d).unwrap()
+    serial_from_ymd(nanshe_core::DateSystem::D1900, y, m, d).unwrap()
 }
 
 fn field(name: &str) -> PivotField {
@@ -430,7 +430,7 @@ fn large_cache_is_written_without_records() {
 fn boolean_and_error_cache_flags_match_excel() {
     let mut wb = Workbook::new();
     let s = wb.sheet_mut(0).unwrap();
-    let na = || Value::Error(gridcraft_core::CellError::NA);
+    let na = || Value::Error(nanshe_core::CellError::NA);
     let cols: [(&str, [Value; 3]); 7] = [
         ("K", [Value::text("a"), Value::text("b"), Value::text("a")]),
         ("BoolOnly", [Value::Bool(true), Value::Bool(false), Value::Bool(true)]),
@@ -727,7 +727,7 @@ fn small_pivot(columns: &[(&str, Vec<Value>)], pt: impl FnOnce(&mut PivotTable))
         }
         rows = rows.max(vals.len());
     }
-    let last = format!("{}{}", gridcraft_core::col_to_letters(columns.len() as u32 - 1), rows + 1);
+    let last = format!("{}{}", nanshe_core::col_to_letters(columns.len() as u32 - 1), rows + 1);
     let mut table = PivotTable { id: 1, name: "PT".into(), source: format!("Data!$A$1:{last}"), anchor: at("A3"), ..PivotTable::default() };
     pt(&mut table);
     let mut report = Sheet::new("Report");

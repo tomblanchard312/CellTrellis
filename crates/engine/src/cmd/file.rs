@@ -57,7 +57,7 @@ fn open(s: &mut Session, p: &Json) -> Result<Json> {
         s.ui_requests.push(crate::UiRequest::Dialog("open".into(), json!({})));
         return ok();
     };
-    let encrypted = gridcraft_xlsx::sniff(&bytes) == gridcraft_xlsx::Format::Encrypted;
+    let encrypted = nanshe_xlsx::sniff(&bytes) == nanshe_xlsx::Format::Encrypted;
     let (mut wb, warnings) = crate::io::open_bytes_with(&name, &bytes, str_param(p, "password"), bool_param(p, "csvAsText").unwrap_or(false))?;
     wb.source_dir = str_param(p, "path").and_then(crate::io::source_dir);
     // What `CELL("filename")` reports (#1489). A workbook opened from bytes knows its name but
@@ -69,7 +69,7 @@ fn open(s: &mut Session, p: &Json) -> Result<Json> {
     };
     let imported =
         matches!(crate::io::FileKind::from_path(&name), Some(crate::io::FileKind::Ods | crate::io::FileKind::Xlsb | crate::io::FileKind::Xls))
-            || matches!(gridcraft_xlsx::sniff(&bytes), gridcraft_xlsx::Format::Ods | gridcraft_xlsx::Format::Xlsb | gridcraft_xlsx::Format::Xls);
+            || matches!(nanshe_xlsx::sniff(&bytes), nanshe_xlsx::Format::Ods | nanshe_xlsx::Format::Xlsb | nanshe_xlsx::Format::Xls);
     let title = if imported {
         format!("{} (imported).xlsx", std::path::Path::new(&name).file_stem().and_then(std::ffi::OsStr::to_str).unwrap_or("Book"))
     } else {
@@ -87,7 +87,7 @@ fn open(s: &mut Session, p: &Json) -> Result<Json> {
     }
     // Someone else may have made the file: its active content asks before it runs.
     let mut doc = DocState::new(wb, path, title, crate::Trust::FromFile);
-    if crate::io::FileKind::from_path(&name).is_none() && gridcraft_xlsx::sniff(&bytes) == gridcraft_xlsx::Format::Xlsx {
+    if crate::io::FileKind::from_path(&name).is_none() && nanshe_xlsx::sniff(&bytes) == nanshe_xlsx::Format::Xlsx {
         doc.content_kind = Some(crate::io::FileKind::Xlsx);
     }
     let i = s.add_document(doc);
@@ -123,7 +123,7 @@ fn save(s: &mut Session, p: &Json) -> Result<Json> {
     // The document's own file keeps the format its content had when opened; any other path
     // goes by its extension. Relative paths to linked workbooks are rewritten for the new folder.
     let kind = crate::io::FileKind::from_path(&path).or(d.content_kind.filter(|_| d.path.as_deref() == Some(path.as_str())));
-    let rebased = crate::io::source_dir(&path).and_then(|f| gridcraft_xlsx::rebase_links(&d.wb, &f));
+    let rebased = crate::io::source_dir(&path).and_then(|f| nanshe_xlsx::rebase_links(&d.wb, &f));
     let wb = rebased.as_ref().unwrap_or(&d.wb);
     let bytes = match kind {
         Some(kind) => crate::io::save_bytes_as(wb, &path, kind)?,
@@ -222,9 +222,9 @@ fn options(s: &mut Session, _: &Json) -> Result<Json> {
     let calculation = s.active().map(|d| {
         let c = &d.wb.calc;
         let mode = match c.mode {
-            gridcraft_model::CalcMode::Automatic => "automatic",
-            gridcraft_model::CalcMode::AutomaticExceptTables => "automaticExceptTables",
-            gridcraft_model::CalcMode::Manual => "manual",
+            nanshe_model::CalcMode::Automatic => "automatic",
+            nanshe_model::CalcMode::AutomaticExceptTables => "automaticExceptTables",
+            nanshe_model::CalcMode::Manual => "manual",
         };
         json!({"mode": mode, "iterative": c.iterative, "maxIterations": c.max_iterations, "maxChange": c.max_change})
     });

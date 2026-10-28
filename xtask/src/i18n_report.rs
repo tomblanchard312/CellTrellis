@@ -69,7 +69,7 @@ fn list<'a>(out: &mut String, keys: impl Iterator<Item = &'a str>, count: usize)
 /// reworded, an argument renamed).
 #[cfg(feature = "engine")]
 fn function_help(help: &BTreeMap<String, BTreeSet<String>>) -> String {
-    let catalog = gridcraft_engine::cmd::formulas::function_list();
+    let catalog = nanshe_engine::cmd::formulas::function_list();
     let mut known: BTreeSet<&str> = catalog.iter().filter_map(|f| f["description"].as_str()).collect();
     known.extend(catalog.iter().filter_map(|f| f["signature"].as_str()).flat_map(argument_names));
     let mut out = String::new();

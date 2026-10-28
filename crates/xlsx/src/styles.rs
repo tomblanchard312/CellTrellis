@@ -4,8 +4,8 @@
 use std::collections::HashMap;
 use std::fmt::Write as _;
 
-use gridcraft_model::style::{DxfStated, Protection};
-use gridcraft_model::{
+use nanshe_model::style::{DxfStated, Protection};
+use nanshe_model::{
     Alignment, BorderLine, BorderStyle, Borders, Color, Fill, Font, HAlign, NumFmt, PatternType, Style, Underline, VAlign, VertAlign, Workbook,
 };
 
@@ -631,7 +631,7 @@ pub fn write_styles(wb: &Workbook, dxfs: &[Style], extra_fmts: &[String]) -> (St
     let mut borders: Vec<Borders> = vec![Borders::default()];
     let mut border_map: HashMap<Borders, u32> = HashMap::from([(Borders::default(), 0)]);
     // The default style's font is font 0.
-    intern(&mut fonts, &mut font_map, &wb.styles.get(gridcraft_model::StyleId::DEFAULT).font);
+    intern(&mut fonts, &mut font_map, &wb.styles.get(nanshe_model::StyleId::DEFAULT).font);
 
     let mut xfs = String::new();
     let mut count = 0;

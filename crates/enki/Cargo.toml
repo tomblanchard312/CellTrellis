@@ -1,5 +1,5 @@
 [package]
-name = "gridcraft-enki"
+name = "nanshe-enki"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

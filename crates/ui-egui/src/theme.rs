@@ -275,7 +275,7 @@ pub fn apply(ctx: &egui::Context, dark: bool) {
         v.widgets.hovered.weak_bg_fill = t.hover;
         v.widgets.active.weak_bg_fill = t.pressed;
         v.widgets.inactive.bg_stroke = Stroke::new(1.0, t.input_border);
-        // 0.37 raises the default widget corner radii; GridCraft keeps its 0.36 shape (#8617).
+        // 0.37 raises the default widget corner radii; Nanshe keeps its 0.36 shape (#8617).
         v.widgets.noninteractive.corner_radius = egui::CornerRadius::same(2);
         v.widgets.inactive.corner_radius = egui::CornerRadius::same(2);
         v.widgets.hovered.corner_radius = egui::CornerRadius::same(3);

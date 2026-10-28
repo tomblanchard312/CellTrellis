@@ -3,7 +3,7 @@
 //! Every open workbook has one or more windows (View › New Window adds another on the same
 //! workbook). A window has its own selection, active sheet and per-sheet selections. The active
 //! window's view lives in its [`DocState`] (`selection`, `sheet_selections`) and in the workbook's
-//! active sheet ([`gridcraft_model::workbook::Workbook::active_sheet`]), where every command reads
+//! active sheet ([`nanshe_model::workbook::Workbook::active_sheet`]), where every command reads
 //! it; each other window keeps its view in [`WindowState`] until it is activated. Swapping a view
 //! in or out never copies the workbook or makes it dirty: the active sheet is set in place through
 //! the shared `Arc`, and selections live outside the workbook.

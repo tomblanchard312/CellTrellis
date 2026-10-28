@@ -68,7 +68,7 @@ type Probe = std::collections::HashMap<String, u8>;
 
 #[cfg(feature = "engine")]
 fn probe_live_commands(calls: &[(String, String)]) -> Probe {
-    use gridcraft_engine::Session;
+    use nanshe_engine::Session;
     let mut map = Probe::new();
     for (id, params) in calls {
         if ENV_SENSITIVE.contains(&id.as_str()) || UI_DIALOG_COMMANDS.iter().any(|(c, _)| c == id) {
@@ -205,7 +205,7 @@ fn parse_and_probe(source: &str) -> Result<(Vec<Entry>, Probe), String> {
     // must assert the live behaviour, not the silent one. Nudge the maintainer.
     let landed: std::collections::BTreeSet<String> = entries
         .iter()
-        .filter(|e| e.pending && gridcraft_engine::find_command(&e.target).is_some())
+        .filter(|e| e.pending && nanshe_engine::find_command(&e.target).is_some())
         .map(|e| {
             eprintln!("keytips: note — pending target {:?} now exists in the catalog; consider dropping `pending`", e.target);
             e.target.clone()
@@ -213,7 +213,7 @@ fn parse_and_probe(source: &str) -> Result<(Vec<Entry>, Probe), String> {
         .collect();
     let mut probe = probe_live_commands(&live_calls);
     for id in landed {
-        let mut s = gridcraft_engine::Session::new();
+        let mut s = nanshe_engine::Session::new();
         s.new_workbook();
         let status = match s.execute(&id, serde_json::json!({})) {
             Ok(_) => {
@@ -342,7 +342,7 @@ fn render_tests(entries: &[Entry], probe: &Probe) -> String {
         out.push_str(&format!("\n#[test]\nfn {}() {{\n    let mut h = harness(blank());\n    {body}\n}}\n", test_name(&e.seq)));
     }
     out.push_str(&format!(
-        "\n#[test]\nfn generated_test_count_matches_the_table() {{\n    const EXPECTED: usize = {};\n    assert_eq!(gridcraft_ui_egui::keytips::keytip_table::SEQUENCES.len(), EXPECTED);\n}}\n",
+        "\n#[test]\nfn generated_test_count_matches_the_table() {{\n    const EXPECTED: usize = {};\n    assert_eq!(nanshe_ui_egui::keytips::keytip_table::SEQUENCES.len(), EXPECTED);\n}}\n",
         entries.len()
     ));
     out.push_str(SAMPLE_TEXT_FIRST);
@@ -359,8 +359,8 @@ const HEADER: &str = r#"//! GENERATED from keytips.json by `cargo xtask keytips`
 
 use egui::{Event, Key, Modifiers};
 use egui::os::OperatingSystem;
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::SheetApp;
+use nanshe_engine::Session;
+use nanshe_ui_egui::SheetApp;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
 

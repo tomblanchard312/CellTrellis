@@ -1,14 +1,14 @@
 //! UI formula syntax boundary. Engine commands, control/API callers and XLSX keep English.
 use crate::i18n::Language;
-use gridcraft_engine::formula::{self, FormulaLocale, ParseError};
-use gridcraft_engine::model::Workbook;
+use nanshe_engine::formula::{self, FormulaLocale, ParseError};
+use nanshe_engine::model::Workbook;
 
 pub(crate) fn canonical(
     text: &str,
     locale: FormulaLocale,
     wb: &Workbook,
     sheet: usize,
-    cell: gridcraft_engine::core::CellRef,
+    cell: nanshe_engine::core::CellRef,
 ) -> Result<String, ParseError> {
     // The editor hid the `_xludf.` prefixes of this cell's formula; confirming it unchanged keeps
     // the user-defined calls instead of binding them to the built-ins of the same name.

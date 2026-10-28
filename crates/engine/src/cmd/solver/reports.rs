@@ -45,7 +45,7 @@ pub(super) fn report_kinds(cmd: &'static str, p: &Json) -> Result<Option<Vec<Rep
 type Lines = Vec<(u32, u32, Value, bool)>;
 
 fn abs_ref(c: CellRef) -> String {
-    format!("${}${}", gridcraft_core::col_to_letters(c.col), u64::from(c.row) + 1)
+    format!("${}${}", nanshe_core::col_to_letters(c.col), u64::from(c.row) + 1)
 }
 
 /// A cell's name in the reports: the nearest text to its left and the nearest text above it.
@@ -93,7 +93,7 @@ pub(super) struct ReportInput<'a> {
 }
 
 fn title(out: &mut Lines, kind: ReportKind, sheet: &str) -> u32 {
-    out.push((0, 0, Value::text(format!("GridCraft {} Report", kind.title())), true));
+    out.push((0, 0, Value::text(format!("Nanshe {} Report", kind.title())), true));
     out.push((1, 0, Value::text(format!("Worksheet: {sheet}")), false));
     3
 }
@@ -106,7 +106,7 @@ fn format_constraint_row(sh: &Sheet, c: &Constraint, cell: CellRef, v: f64, rhs:
             let b = rhs.get(k).or_else(|| rhs.first()).copied().unwrap_or(f64::NAN);
             let rhs_text = match rhs_cells {
                 Rhs::Cells(cells) => cells.get(k).or_else(|| cells.first()).map(|c| abs_ref(*c)).unwrap_or_default(),
-                _ => gridcraft_core::number_to_text(b),
+                _ => nanshe_core::number_to_text(b),
             };
             let slack = (v - b).abs();
             let binding = rel == Rel::Eq || slack <= PRECISION * (1.0 + b.abs());
@@ -114,7 +114,7 @@ fn format_constraint_row(sh: &Sheet, c: &Constraint, cell: CellRef, v: f64, rhs:
             (format!("{}{}{rhs_text}", abs_ref(cell), rel.text()), if binding { "Binding" } else { "Not Binding" }, slack)
         }
     };
-    let num = |v: f64| if v.is_finite() { Value::number(v) } else { Value::Error(gridcraft_core::CellError::Value) };
+    let num = |v: f64| if v.is_finite() { Value::number(v) } else { Value::Error(nanshe_core::CellError::Value) };
     vec![Value::text(abs_ref(cell)), Value::text(cell_name(sh, cell)), num(v), Value::text(formula), Value::text(status), num(slack)]
 }
 
@@ -138,7 +138,7 @@ fn answer_report(d: &DocState, sh: &Sheet, inp: &ReportInput) -> Lines {
     let vals = read(&mut trial, &inp.solution, &cells);
     let mut at = vals.iter().copied();
     let f1 = at.next().unwrap_or(f64::NAN);
-    let num = |v: f64| if v.is_finite() { Value::number(v) } else { Value::Error(gridcraft_core::CellError::Value) };
+    let num = |v: f64| if v.is_finite() { Value::number(v) } else { Value::Error(nanshe_core::CellError::Value) };
     let mut out = Lines::new();
     let mut r = title(&mut out, ReportKind::Answer, &sh.name);
     out.push((r, 0, Value::text(format!("Result: {}", inp.message)), false));
@@ -215,7 +215,7 @@ fn limits_report(d: &DocState, sh: &Sheet, inp: &ReportInput) -> Result<Lines> {
         ev.budget = ev.evals.saturating_add(1);
         ev.eval(x).map(|p| p.f).unwrap_or(f64::NAN)
     };
-    let num = |v: f64| if v.is_finite() { Value::number(v) } else { Value::Error(gridcraft_core::CellError::Value) };
+    let num = |v: f64| if v.is_finite() { Value::number(v) } else { Value::Error(nanshe_core::CellError::Value) };
     let f = objective_at(&mut ev, x);
     let mut rows = Vec::new();
     for (j, c) in m.vars.iter().enumerate() {
@@ -236,7 +236,7 @@ fn limits_report(d: &DocState, sh: &Sheet, inp: &ReportInput) -> Result<Lines> {
                     (num(v), num(objective_at(&mut ev, &p)))
                 }
                 Outcome::Unbounded => (Value::text("Unbounded"), Value::Empty),
-                _ => (Value::Error(gridcraft_core::CellError::NA), Value::Empty),
+                _ => (Value::Error(nanshe_core::CellError::NA), Value::Empty),
             });
         }
         let mut row = vec![Value::text(abs_ref(*c)), Value::text(cell_name(sh, *c)), num(x.get(j).copied().unwrap_or(f64::NAN))];
@@ -285,15 +285,15 @@ pub(super) fn write_reports(cx: &mut Ctx, at: usize, built: Vec<(String, Lines)>
     if count == 0 {
         return names;
     }
-    let bold = cx.wb.styles.derive(gridcraft_model::StyleId::DEFAULT, |st| st.font.bold = true);
+    let bold = cx.wb.styles.derive(nanshe_model::StyleId::DEFAULT, |st| st.font.bold = true);
     for (i, (name, lines)) in built.into_iter().enumerate() {
         let mut sheet = Sheet::new(name);
         for (r, c, v, b) in lines {
-            let style = if b { bold } else { gridcraft_model::StyleId::DEFAULT };
+            let style = if b { bold } else { nanshe_model::StyleId::DEFAULT };
             sheet.set_cell(CellRef::new(r, c), Cell { value: v, formula: None, style });
         }
         for (c, w) in [(0u32, 14.0f32), (1, 110.0), (2, 140.0), (3, 120.0), (4, 120.0), (5, 120.0), (6, 120.0), (7, 120.0)] {
-            sheet.cols.insert(c, gridcraft_model::LineInfo { size: Some(w), ..Default::default() });
+            sheet.cols.insert(c, nanshe_model::LineInfo { size: Some(w), ..Default::default() });
         }
         cx.wb.sheets.insert(at + i, std::sync::Arc::new(sheet));
     }

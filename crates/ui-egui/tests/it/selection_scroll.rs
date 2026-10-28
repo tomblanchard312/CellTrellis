@@ -2,10 +2,10 @@
 //! Go To and Select over the control channel scroll the active cell into view.
 
 use egui::{Event, Key, Modifiers};
-use gridcraft_engine::Session;
-use gridcraft_engine::core::{CellRef, RangeRef};
-use gridcraft_ui_egui::control::{Outcome, handle};
-use gridcraft_ui_egui::{SheetApp, grid::Geo};
+use nanshe_engine::Session;
+use nanshe_engine::core::{CellRef, RangeRef};
+use nanshe_ui_egui::control::{Outcome, handle};
+use nanshe_ui_egui::{SheetApp, grid::Geo};
 use serde_json::{Value as Json, json};
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;

@@ -1,6 +1,6 @@
 use super::format::{cell_format_code, r1c1_to_a1};
 use super::{Area, Arg, Array, CellError, Ev, Evaluator, Expr, FnCtx, MAX_CELLS, Value, err};
-use gridcraft_core::{CellRef, MAX_COLS, MAX_ROWS, RangeRef};
+use nanshe_core::{CellRef, MAX_COLS, MAX_ROWS, RangeRef};
 use std::sync::Arc;
 
 impl<'h> Evaluator<'h> {
@@ -75,7 +75,7 @@ impl<'h> Evaluator<'h> {
                 Err(e) => return err(e),
             }
         };
-        match gridcraft_formula::parse(&text) {
+        match nanshe_formula::parse(&text) {
             Ok(Expr::Ref(_)) if !a1_ok => err(CellError::Ref),
             Ok(e @ (Expr::Ref(_) | Expr::Name(_) | Expr::Struct(_))) => match self.eval(&e) {
                 r @ Ev::R(_) => r,
@@ -195,7 +195,7 @@ impl<'h> Evaluator<'h> {
         if (3..=6).contains(&args.len())
             && let (Ev::R(look), Ev::R(ret)) = (self.eval(&args[1]), self.eval(&args[2]))
             && let ([l], [r]) = (look.as_slice(), ret.as_slice())
-            && let Some(spec) = gridcraft_functions::lookup("XMATCH")
+            && let Some(spec) = nanshe_functions::lookup("XMATCH")
         {
             let key = self.value(&args[0]);
             let (l, r) = (*l, *r);
@@ -223,7 +223,7 @@ impl<'h> Evaluator<'h> {
                     }
                 }
                 let mut ctx = FnCtx { ev: self, criteria: None, lambda: None };
-                return match gridcraft_functions::call(spec, &xargs, &mut ctx) {
+                return match nanshe_functions::call(spec, &xargs, &mut ctx) {
                     Value::Number(p) if p >= 1.0 => {
                         let k = p as u32 - 1;
                         let range = if vertical {
@@ -264,7 +264,7 @@ impl<'h> Evaluator<'h> {
         let wb = self.host.workbook();
         let sheet = wb.sheet(a.sheet);
         match kind.as_str() {
-            "address" => Ev::V(Value::text(format!("${}${}", gridcraft_core::col_to_letters(c.col), c.row + 1))),
+            "address" => Ev::V(Value::text(format!("${}${}", nanshe_core::col_to_letters(c.col), c.row + 1))),
             "row" => Ev::V(Value::number(c.row as f64 + 1.0)),
             "col" => Ev::V(Value::number(c.col as f64 + 1.0)),
             "contents" => Ev::V(self.host.cell_value(a.sheet, c)),
@@ -276,7 +276,7 @@ impl<'h> Evaluator<'h> {
                     _ => "v",
                 }))
             }
-            "width" => Ev::V(Value::number(sheet.map_or(8.43, |s| gridcraft_model::points_to_chars(s.col_width(c.col) as f64)).round())),
+            "width" => Ev::V(Value::number(sheet.map_or(8.43, |s| nanshe_model::points_to_chars(s.col_width(c.col) as f64)).round())),
             // Excel's `<folder>/[<file>]<sheet>`, which the classic sheet-name formula splits on
             // the `]`. Empty until the workbook has a file of its own, as in Excel (#1489).
             "filename" => Ev::V(Value::text(match &wb.source_path {
@@ -402,8 +402,8 @@ impl<'h> Evaluator<'h> {
             }
         }
         if let Some(k) = k {
-            return Ev::V(gridcraft_functions::aggregate_values_k(func, &values, &k));
+            return Ev::V(nanshe_functions::aggregate_values_k(func, &values, &k));
         }
-        Ev::V(gridcraft_functions::aggregate_values(func, &values))
+        Ev::V(nanshe_functions::aggregate_values(func, &values))
     }
 }

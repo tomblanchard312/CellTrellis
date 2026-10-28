@@ -28,7 +28,7 @@ impl<'a> SheetKept<'a> {
         }
     }
 
-    /// GridCraft's notes VML for part `name`, merged with the kept control and object shapes.
+    /// Nanshe's notes VML for part `name`, merged with the kept control and object shapes.
     pub fn notes_vml(&self, ours: String, name: &str, out: &mut Out) -> String {
         let Some(vml) = self.vml() else { return ours };
         self.write_vml_rels(vml, name, out);

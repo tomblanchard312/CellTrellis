@@ -5,7 +5,7 @@ use super::*;
 pub(super) fn table_name(name: &str, used: &mut HashSet<String>, n: u32) -> String {
     let mut s: String =
         name.chars().enumerate().map(|(i, c)| if c.is_alphanumeric() || c == '_' || c == '.' || (i == 0 && c == '\\') { c } else { '_' }).collect();
-    if s.is_empty() || !s.starts_with(|c: char| c.is_alphabetic() || c == '_' || c == '\\') || gridcraft_core::CellRef::parse(&s).is_some() {
+    if s.is_empty() || !s.starts_with(|c: char| c.is_alphabetic() || c == '_' || c == '\\') || nanshe_core::CellRef::parse(&s).is_some() {
         s = format!("Table{n}");
     }
     let mut out = s.clone();
@@ -78,7 +78,7 @@ pub(super) fn autofilter_xml(range: RangeRef, criteria: &[(u32, FilterCriterion)
                 let _ = write!(s, "<dynamicFilter type=\"{}\"/>", if *above { "aboveAverage" } else { "belowAverage" });
             }
             FilterCriterion::FillColor(c) => {
-                let st = Style { fill: gridcraft_model::Fill::solid(*c), ..Default::default() };
+                let st = Style { fill: nanshe_model::Fill::solid(*c), ..Default::default() };
                 let _ = write!(s, "<colorFilter dxfId=\"{}\"/>", dxf_id(&mut out.dxfs, &st));
             }
             FilterCriterion::FontColor(c) => {
@@ -207,7 +207,7 @@ pub(super) fn thread_ids(sheet: &Sheet, si: usize) -> BTreeMap<CellRef, Vec<Stri
 
 pub(super) fn comments_xml(sheet: &Sheet, ids: &BTreeMap<CellRef, Vec<String>>) -> String {
     // A threaded comment's legacy note is authored by `tc={thread id}`.
-    let author_of = |cell: &CellRef, c: &gridcraft_model::Comment| match ids.get(cell).and_then(|v| v.first()) {
+    let author_of = |cell: &CellRef, c: &nanshe_model::Comment| match ids.get(cell).and_then(|v| v.first()) {
         Some(id) => format!("tc={id}"),
         None => c.author.clone(),
     };
@@ -305,11 +305,11 @@ pub(super) fn threaded_xml(sheet: &Sheet, ids: &BTreeMap<CellRef, Vec<String>>, 
 
 /// A protection password hash as attributes, each name preceded by `prefix` (see
 /// [`crate::sheet_read::read_password`]).
-pub(crate) fn password_attrs(h: &gridcraft_model::PasswordHash, prefix: &str) -> String {
+pub(crate) fn password_attrs(h: &nanshe_model::PasswordHash, prefix: &str) -> String {
     let name = |base: &str| crate::sheet_read::password_attr(prefix, base);
     match h {
-        gridcraft_model::PasswordHash::Legacy(h) => format!(" {}=\"{h:04X}\"", name("password")),
-        gridcraft_model::PasswordHash::Iterated { algorithm, hash, salt, spin_count } => format!(
+        nanshe_model::PasswordHash::Legacy(h) => format!(" {}=\"{h:04X}\"", name("password")),
+        nanshe_model::PasswordHash::Iterated { algorithm, hash, salt, spin_count } => format!(
             " {}=\"{}\" {}=\"{}\" {}=\"{}\" {}=\"{spin_count}\"",
             name("algorithmName"),
             esc_attr(algorithm),

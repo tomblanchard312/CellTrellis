@@ -3,9 +3,9 @@
 
 use std::fmt::Write as _;
 
-use gridcraft_core::{RangeRef, Value, category_levels};
-use gridcraft_formula::{Expr, SheetSel};
-use gridcraft_model::{Chart, ChartKind, Color, DefinedName, LegendPos, LineDash, Series, Trendline, TrendlineKind, Workbook};
+use nanshe_core::{RangeRef, Value, category_levels};
+use nanshe_formula::{Expr, SheetSel};
+use nanshe_model::{Chart, ChartKind, Color, DefinedName, LegendPos, LineDash, Series, Trendline, TrendlineKind, Workbook};
 
 use crate::drawing::{dml_color, srgb};
 use crate::xml::{El, esc, num};
@@ -322,7 +322,7 @@ const MAX_CACHE: u64 = 100_000;
 
 /// The sheet and range a same-workbook reference (`Sheet1!$B$2:$B$9`) names.
 fn ref_target(wb: &Workbook, sheet_idx: usize, f: &str) -> Option<(usize, RangeRef)> {
-    let e = gridcraft_formula::parse(f).ok()?;
+    let e = nanshe_formula::parse(f).ok()?;
     let Expr::Ref(r) = e else { return None };
     let si = match &r.sheet {
         SheetSel::Current => sheet_idx,
@@ -352,14 +352,14 @@ pub(crate) fn ref_values(wb: &Workbook, sheet_idx: usize, f: &str) -> Option<Vec
 }
 
 fn is_ref(f: &str) -> bool {
-    matches!(gridcraft_formula::parse(f), Ok(Expr::Ref(_)))
+    matches!(nanshe_formula::parse(f), Ok(Expr::Ref(_)))
 }
 
 /// A chart reference that is a name: its sheet when qualified (`Sheet1!Sales`), the bare
 /// name, and the definition formulas would find from sheet `si` (none when undefined). `None`
 /// when it isn't a name, or names a sheet the workbook doesn't have.
 fn chart_name<'a>(wb: &'a Workbook, si: usize, f: &str) -> Option<(Option<usize>, String, Option<&'a DefinedName>)> {
-    let Ok(Expr::Name(n)) = gridcraft_formula::parse(f.trim()) else { return None };
+    let Ok(Expr::Name(n)) = nanshe_formula::parse(f.trim()) else { return None };
     match n.split_once('!') {
         Some((s, bare)) => {
             let i = wb.sheet_index(s.trim_matches('\''))?;
@@ -377,7 +377,7 @@ fn chart_name<'a>(wb: &'a Workbook, si: usize, f: &str) -> Option<(Option<usize>
 /// Microsoft 365). A workbook-scoped name is written `[0]!Name`, as Excel writes it, a
 /// sheet-scoped one `Sheet!Name`; an undefined name gets `[0]!`, as the file it came from had.
 fn chart_ref_to_file(wb: &Workbook, si: usize, f: &str) -> String {
-    let on_sheet = |i: usize, n: &str| wb.sheet(i).map(|sh| format!("{}!{n}", gridcraft_formula::quote_sheet(&sh.name)));
+    let on_sheet = |i: usize, n: &str| wb.sheet(i).map(|sh| format!("{}!{n}", nanshe_formula::quote_sheet(&sh.name)));
     match chart_name(wb, si, f) {
         Some((Some(i), n, _)) => on_sheet(i, &n).unwrap_or_else(|| crate::fmla::text_to_file(f)),
         Some((None, n, def)) => def.and_then(|d| d.scope).and_then(|i| on_sheet(i, &n)).unwrap_or_else(|| format!("{THIS_BOOK}{n}")),

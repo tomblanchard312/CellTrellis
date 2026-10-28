@@ -1,7 +1,7 @@
 //! #1999: a conditional-format rule whose formula doesn't parse must be rejected at
 //! creation (Excel's object model refuses it too), not saved and poison the file.
 
-use gridcraft_engine::Session;
+use nanshe_engine::Session;
 use serde_json::json;
 
 fn session() -> Session {

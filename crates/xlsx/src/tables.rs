@@ -53,7 +53,7 @@ pub fn builtin_id(code: &str) -> Option<u32> {
     BUILTIN_FORMATS.iter().find(|(i, c)| *c == code && !matches!(i, 5..=8 | 42 | 44)).map(|(i, _)| *i)
 }
 
-pub use gridcraft_core::color::INDEXED;
+pub use nanshe_core::color::INDEXED;
 
 /// Paper sizes (`pageSetup paperSize`) we name. ID 12/13 are the JIS B4/B5 that
 /// `pageLayout.pageSetup` calls `B4`/`B5`; 42 is ISO B4, and 43–88 are the Japanese postcards,

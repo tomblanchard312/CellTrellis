@@ -2,7 +2,7 @@
 
 > **Last reviewed:** 2026-10-10 · ** Last updated:** 2026-10-28 · **Change:** major (Nanshe Developer and local Scribe integration) · **Target:** Microsoft Excel (Microsoft 365)
 
-How GridCraft is built today. Rules for contributors are in [`AGENTS.md`](../AGENTS.md).
+How Nanshe is built today. Rules for contributors are in [`AGENTS.md`](../AGENTS.md).
 
 ## Workspace and layering
 
@@ -24,7 +24,7 @@ including tests, 2026-10-10.
 | L5 | `engine` | ~17.7k | `Session`: open workbooks, selection, history (COW snapshots), clipboard, fill, sort, filter, PivotTables, what-if, print, file I/O (`io.rs`), and the command registry (`cmd/*`, 313 commands) with the Excel ribbon catalog (`catalog.rs`) |
 | L6 | `ui-egui` | ~11.6k | Excel-style UI (title bar, QAT, ribbon, formula bar, virtualised grid, editor, tabs, status bar, dialogs, task panes, chart view) and the control channel |
 | L6 | `mcp` | ~1.4k | MCP server over stdio (hand-written JSON-RPC), headless or bridged to a running app |
-| L7 | `apps/gridcraft`, `apps/gridcraft-cli`, `apps/gridcraft-web` | ~2.2k | Desktop (eframe/wgpu), CLI (`info`, `convert`, `eval`, `cat`, `run`, `commands`, `functions`, `mcp`, `send`), web (WASM via trunk) |
+| L7 | `apps/nanshe`, `apps/nanshe-cli`, `apps/nanshe-web` | ~2.2k | Desktop (eframe/wgpu), CLI (`info`, `convert`, `eval`, `cat`, `run`, `commands`, `functions`, `mcp`, `send`), web (WASM via trunk) |
 | — | `xtask` | — | `ci`, `parity`, `assets`, `layers`, `wasm`, `version`, `stats` |
 
 ## Data flow
@@ -127,10 +127,10 @@ Actions made of many commands (macros, a debugger that runs one step per call) u
 
 ## Agent control
 
-- Desktop control channel: `gridcraft --control 7979`, JSON lines on localhost
+- Desktop control channel: `nanshe --control 7979`, JSON lines on localhost
   (`engine.execute`, `ui.screenshot`, pointer and keyboard input…), see
   [`control-protocol.md`](control-protocol.md).
-- MCP: `gridcraft-cli mcp`, headless or `--connect` to a running app, see [`mcp.md`](mcp.md).
+- MCP: `nanshe-cli mcp`, headless or `--connect` to a running app, see [`mcp.md`](mcp.md).
 - CLI: [`cli.md`](cli.md).
 
 ## Platforms and builds
@@ -156,7 +156,7 @@ rpm, tarball), FreeBSD, and web (WASM; WebGPU or WebGL2). Release workflows in
 
 ## Nanshe Developer and Scribe
 
-The Nanshe fork adds an L0 `gridcraft-enki` protocol client, engine commands for per-language
+The Nanshe fork adds an L0 `nanshe-enki` protocol client, engine commands for per-language
 source storage and bounded grouped replay, and thin Developer/Scribe panes in the existing
 egui frontend. VBA (.NET), Python and R run in separate local processes using private JSON
 lines; each command operates on a copied `Session` until the user applies a preview. The

@@ -53,7 +53,7 @@ impl Acc {
 
 // ---------------------------------------------------------------- operators
 
-pub(super) fn map_unary(v: &Value, f: &dyn Fn(f64) -> Value, plus: bool, sys: gridcraft_core::DateSystem) -> Value {
+pub(super) fn map_unary(v: &Value, f: &dyn Fn(f64) -> Value, plus: bool, sys: nanshe_core::DateSystem) -> Value {
     match v {
         Value::Array(a) => Value::from(Array { rows: a.rows, cols: a.cols, data: a.data.iter().map(|x| map_unary(x, f, plus, sys)).collect() }),
         Value::Error(e) => Value::Error(*e),
@@ -129,11 +129,11 @@ pub(super) fn single(v: Value) -> Option<Value> {
     }
 }
 
-pub fn binary_values(op: BinOp, x: &Value, y: &Value, sys: gridcraft_core::DateSystem) -> Value {
+pub fn binary_values(op: BinOp, x: &Value, y: &Value, sys: nanshe_core::DateSystem) -> Value {
     zip2(x, y, |a, b| binary_scalar(op, a, b, sys))
 }
 
-fn binary_scalar(op: BinOp, a: &Value, b: &Value, sys: gridcraft_core::DateSystem) -> Value {
+fn binary_scalar(op: BinOp, a: &Value, b: &Value, sys: nanshe_core::DateSystem) -> Value {
     if let Value::Error(e) = a {
         return Value::Error(*e);
     }

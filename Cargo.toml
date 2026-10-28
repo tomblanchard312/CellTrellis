@@ -1,30 +1,30 @@
 [workspace]
 resolver = "3"
 members = ["crates/*", "apps/*", "xtask"]
-default-members = ["crates/*", "apps/gridcraft", "apps/gridcraft-cli", "xtask"]
+default-members = ["crates/*", "apps/nanshe", "apps/nanshe-cli", "xtask"]
 
 [workspace.package]
 version = "0.13.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 rust-version = "1.95"
-repository = "https://github.com/storytold/gridcraft"
+repository = "https://github.com/tomblanchard312/Nanshe"
 
 [workspace.dependencies]
 # internal
-gridcraft-core = { path = "crates/core" }
-gridcraft-numfmt = { path = "crates/numfmt" }
-gridcraft-formula = { path = "crates/formula" }
-gridcraft-functions = { path = "crates/functions" }
-gridcraft-model = { path = "crates/model" }
-gridcraft-calc = { path = "crates/calc" }
-gridcraft-xlsx = { path = "crates/xlsx" }
-gridcraft-chart = { path = "crates/chart" }
-gridcraft-engine = { path = "crates/engine" }
-gridcraft-enki = { path = "crates/enki" }
-gridcraft-ui-egui = { path = "crates/ui-egui" }
-gridcraft-mcp = { path = "crates/mcp" }
-gridcraft-pdf = { path = "crates/pdf" }
+nanshe-core = { path = "crates/core" }
+nanshe-numfmt = { path = "crates/numfmt" }
+nanshe-formula = { path = "crates/formula" }
+nanshe-functions = { path = "crates/functions" }
+nanshe-model = { path = "crates/model" }
+nanshe-calc = { path = "crates/calc" }
+nanshe-xlsx = { path = "crates/xlsx" }
+nanshe-chart = { path = "crates/chart" }
+nanshe-engine = { path = "crates/engine" }
+nanshe-enki = { path = "crates/enki" }
+nanshe-ui-egui = { path = "crates/ui-egui" }
+nanshe-mcp = { path = "crates/mcp" }
+nanshe-pdf = { path = "crates/pdf" }
 # Every craft-libs crate (craft-update and craft-window here, craft-ui in ui-egui, craft-print in
 # the app) comes from one storytold/craft-libs revision.
 craft-update = { git = "https://github.com/storytold/craft-libs", rev = "92d392cff132eaf53e13afff77f38b5c11b73aa0", version = "=0.1.0", features = ["egui"] }

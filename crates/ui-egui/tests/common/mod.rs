@@ -9,16 +9,16 @@
 //! that renders every catalog.
 
 use egui_kittest::HarnessBuilder;
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::{Services, SheetApp};
+use nanshe_engine::Session;
+use nanshe_ui_egui::{Services, SheetApp};
 
 pub type Harness = egui_kittest::Harness<'static, SheetApp>;
 
-/// A kittest builder with the deterministic font set and GridCraft's visuals installed.
+/// A kittest builder with the deterministic font set and Nanshe's visuals installed.
 pub fn builder<State>() -> HarnessBuilder<State> {
     egui_kittest::Harness::builder().with_context_setup(|ctx| {
-        ctx.set_fonts(gridcraft_ui_egui::theme::pinned_font_definitions());
-        gridcraft_ui_egui::theme::apply(ctx, false);
+        ctx.set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());
+        nanshe_ui_egui::theme::apply(ctx, false);
     })
 }
 

@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::io::Read;
 use std::sync::Arc;
 
-use gridcraft_model::Sheet;
+use nanshe_model::Sheet;
 
 use super::make_zip;
 use crate::package::{normalize, resolve, split_dir};
@@ -280,7 +280,7 @@ fn assert_kept_sheet_parts(u: &Unpacked, sheet: &str, sx: &str) {
     assert!(pos("<pageSetup") < pos("<legacyDrawing") && pos("<legacyDrawing") < pos("<oleObjects") && pos("<oleObjects") < pos("<controls"));
     // Query table: a sheet relationship only.
     assert!(u.rels(sheet).iter().any(|r| r.1.ends_with("/queryTable") && u.parts.get(&r.2).is_some_and(|b| b == QUERY_TABLE.as_bytes())));
-    // One VML drawing: the kept control shapes plus GridCraft's note, in a fresh shape block.
+    // One VML drawing: the kept control shapes plus Nanshe's note, in a fresh shape block.
     let vml_id = attr_of(sx, "legacyDrawing", "r:id");
     let vml_part = u.target(sheet, &vml_id).1;
     let vml = u.text(&vml_part);
@@ -293,7 +293,7 @@ fn assert_kept_sheet_parts(u: &Unpacked, sheet: &str, sx: &str) {
     assert_eq!(u.parts.get(&img[0].2).unwrap(), EMF);
 }
 
-fn assert_round_trip_kept_content(wb: &gridcraft_model::Workbook, out: &[u8]) {
+fn assert_round_trip_kept_content(wb: &nanshe_model::Workbook, out: &[u8]) {
     // Reading the output keeps the same content again.
     let (wb2, rep2) = read_xlsx(out).unwrap();
     assert!(!rep2.warnings.iter().any(|w| w.contains("dropped")), "{:?}", rep2.warnings);
@@ -316,7 +316,7 @@ fn edited_workbooks_keep_consistent_relationships() {
     let s = wb.sheet_mut(1).unwrap();
     s.name = "Renamed".into();
     s.comments.clear();
-    s.set_value(gridcraft_core::CellRef::new(5, 5), gridcraft_core::Value::Number(3.0));
+    s.set_value(nanshe_core::CellRef::new(5, 5), nanshe_core::Value::Number(3.0));
     let u = Unpacked::new(&write_xlsx(&wb).unwrap());
     u.assert_valid();
     let sheet = sheet_part(&u, "Renamed");
@@ -386,7 +386,7 @@ fn damaged_kept_content_is_dropped_without_failing_the_read() {
         ("rId4", "customXml", "../customXml/missing.xml"),
         // A cycle: item1 → itemProps1 → item1.
         ("rId5", "customXml", "../customXml/item1.xml"),
-        // Kept content that points into a part GridCraft rewrites.
+        // Kept content that points into a part Nanshe rewrites.
         ("rId6", "customXml", "../customXml/item2.xml"),
         // Damaged rels behind a kept part.
         ("rId7", "connections", "connections.xml"),
@@ -573,20 +573,20 @@ fn xml_maps_and_their_bindings_survive_a_round_trip() {
 /// Where a link with `target`, in a workbook read from `from`, points once saved into `to`.
 #[cfg(unix)]
 fn rebased(target: &str, from: &str, to: &str) -> String {
-    let link = |rel_type: &str| gridcraft_model::PreservedRel {
+    let link = |rel_type: &str| nanshe_model::PreservedRel {
         id: "rId1".into(),
         rel_type: format!("{NS_R}/{rel_type}"),
         target: target.into(),
         external: true,
     };
-    let part = gridcraft_model::PreservedPart {
+    let part = nanshe_model::PreservedPart {
         name: "xl/externalLinks/externalLink1.xml".into(),
         content_type: String::new(),
         data: Arc::from(&b""[..]),
         rels: vec![link("externalLinkPath"), link("hyperlink")],
     };
-    let mut wb = gridcraft_model::Workbook::new();
-    wb.preserved = Some(Arc::new(gridcraft_model::Preserved { parts: vec![part], ..Default::default() }));
+    let mut wb = nanshe_model::Workbook::new();
+    wb.preserved = Some(Arc::new(nanshe_model::Preserved { parts: vec![part], ..Default::default() }));
     wb.source_dir = Some(from.into());
     let Some(out) = crate::rebase_links(&wb, std::path::Path::new(to)) else { return target.into() };
     let rels = &out.preserved.as_ref().unwrap().parts[0].rels;
@@ -831,9 +831,9 @@ fn file_version_and_calc_features_survive_a_save() {
         assert!(text.contains(&format!("<extLst>{calc_features}</extLst>")), "{text}");
     }
 
-    // A workbook that had neither gets a <fileVersion> naming GridCraft (#1699), kept on the next
+    // A workbook that had neither gets a <fileVersion> naming Nanshe (#1699), kept on the next
     // save, and no calcFeatures: Excel recalculates it on open.
-    let new = write_xlsx(&gridcraft_model::Workbook::new()).unwrap();
+    let new = write_xlsx(&nanshe_model::Workbook::new()).unwrap();
     let (reread, _) = read_xlsx(&new).unwrap();
     for saved in [new, write_xlsx(&reread).unwrap()] {
         let u = Unpacked::new(&saved);
@@ -841,7 +841,7 @@ fn file_version_and_calc_features_survive_a_save() {
         let plain = u.text("xl/workbook.xml");
         let root = xml::parse(plain.as_bytes()).unwrap();
         assert_eq!(root.children.first().map(|e| e.name.as_str()), Some("fileVersion"), "{plain}");
-        assert!(plain.contains(r#"<fileVersion appName="gridcraft"/>"#) && !plain.contains("extLst"), "{plain}");
+        assert!(plain.contains(r#"<fileVersion appName="nanshe"/>"#) && !plain.contains("extLst"), "{plain}");
     }
 }
 
@@ -850,7 +850,7 @@ const SIGNATURE: &[u8] = b"\x89PNG\r\n\x1a\n footer signature";
 const HF_VML: &str = r##"<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><o:shapelayout v:ext="edit"><o:idmap v:ext="edit" data="1"/></o:shapelayout><v:shapetype id="_x0000_t75" coordsize="21600,21600" o:spt="75" o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f" stroked="f"/><v:shape id="LH" o:spid="_x0000_s1025" type="#_x0000_t75" style="position:absolute;margin-left:0;margin-top:0;width:120pt;height:40pt;z-index:1"><v:imagedata o:relid="rId1" o:title="logo"/><o:lock v:ext="edit" rotation="t"/></v:shape><v:shape id="CF" o:spid="_x0000_s1026" type="#_x0000_t75" style="position:absolute;margin-left:0;margin-top:0;width:80pt;height:20pt;z-index:2"><v:imagedata o:relid="rId2" o:title="signature"/><o:lock v:ext="edit" rotation="t"/></v:shape></xml>"##;
 
 /// #1257: a letterhead in the header and a picture in the footer (`&G`), drawn from a VML part
-/// that `<legacyDrawingHF>` names, next to a note whose VML drawing GridCraft rewrites.
+/// that `<legacyDrawingHF>` names, next to a note whose VML drawing Nanshe rewrites.
 fn header_picture_package() -> Vec<u8> {
     let types = r#"<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="vml" ContentType="application/vnd.openxmlformats-officedocument.vmlDrawing"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/comments1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml"/></Types>"#;
     let workbook = format!(

@@ -3,11 +3,11 @@
 
 use egui::{Event, Key, Modifiers, PointerButton, Pos2, pos2, vec2};
 use egui_kittest::kittest::Queryable;
-use gridcraft_engine::Session;
-use gridcraft_engine::core::CellRef;
-use gridcraft_engine::model::SheetViewMode;
-use gridcraft_ui_egui::SheetApp;
-use gridcraft_ui_egui::grid::Geo;
+use nanshe_engine::Session;
+use nanshe_engine::core::CellRef;
+use nanshe_engine::model::SheetViewMode;
+use nanshe_ui_egui::SheetApp;
+use nanshe_ui_egui::grid::Geo;
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
@@ -101,7 +101,7 @@ fn header_is_edited_in_place_committed_by_a_click_elsewhere_and_undoable() {
     }
     h.input_mut().events.push(Event::Text("Report ".into()));
     h.run_steps(2);
-    gridcraft_ui_egui::paper_view::insert_field(h.state_mut(), "&[Page]");
+    nanshe_ui_egui::paper_view::insert_field(h.state_mut(), "&[Page]");
     h.run_steps(2);
     assert_eq!(h.state().grid.hf_edit.as_ref().unwrap().texts[1], "Report &[Page]");
     assert_eq!(header(&h), "&LLeft", "nothing is written while editing");
@@ -135,11 +135,11 @@ fn the_first_page_edits_its_own_header_when_different_first_page_is_on() {
     h.state_mut().run("pageLayout.headerFooter", json!({"differentFirst": true, "firstHeader": "&CCover"})).unwrap();
     h.run_steps(3);
     // Insert › Header & Footer edits the first page's centre header, here the first-page one.
-    gridcraft_ui_egui::paper_view::start_editing(h.state_mut());
+    nanshe_ui_egui::paper_view::start_editing(h.state_mut());
     h.run_steps(3);
     {
         let e = h.state().grid.hf_edit.as_ref().expect("Insert › Header & Footer starts editing");
-        assert_eq!((e.footer, e.section, e.kind), (false, 1, gridcraft_engine::model::HfPage::First));
+        assert_eq!((e.footer, e.section, e.kind), (false, 1, nanshe_engine::model::HfPage::First));
         assert_eq!(e.texts[1], "Cover");
     }
     h.input_mut().events.push(Event::Text(" page".into()));
@@ -158,7 +158,7 @@ fn the_first_page_edits_its_own_header_when_different_first_page_is_on() {
 #[test]
 fn scale_with_document_and_align_with_page_margins_are_check_boxes_on_the_header_and_footer_tab() {
     let mut h = fixture();
-    gridcraft_ui_egui::paper_view::start_editing(h.state_mut());
+    nanshe_ui_egui::paper_view::start_editing(h.state_mut());
     h.run_steps(4);
     let options = |h: &Harness| {
         let pr = &h.state().session.doc().unwrap().wb.active().unwrap().print;
@@ -181,7 +181,7 @@ fn insert_header_and_footer_switches_to_page_layout_view() {
     let mut h = fixture();
     h.state_mut().run("view.normal", json!({})).unwrap();
     h.run_steps(3);
-    gridcraft_ui_egui::paper_view::start_editing(h.state_mut());
+    nanshe_ui_egui::paper_view::start_editing(h.state_mut());
     h.run_steps(4);
     assert_eq!(h.state().session.doc().unwrap().wb.active().unwrap().view, SheetViewMode::PageLayout);
     let e = h.state().grid.hf_edit.as_ref().expect("the header is being edited");
@@ -347,7 +347,7 @@ fn right_to_left_sheets_carry_the_vertical_ruler_on_the_right() {
     let start = margins(&h);
     let outer = h.state().grid.rect.unwrap();
     // The grid leaves the ruler's width free on the right, not on the left.
-    assert!((g.rect.right() - (outer.right() - gridcraft_ui_egui::paper_view::RULER)).abs() < 0.5, "{:?} {outer:?}", g.rect);
+    assert!((g.rect.right() - (outer.right() - nanshe_ui_egui::paper_view::RULER)).abs() < 0.5, "{:?} {outer:?}", g.rect);
     assert!((g.rect.left() - outer.left()).abs() < 0.5);
     let x = outer.right() - 9.0;
     let at = pos2(x, screen(&g, 0.0, pg.page_y(0) + pg.margins[2]).y);

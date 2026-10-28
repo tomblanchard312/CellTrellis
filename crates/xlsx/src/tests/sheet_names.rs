@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use gridcraft_model::{Sheet, Workbook};
+use nanshe_model::{Sheet, Workbook};
 
 use crate::{IoError, write_xlsx};
 

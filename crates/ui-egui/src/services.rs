@@ -30,7 +30,7 @@ pub struct Services {
     pub paste_html: Option<Box<dyn FnMut() -> Option<String>>>,
     /// Read the system clipboard's plain text for the ribbon and menu Paste commands (Cmd/Ctrl+V
     /// gets it from egui's `Event::Paste`). `None` from the host, or no service (web), pastes
-    /// GridCraft's own clipboard.
+    /// Nanshe's own clipboard.
     pub paste_text: Option<Box<dyn FnMut() -> Option<String>>>,
     /// Web: deliver a file to the user (name, bytes).
     pub download: Option<Download>,

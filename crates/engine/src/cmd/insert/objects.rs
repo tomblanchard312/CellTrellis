@@ -75,7 +75,7 @@ pub(super) fn insert_picture(s: &mut Session, p: &Json) -> Result<Json> {
             width: f64_param(p, "width").map(|v| v as f32).unwrap_or(w as f32 * scale),
             height: f64_param(p, "height").map(|v| v as f32).unwrap_or(h as f32 * scale),
             // Excel inserts pictures as "Move but don't size with cells" (`editAs="oneCell"`).
-            mode: anchor_mode_param(p).unwrap_or(gridcraft_model::AnchorMode::MoveOnly),
+            mode: anchor_mode_param(p).unwrap_or(nanshe_model::AnchorMode::MoveOnly),
         },
         data: data.into(),
         mime,

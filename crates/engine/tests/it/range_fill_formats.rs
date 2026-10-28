@@ -1,7 +1,7 @@
 //! Ctrl+Enter (`range.fill`) gives every cell what typing the input there gives it: a General
 //! cell gets the input's automatic number format, a formatted cell keeps its own.
 
-use gridcraft_engine::Session;
+use nanshe_engine::Session;
 use serde_json::{Value, json};
 
 fn session() -> Session {
@@ -17,7 +17,7 @@ fn get(s: &mut Session, a: &str) -> Value {
 fn fmt_of(s: &Session, a: &str) -> String {
     let wb = &s.doc().unwrap().wb;
     let sh = wb.active().unwrap();
-    wb.styles.get(sh.style_id(gridcraft_engine::core::CellRef::parse(a).unwrap())).num_fmt.as_str().to_string()
+    wb.styles.get(sh.style_id(nanshe_engine::core::CellRef::parse(a).unwrap())).num_fmt.as_str().to_string()
 }
 
 /// Selects `range` with A1 active and fills it with `input`, as Ctrl+Enter does.

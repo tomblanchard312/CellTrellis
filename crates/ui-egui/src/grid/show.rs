@@ -37,7 +37,7 @@ pub fn show(app: &mut SheetApp, ui: &mut egui::Ui) {
     let place = (d.uid, si);
     let mut view = app.view();
     // Page Layout view: pages on a desk, rulers above and left of the headings.
-    let paper = sh.view == gridcraft_engine::model::SheetViewMode::PageLayout;
+    let paper = sh.view == nanshe_engine::model::SheetViewMode::PageLayout;
     let ruler = if paper && !app.session.hide_ruler { crate::paper_view::RULER } else { 0.0 };
     // Right-to-left sheets carry the vertical ruler on the right, beside the row headings.
     let grid_rect = if rtl {
@@ -185,7 +185,7 @@ pub fn show(app: &mut SheetApp, ui: &mut egui::Ui) {
         sheet: sh,
         selection: &sel,
     });
-    if sh.view == gridcraft_engine::model::SheetViewMode::PageBreakPreview {
+    if sh.view == nanshe_engine::model::SheetViewMode::PageBreakPreview {
         paint_pages(app, &painter.with_clip_rect(geo.cells), &geo, sh);
     }
     if geo.paper.is_some() {
@@ -231,7 +231,7 @@ struct ActiveCellVisibility<'a, F> {
     wb: &'a Workbook,
     si: usize,
     sh: &'a Sheet,
-    selection: &'a gridcraft_engine::Selection,
+    selection: &'a nanshe_engine::Selection,
     paper: bool,
     make_geo: &'a F,
 }
@@ -241,7 +241,7 @@ fn selection_outline(
     ui: &egui::Ui,
     geo: &Geo,
     sh: &Sheet,
-    sel: &gridcraft_engine::Selection,
+    sel: &nanshe_engine::Selection,
     place: (u64, usize),
     now: f64,
 ) -> Rect {
@@ -375,7 +375,7 @@ struct PanesInput<'a> {
     workbook: &'a Workbook,
     sheet_index: usize,
     sheet: &'a Sheet,
-    selection: &'a gridcraft_engine::Selection,
+    selection: &'a nanshe_engine::Selection,
     outline: Rect,
     tokens: &'a Tokens,
 }
@@ -526,7 +526,7 @@ pub(crate) fn paint_headers(
     p: &Painter,
     geo: &Geo,
     sh: &Sheet,
-    sel: &gridcraft_engine::Selection,
+    sel: &nanshe_engine::Selection,
     t: &Tokens,
     quads: &[PaneQuad],
     headings: &[TableHeading],
@@ -646,7 +646,7 @@ pub(crate) struct OverlayInput<'a> {
     workbook: &'a Workbook,
     sheet_index: usize,
     sheet: &'a Sheet,
-    selection: &'a gridcraft_engine::Selection,
+    selection: &'a nanshe_engine::Selection,
 }
 
 pub(crate) fn paint_overlays(input: OverlayInput<'_>) {
@@ -822,7 +822,7 @@ mod trace_arrow_tests {
     use super::*;
 
     fn app() -> SheetApp {
-        let mut s = gridcraft_engine::Session::new();
+        let mut s = nanshe_engine::Session::new();
         s.new_workbook();
         SheetApp::new(s, Default::default())
     }

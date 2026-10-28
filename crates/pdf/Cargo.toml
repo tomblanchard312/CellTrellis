@@ -1,9 +1,9 @@
 [package]
-name = "gridcraft-pdf"
+name = "nanshe-pdf"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "GridCraft's tiny self-contained PDF 1.7 writer (standard 14 fonts, vector drawing, RGBA images)"
+description = "Nanshe's tiny self-contained PDF 1.7 writer (standard 14 fonts, vector drawing, RGBA images)"
 readme = "README.md"
 
 [lints]

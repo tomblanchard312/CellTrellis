@@ -2,11 +2,11 @@
 
 use std::fmt::Write;
 
-use gridcraft_core::{CellRef, number_to_text};
+use nanshe_core::{CellRef, number_to_text};
 
 use crate::ast::{Anchor, BinOp, Expr, RefKind, Reference, SheetSel, StructItem, StructRef, UnOp};
 
-pub use gridcraft_core::{quote_sheet, sheet_needs_quotes as needs_quotes};
+pub use nanshe_core::{quote_sheet, sheet_needs_quotes as needs_quotes};
 
 fn sheet_prefix(s: &SheetSel) -> String {
     match s {
@@ -30,7 +30,7 @@ fn push_anchor_a1(s: &mut String, a: &Anchor) {
     let _ = write!(s, "{}", a.row as u64 + 1);
 }
 
-/// Appends [`gridcraft_core::col_to_letters`]`(col)` without allocating.
+/// Appends [`nanshe_core::col_to_letters`]`(col)` without allocating.
 fn push_col(s: &mut String, col: u32) {
     let mut letters = [0u8; 8];
     let mut i = letters.len();

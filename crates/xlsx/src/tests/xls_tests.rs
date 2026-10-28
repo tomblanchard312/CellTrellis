@@ -1,7 +1,7 @@
 //! Legacy `.xls` (BIFF8) import. Every test file is assembled here from the [MS-CFB] and
 //! [MS-XLS] structures; no Excel-produced file is used.
 
-use gridcraft_core::{CellError, CellRef, DateSystem, RangeRef, Value};
+use nanshe_core::{CellError, CellRef, DateSystem, RangeRef, Value};
 
 use crate::{Format, IoError, read_xls, read_xlsx, sniff, write_xlsx};
 
@@ -285,11 +285,11 @@ fn sample(date1904: bool) -> Vec<u8> {
     cat(&[&globals([p1, p2, p3]), &sheet1, &data, &chart])
 }
 
-fn v(wb: &gridcraft_model::Workbook, sheet: usize, a1: &str) -> Value {
+fn v(wb: &nanshe_model::Workbook, sheet: usize, a1: &str) -> Value {
     wb.sheets[sheet].value(CellRef::parse(a1).unwrap())
 }
 
-fn ftext(wb: &gridcraft_model::Workbook, a1: &str) -> Option<String> {
+fn ftext(wb: &nanshe_model::Workbook, a1: &str) -> Option<String> {
     wb.sheets[0].cell(CellRef::parse(a1).unwrap()).and_then(|c| c.formula.as_ref()).map(|f| f.text.clone())
 }
 
@@ -316,7 +316,7 @@ fn reads_values_formulas_formats_and_layout() {
     assert_eq!(wb.date_system, DateSystem::D1904);
 }
 
-fn assert_values_roundtrip(wb: &gridcraft_model::Workbook) {
+fn assert_values_roundtrip(wb: &nanshe_model::Workbook) {
     assert_eq!(v(wb, 0, "A1"), Value::from("Hello"));
     assert_eq!(v(wb, 0, "B1"), Value::Number(1.5));
     assert_eq!(v(wb, 0, "C1"), Value::Number(42.0));
@@ -327,7 +327,7 @@ fn assert_values_roundtrip(wb: &gridcraft_model::Workbook) {
     assert_eq!(v(wb, 0, "D2"), Value::Number(1.5));
 }
 
-fn assert_formula_roundtrip(wb: &gridcraft_model::Workbook) {
+fn assert_formula_roundtrip(wb: &nanshe_model::Workbook) {
     // Formulas: text plus the cached result.
     assert_eq!(ftext(wb, "A3").as_deref(), Some("B1*2"));
     assert_eq!(v(wb, 0, "A3"), Value::Number(3.0));
@@ -351,7 +351,7 @@ fn assert_formula_roundtrip(wb: &gridcraft_model::Workbook) {
     assert_eq!(v(wb, 0, "C6"), Value::Empty);
 }
 
-fn assert_layout_roundtrip(wb: &gridcraft_model::Workbook) {
+fn assert_layout_roundtrip(wb: &nanshe_model::Workbook) {
     // Number formats, merges, sizes, names, print area; embedded chart records ignored.
     let sh = &wb.sheets[0];
     assert_eq!(wb.styles.get(sh.style_id(CellRef::parse("A4").unwrap())).num_fmt.as_str(), "yyyy-mm-dd");
@@ -368,7 +368,7 @@ fn assert_layout_roundtrip(wb: &gridcraft_model::Workbook) {
     assert_eq!(wb.date_system, DateSystem::D1900);
 }
 
-fn assert_xlsx_conversion(wb: &gridcraft_model::Workbook) {
+fn assert_xlsx_conversion(wb: &nanshe_model::Workbook) {
     // The import saves as .xlsx and reads back.
     let (back, _) = read_xlsx(&write_xlsx(wb).unwrap()).unwrap();
     assert_eq!(back.sheets[0].cell(CellRef::parse("A3").unwrap()).unwrap().formula.as_ref().unwrap().text, "B1*2");
@@ -582,11 +582,11 @@ fn reads_iterative_calculation_settings() {
     let (wb, _) = read_xls(&compound("Workbook", &cat(&[&globals(p1, p2), &sheet1, &sheet2]))).unwrap();
     assert!(wb.calc.iterative);
     assert_eq!((wb.calc.max_iterations, wb.calc.max_change), (50, 0.01));
-    assert_eq!(wb.calc.mode, gridcraft_model::CalcMode::Manual);
+    assert_eq!(wb.calc.mode, nanshe_model::CalcMode::Manual);
     assert!(wb.calc.precision_as_displayed);
     // Without the records: Excel's defaults, iteration off.
     let (wb, _) = read_xls(&compound("Workbook", &sample(false))).unwrap();
-    assert_eq!(wb.calc, gridcraft_model::CalcSettings::default());
+    assert_eq!(wb.calc, nanshe_model::CalcSettings::default());
 }
 
 #[test]

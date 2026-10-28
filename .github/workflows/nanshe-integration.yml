@@ -25,8 +25,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: rustup toolchain install stable --profile minimal --component clippy
-      - run: cargo +stable test -p gridcraft-enki --all-targets
-      - run: cargo +stable clippy -p gridcraft-enki --all-targets -- -D warnings
+      - run: cargo +stable test -p nanshe-enki --all-targets
+      - run: cargo +stable clippy -p nanshe-enki --all-targets -- -D warnings
+  windows-app:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: 2
+      CARGO_PROFILE_DEV_DEBUG: 0
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install stable --profile minimal
+      - run: cargo +stable build -p nanshe -p nanshe-cli
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nanshe-windows-x64
+          path: |
+            target/debug/nanshe.exe
+            target/debug/nanshe-cli.exe
+          if-no-files-found: error
   runtime-bridge:
     runs-on: ubuntu-latest
     steps:
@@ -47,6 +64,6 @@ jobs:
           NANSHE_PYTHON="$(command -v python)"
           NANSHE_RSCRIPT="$(command -v Rscript)"
           export NANSHE_PYTHON NANSHE_RSCRIPT
-          cargo +stable test -p gridcraft-ui-egui developer --lib
-          cargo +stable test -p gridcraft-engine cmd::developer --lib
-          cargo +stable test -p gridcraft-enki
+          cargo +stable test -p nanshe-ui-egui developer --lib
+          cargo +stable test -p nanshe-engine cmd::developer --lib
+          cargo +stable test -p nanshe-enki

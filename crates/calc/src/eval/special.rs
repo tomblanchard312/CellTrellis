@@ -1,5 +1,5 @@
 use super::{Area, BinOp, Ev, Expr, Reference, SheetSel, Value, Workbook};
-use gridcraft_core::{CellRef, MAX_COLS, MAX_ROWS, RangeRef};
+use nanshe_core::{CellRef, MAX_COLS, MAX_ROWS, RangeRef};
 
 /// SUMIF and AVERAGEIF with a sum range: Excel sizes the sum range like the criteria range.
 pub(super) fn resizes_sum_range(name: &str, args: usize) -> bool {
@@ -65,7 +65,7 @@ pub fn precedents(wb: &Workbook, sheet: usize, e: &Expr) -> (Vec<Area>, bool) {
             dynamic = true
         }
         Expr::Name(_) | Expr::Struct(_) => dynamic = true,
-        Expr::Call(n, _) if gridcraft_functions::lookup(n).is_none() && !is_special(n) => dynamic = true,
+        Expr::Call(n, _) if nanshe_functions::lookup(n).is_none() && !is_special(n) => dynamic = true,
         // A range ending in a function's result (`A1:INDEX(B1:B9,n)`) covers the cells between
         // the references inside it, not only those references.
         Expr::Binary(BinOp::Range, a, b) if !matches!((&**a, &**b), (Expr::Ref(_), Expr::Ref(_))) => {
@@ -161,5 +161,5 @@ pub const SPECIAL_FUNCTIONS: &[&str] = &[
 ];
 
 pub fn is_known_function(n: &str) -> bool {
-    is_special(&n.to_ascii_uppercase()) || gridcraft_functions::lookup(n).is_some()
+    is_special(&n.to_ascii_uppercase()) || nanshe_functions::lookup(n).is_some()
 }

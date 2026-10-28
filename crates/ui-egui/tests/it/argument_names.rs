@@ -1,8 +1,8 @@
 //! Ctrl+Shift+A (Control+Shift+A on a Mac) after a function name inserts its argument names, as
 //! in Excel.
 use egui::{Context, Event, Key, Modifiers, RawInput, Rect, pos2, vec2};
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::SheetApp;
+use nanshe_engine::Session;
+use nanshe_ui_egui::SheetApp;
 
 fn frame(ctx: &Context, app: &mut SheetApp, time: f64, events: Vec<Event>) {
     let mut output = ctx.run_ui(

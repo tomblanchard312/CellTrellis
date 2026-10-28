@@ -4,8 +4,8 @@
 
 use std::io::{Read, Write};
 
-use gridcraft_engine::{Session, io};
-use gridcraft_model::Workbook;
+use nanshe_engine::{Session, io};
+use nanshe_model::Workbook;
 use serde_json::json;
 
 const TASKS: usize = 6;
@@ -97,7 +97,7 @@ fn workbook_names_in_chart_series_resolve_after_save_and_reopen() {
     assert_eq!(chart.series[2].values, "Sheet1!TaskLeft");
     assert_eq!(chart.series[2].name.as_deref(), Some("LeftTitle"));
 
-    let data = gridcraft_chart::resolve(&wb, 0, chart);
+    let data = nanshe_chart::resolve(&wb, 0, chart);
     let tasks: Vec<String> = (1..=TASKS).map(|i| format!("Task {i}")).collect();
     assert_eq!(data.categories, tasks);
     let names: Vec<&str> = data.series.iter().map(|s| s.name.as_str()).collect();
@@ -109,7 +109,7 @@ fn workbook_names_in_chart_series_resolve_after_save_and_reopen() {
 
     // A second save and reopen gives the same chart data.
     let again = reopen(&io::save_bytes(&wb, "plan.xlsx").unwrap());
-    assert_eq!(gridcraft_chart::resolve(&again, 0, &again.sheet(0).unwrap().charts[0]), data);
+    assert_eq!(nanshe_chart::resolve(&again, 0, &again.sheet(0).unwrap().charts[0]), data);
 }
 
 #[test]
@@ -119,7 +119,7 @@ fn a_missing_workbook_name_resolves_to_no_values_without_panicking() {
     let wb = reopen(&bytes);
     let chart = &wb.sheet(0).unwrap().charts[0];
     assert_eq!(chart.series[2].values, "NoSuchName");
-    let data = gridcraft_chart::resolve(&wb, 0, chart);
+    let data = nanshe_chart::resolve(&wb, 0, chart);
     assert!(data.series[2].values.iter().all(Option::is_none), "{:?}", data.series[2].values);
     // The other series still plot.
     assert_eq!(data.series[0].values.len(), TASKS);

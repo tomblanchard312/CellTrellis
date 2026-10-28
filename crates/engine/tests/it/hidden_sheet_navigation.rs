@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use gridcraft_engine::{Session, model::Visibility};
+use nanshe_engine::{Session, model::Visibility};
 use serde_json::json;
 
 fn workbook(hidden: &[usize], active: usize) -> Session {

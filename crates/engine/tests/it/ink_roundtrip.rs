@@ -1,9 +1,9 @@
 //! Native ink remains editable after XLSX saves, including a save after an unrelated cell edit.
 
-use gridcraft_engine::Session;
-use gridcraft_engine::cmd::draw::{ink_points, ink_width};
-use gridcraft_engine::core::{CellRef, Value};
-use gridcraft_engine::model::{Shape, ShapeKind};
+use nanshe_engine::Session;
+use nanshe_engine::cmd::draw::{ink_points, ink_width};
+use nanshe_engine::core::{CellRef, Value};
+use nanshe_engine::model::{Shape, ShapeKind};
 use serde_json::json;
 
 fn workbook() -> Session {

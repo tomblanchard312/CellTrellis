@@ -15,7 +15,7 @@ pub(super) fn col32(c: Color, wb: &Workbook, default: Color32) -> Color32 {
     c.resolve(&wb.theme).map(theme::color32).unwrap_or(default)
 }
 
-pub(super) fn numfmt_color(c: gridcraft_engine::numfmt::FormatColor) -> Color32 {
+pub(super) fn numfmt_color(c: nanshe_engine::numfmt::FormatColor) -> Color32 {
     c.rgb().map(|[r, g, b]| Color32::from_rgb(r, g, b)).unwrap_or(Color32::BLACK)
 }
 
@@ -31,7 +31,7 @@ pub(super) fn center_across_end(start: u32, limit: u32, continues: impl Fn(u32) 
 pub(super) fn look(wb: &Workbook, si: usize, sh: &Sheet, c: CellRef, cf: &mut CfCache) -> (Look, Option<CfLook>) {
     let mut style = wb.styles.get(sh.style_id(c)).clone();
     if let Some(t) = sh.table_at(c) {
-        style = gridcraft_engine::tables::table_cell_style(wb, si, t, c);
+        style = nanshe_engine::tables::table_cell_style(wb, si, t, c);
     }
     let cfl = cf.look(wb, si, c);
     if let Some(l) = &cfl
@@ -120,12 +120,12 @@ pub(super) fn display_text(
         && let Value::Number(n) = v
     {
         let max_chars = ((width_px - 4.0) / char_w).floor().max(1.0) as usize;
-        return match gridcraft_engine::numfmt::format_general_fit(*n, max_chars.min(11)) {
+        return match nanshe_engine::numfmt::format_general_fit(*n, max_chars.min(11)) {
             Some(t) => (t, None, true, None),
             None => ("#".repeat(max_chars.max(1)), None, true, None),
         };
     }
-    let f = gridcraft_engine::display::format(v, code, wb);
+    let f = nanshe_engine::display::format(v, code, wb);
     (f.text, f.color.map(numfmt_color), f.numeric, f.fill)
 }
 
@@ -256,7 +256,7 @@ pub(crate) fn paint_border(p: &Painter, pts: [Pos2; 2], style: BorderStyle, col:
 }
 
 pub(super) fn paint_cf_icon(p: &Painter, r: Rect, set: &str, idx: usize) {
-    let n = gridcraft_engine::cf::icon_count(set);
+    let n = nanshe_engine::cf::icon_count(set);
     let palette3 = [Color32::from_rgb(0xD1, 0x3B, 0x2F), Color32::from_rgb(0xF2, 0xB8, 0x2E), Color32::from_rgb(0x2E, 0x9E, 0x4F)];
     let col = if n <= 3 {
         palette3.get(idx).copied().unwrap_or(Color32::GRAY)

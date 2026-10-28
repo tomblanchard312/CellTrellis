@@ -7,7 +7,7 @@ impl SheetApp {
             return;
         }
         if let Some(dl) = &self.services.download
-            && let Some(b) = result.get("base64").and_then(Json::as_str).and_then(gridcraft_engine::io::base64_decode)
+            && let Some(b) = result.get("base64").and_then(Json::as_str).and_then(nanshe_engine::io::base64_decode)
         {
             let title = self.session.active().map(|d| d.display_title()).unwrap_or_else(|| "Book1".into());
             dl(&std::path::Path::new(&title).with_extension("pdf").to_string_lossy(), &b);
@@ -52,7 +52,7 @@ impl SheetApp {
         }
         let pdf = self.run("file.print", params)?;
         let encoded = pdf.get("base64").and_then(Json::as_str).ok_or("The print command did not produce a PDF.")?;
-        let bytes = gridcraft_engine::io::base64_decode(encoded).ok_or("Couldn't decode the generated PDF.")?;
+        let bytes = nanshe_engine::io::base64_decode(encoded).ok_or("Couldn't decode the generated PDF.")?;
         let len = bytes.len();
         if let Some(submit) = &self.services.print_native {
             self.printing.begin(submit(bytes, self.printing.settings.clone())).map_err(|_| "A print job is already being submitted.".to_owned())?;

@@ -6,8 +6,8 @@
 
 use std::sync::Arc;
 
-use gridcraft_core::{CellRef, RangeRef};
-use gridcraft_model::{
+use nanshe_core::{CellRef, RangeRef};
+use nanshe_model::{
     Anchor, Cell, Chart, ChartKind, LegendPos, NumFmt, PivotCalcField, PivotDateGroup, PivotField, PivotFilter, PivotFunc, PivotLayout, PivotShowAs,
     PivotSort, PivotTable, PivotValue, Sheet, StyleId, Workbook,
 };

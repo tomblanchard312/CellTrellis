@@ -1,10 +1,10 @@
-//! Floating objects on the sheet: charts (rendered by `gridcraft-chart` into primitives that
+//! Floating objects on the sheet: charts (rendered by `nanshe-chart` into primitives that
 //! we paint with egui), pictures and shapes.
 
 use egui::epaint::{PathShape, PathStroke};
 use egui::{Align2, Color32, FontId, Painter, Pos2, Rect, Stroke, StrokeKind, pos2, vec2};
-use gridcraft_chart::{HAlign, Prim, VAlign};
-use gridcraft_engine::model::{Anchor, ShapeKind, Sheet, Workbook};
+use nanshe_chart::{HAlign, Prim, VAlign};
+use nanshe_engine::model::{Anchor, ShapeKind, Sheet, Workbook};
 
 use crate::SheetApp;
 use crate::grid::Geo;
@@ -19,7 +19,7 @@ struct EguiMeasure<'a> {
     z: f32,
 }
 
-impl gridcraft_chart::Measure for EguiMeasure<'_> {
+impl nanshe_chart::Measure for EguiMeasure<'_> {
     fn text_width(&self, text: &str, size: f32, bold: bool) -> f32 {
         let font = if bold { theme::ui_bold(size * self.z) } else { theme::ui_font(size * self.z) };
         self.painter.layout_no_wrap(text.to_string(), font, Color32::BLACK).size().x / self.z.max(0.01)
@@ -28,16 +28,16 @@ impl gridcraft_chart::Measure for EguiMeasure<'_> {
 
 /// Paints `chart` (not necessarily on the sheet: the Recommended Charts preview) scaled to fit
 /// `rect`.
-pub fn paint_chart(p: &Painter, rect: Rect, wb: &Workbook, sheet: usize, chart: &gridcraft_engine::model::Chart) {
+pub fn paint_chart(p: &Painter, rect: Rect, wb: &Workbook, sheet: usize, chart: &nanshe_engine::model::Chart) {
     let (w, h) = (chart.anchor.width.max(1.0), chart.anchor.height.max(1.0));
     let z = (rect.width() / w).min(rect.height() / h);
     if !(z.is_finite() && z > 0.0) {
         return;
     }
     let origin = rect.center() - vec2(w * z, h * z) / 2.0;
-    let data = gridcraft_chart::resolve(wb, sheet, chart);
+    let data = nanshe_chart::resolve(wb, sheet, chart);
     let m = EguiMeasure { painter: p, z };
-    let prims = gridcraft_chart::render(chart, &data, w, h, &m);
+    let prims = nanshe_chart::render(chart, &data, w, h, &m);
     paint_prims(&p.with_clip_rect(rect.intersect(p.clip_rect())), origin, &prims, z);
 }
 
@@ -195,8 +195,8 @@ fn area_mesh(v: &[Pos2], col: Color32) -> egui::Mesh {
 /// A shape's text with its formatting: size, bold/italic, typeface, colour, outline, horizontal
 /// alignment and vertical anchor. Shapes other than text boxes default to white text centred in
 /// the shape; text boxes to black text at the top left.
-fn paint_shape_text(p: &Painter, wb: &Workbook, sp: &gridcraft_engine::model::Shape, r: Rect, z: f32) {
-    use gridcraft_engine::model::{ShapeTextAlign, ShapeTextAnchor};
+fn paint_shape_text(p: &Painter, wb: &Workbook, sp: &nanshe_engine::model::Shape, r: Rect, z: f32) {
+    use nanshe_engine::model::{ShapeTextAlign, ShapeTextAnchor};
     let f = &sp.format;
     let text_box = sp.kind == ShapeKind::TextBox;
     let align = f.align.unwrap_or(if text_box { ShapeTextAlign::Left } else { ShapeTextAlign::Center });
@@ -256,7 +256,7 @@ pub(crate) struct PaintedObject {
 /// Ctrl+6 (Options › Advanced › "For objects, show: Nothing"): objects are neither drawn nor
 /// clickable. Placeholders, which Excel no longer offers, show the objects.
 pub(crate) fn objects_hidden(wb: &Workbook) -> bool {
-    wb.show_objects == gridcraft_engine::model::ShowObjects::None
+    wb.show_objects == nanshe_engine::model::ShowObjects::None
 }
 
 pub(crate) fn paint_objects(app: &SheetApp, p: &Painter, geo: &Geo, wb: &Workbook, si: usize, sh: &Sheet) -> Vec<PaintedObject> {
@@ -299,9 +299,9 @@ pub(crate) fn paint_objects(app: &SheetApp, p: &Painter, geo: &Geo, wb: &Workboo
                 p.add(PathShape::convex_polygon(vec![pos2(r.center().x, r.top()), r.right_bottom(), r.left_bottom()], fill, Stroke::new(1.0, line)));
             }
             ShapeKind::Ink => {
-                let w = gridcraft_engine::cmd::draw::ink_width(sp) * geo.z;
+                let w = nanshe_engine::cmd::draw::ink_width(sp) * geo.z;
                 let pts: Vec<Pos2> =
-                    gridcraft_engine::cmd::draw::ink_points(sp).iter().map(|q| pos2(r.left() + q[0] * geo.z, r.top() + q[1] * geo.z)).collect();
+                    nanshe_engine::cmd::draw::ink_points(sp).iter().map(|q| pos2(r.left() + q[0] * geo.z, r.top() + q[1] * geo.z)).collect();
                 if pts.len() >= 2 {
                     let col = if w > 8.0 { line.gamma_multiply(0.45) } else { line };
                     p.add(PathShape::line(pts, PathStroke::new(w, col)));
@@ -358,9 +358,9 @@ pub(crate) fn paint_objects(app: &SheetApp, p: &Painter, geo: &Geo, wb: &Workboo
         // Soft shadow + white card.
         p.rect_filled(r.translate(vec2(0.0, 1.5)), 2.0, Color32::from_black_alpha(18));
         p.rect_filled(r, 0.0, Tokens::get(p.ctx()).grid_bg);
-        let data = gridcraft_chart::resolve(wb, si, ch);
+        let data = nanshe_chart::resolve(wb, si, ch);
         let m = EguiMeasure { painter: p, z: geo.z };
-        let prims = gridcraft_chart::render(ch, &data, ch.anchor.width, ch.anchor.height, &m);
+        let prims = nanshe_chart::render(ch, &data, ch.anchor.width, ch.anchor.height, &m);
         paint_prims(&p.with_clip_rect(r.intersect(p.clip_rect())), r.min, &prims, geo.z);
         if app.selected_chart == Some(ch.id) {
             selection_frame(p, r);
@@ -370,7 +370,7 @@ pub(crate) fn paint_objects(app: &SheetApp, p: &Painter, geo: &Geo, wb: &Workboo
         if app.selected_chart == Some(ch.id) {
             // Highlight the source data like Excel does.
             for s in &ch.series {
-                if let Ok(gridcraft_engine::formula::Expr::Ref(rf)) = gridcraft_engine::formula::parse(&s.values)
+                if let Ok(nanshe_engine::formula::Expr::Ref(rf)) = nanshe_engine::formula::parse(&s.values)
                     && rf.sheet_name().is_none_or(|n| n.eq_ignore_ascii_case(&sh.name))
                 {
                     let rr = geo.range_rect(sh, rf.range());
@@ -427,7 +427,7 @@ fn paint_slicers(app: &SheetApp, p: &Painter, geo: &Geo, wb: &Workbook, si: usiz
         if !r.intersects(p.clip_rect()) {
             continue;
         }
-        let items = gridcraft_engine::cmd::slicer::slicer_items(wb, si, sl);
+        let items = nanshe_engine::cmd::slicer::slicer_items(wb, si, sl);
         let lay = slicer_layout(r, geo.z, items.len(), sl.columns);
         let radius = 4.0 * geo.z;
         // Card + soft shadow.
@@ -477,7 +477,7 @@ pub fn slicer_click(geo: &Geo, sh: &Sheet, wb: &Workbook, si: usize, p: Pos2) ->
         if !r.contains(p) {
             continue;
         }
-        let items = gridcraft_engine::cmd::slicer::slicer_items(wb, si, sl);
+        let items = nanshe_engine::cmd::slicer::slicer_items(wb, si, sl);
         let lay = slicer_layout(r, geo.z, items.len(), sl.columns);
         if lay.clear.contains(p) {
             return Some((sl.id, SlicerAction::Clear));

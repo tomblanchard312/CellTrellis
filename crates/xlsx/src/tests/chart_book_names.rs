@@ -4,7 +4,7 @@
 use std::io::Read;
 use std::sync::Arc;
 
-use gridcraft_model::{Anchor, Chart, ChartKind, DefinedName, LegendPos, Series, Sheet, Workbook};
+use nanshe_model::{Anchor, Chart, ChartKind, DefinedName, LegendPos, Series, Sheet, Workbook};
 
 use crate::chart::chart_ref_from_file;
 use crate::{read_xlsx, write_xlsx};
@@ -63,7 +63,7 @@ fn chart_names_are_written_qualified() {
     s.charts.push(Chart {
         id: 1,
         kind: ChartKind::BarStacked,
-        anchor: Anchor { cell: gridcraft_core::CellRef::new(0, 3), width: 480.0, height: 300.0, ..Anchor::default() },
+        anchor: Anchor { cell: nanshe_core::CellRef::new(0, 3), width: 480.0, height: 300.0, ..Anchor::default() },
         title: None,
         series: vec![
             series("Title", "Amounts"),

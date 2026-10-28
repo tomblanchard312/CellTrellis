@@ -22,7 +22,7 @@ const IO_TIMEOUT: Duration = Duration::from_secs(30);
 /// Longest reply line accepted from the app (guards against a runaway peer).
 const MAX_REPLY: u64 = 256 * 1024 * 1024;
 
-/// A running GridCraft app, reached through its loopback control port.
+/// A running Nanshe app, reached through its loopback control port.
 pub struct Remote {
     addr: String,
     token: String,
@@ -32,7 +32,7 @@ pub struct Remote {
 
 impl Remote {
     /// Connect to `addr` (`127.0.0.1:7979`), failing fast when nothing is listening. The app
-    /// requires a token (#777): `GRIDCRAFT_CONTROL_TOKEN`, else the file the app wrote for this port.
+    /// requires a token (#777): `NANSHE_CONTROL_TOKEN`, else the file the app wrote for this port.
     pub fn connect(addr: &str) -> std::io::Result<Self> {
         let token = crate::control_auth::client_token(addr).map_err(|e| std::io::Error::new(std::io::ErrorKind::PermissionDenied, e))?;
         Self::connect_with_token(addr, token)
@@ -84,7 +84,7 @@ impl Remote {
         } else {
             Err(std::io::Error::new(
                 std::io::ErrorKind::PermissionDenied,
-                "the app refused the control token (is GRIDCRAFT_CONTROL_TOKEN or the app's token file for this port out of date?)",
+                "the app refused the control token (is NANSHE_CONTROL_TOKEN or the app's token file for this port out of date?)",
             ))
         }
     }
@@ -120,7 +120,7 @@ impl Backend for Remote {
                 self.conn = None;
                 self.roundtrip(&line).map_err(|e| {
                     self.conn = None;
-                    format!("GridCraft app at {} is not reachable: {e}", self.addr)
+                    format!("Nanshe app at {} is not reachable: {e}", self.addr)
                 })?
             }
         };
@@ -137,6 +137,6 @@ impl Backend for Remote {
     }
 
     fn describe(&self) -> String {
-        format!("connected to the GridCraft app at {}", self.addr)
+        format!("connected to the Nanshe app at {}", self.addr)
     }
 }

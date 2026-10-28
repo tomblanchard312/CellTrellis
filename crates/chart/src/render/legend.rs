@@ -4,7 +4,7 @@ use super::{
     Chart, ChartData, ChartKind, Ctx, DOWN, HAlign, LABEL_SIZE, MAX_CATS, MAX_SERIES, MAX_TRENDLINES, Prim, Rgba, SeriesData, TEXT, Theme, UP,
     VAlign, auto_name, series_color,
 };
-use gridcraft_model::LegendPos;
+use nanshe_model::LegendPos;
 
 /// How a legend entry's swatch is drawn.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

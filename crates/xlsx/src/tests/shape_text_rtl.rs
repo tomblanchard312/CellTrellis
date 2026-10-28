@@ -3,7 +3,7 @@
 use std::io::Read;
 use std::sync::Arc;
 
-use gridcraft_model::{Anchor, Color, Shape, ShapeFormat, ShapeKind, ShapeTextAlign, Sheet, Workbook};
+use nanshe_model::{Anchor, Color, Shape, ShapeFormat, ShapeKind, ShapeTextAlign, Sheet, Workbook};
 
 use super::minimal;
 use crate::{read_xlsx, write_xlsx};

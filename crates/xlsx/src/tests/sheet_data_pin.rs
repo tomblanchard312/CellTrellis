@@ -6,8 +6,8 @@
 
 use std::sync::Arc;
 
-use gridcraft_core::{CellError, CellRef, RangeRef, Value};
-use gridcraft_model::{Cell, Formula, LineInfo, NumFmt, StyleId, Workbook};
+use nanshe_core::{CellError, CellRef, RangeRef, Value};
+use nanshe_model::{Cell, Formula, LineInfo, NumFmt, StyleId, Workbook};
 
 use crate::package::Package;
 use crate::write_xlsx;
@@ -37,7 +37,7 @@ fn sheet_data_is_written_byte_for_byte_as_pinned() {
     sh.rows.insert(1, LineInfo { hidden: true, ..LineInfo::default() });
     sh.rows.insert(4, LineInfo { size: Some(30.0), custom: true, ..LineInfo::default() });
     sh.rows.insert(7, LineInfo { outline: 2, style: Some(money), ..LineInfo::default() });
-    let set = |sh: &mut gridcraft_model::Sheet, a: &str, value: Value, style: StyleId| sh.cells.set(at(a), Cell { value, formula: None, style });
+    let set = |sh: &mut nanshe_model::Sheet, a: &str, value: Value, style: StyleId| sh.cells.set(at(a), Cell { value, formula: None, style });
     set(sh, "A3", Value::text("a & <b> \"q\""), StyleId::DEFAULT);
     set(sh, "B3", Value::Number(-5.0), StyleId::DEFAULT);
     set(sh, "C3", Value::Number(0.1), money);

@@ -2,11 +2,11 @@
 //! is scrolled out of view and the active cell is inside it, as in Excel (#1423).
 
 use egui::{Event, Modifiers, PointerButton, Pos2, Rect, pos2, vec2};
-use gridcraft_engine::Session;
-use gridcraft_engine::core::{CellRef, RangeRef};
-use gridcraft_engine::model::Sheet;
-use gridcraft_ui_egui::SheetApp;
-use gridcraft_ui_egui::grid::{Geo, heading_table, table_headings};
+use nanshe_engine::Session;
+use nanshe_engine::core::{CellRef, RangeRef};
+use nanshe_engine::model::Sheet;
+use nanshe_ui_egui::SheetApp;
+use nanshe_ui_egui::grid::{Geo, heading_table, table_headings};
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
@@ -144,7 +144,7 @@ fn the_button_in_a_replaced_heading_opens_that_columns_filter_menu() {
     let scroll = sh.row_top(10) as f32;
     h.state_mut().view_mut().unwrap().scroll.y = scroll;
     h.run_steps(2);
-    if let Ok(path) = std::env::var("GRIDCRAFT_TABLE_HEADINGS_SCREENSHOT") {
+    if let Ok(path) = std::env::var("NANSHE_TABLE_HEADINGS_SCREENSHOT") {
         h.render().unwrap().save(path).unwrap();
     }
     let app = h.state();

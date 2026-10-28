@@ -3,9 +3,9 @@
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::Write as _;
 
-use gridcraft_core::RangeRef;
-use gridcraft_formula::quote_sheet;
-use gridcraft_model::{CalcMode, CalcSettings, PhoneticString, ShowObjects, Style, Visibility, Workbook};
+use nanshe_core::RangeRef;
+use nanshe_formula::quote_sheet;
+use nanshe_model::{CalcMode, CalcSettings, PhoneticString, ShowObjects, Style, Visibility, Workbook};
 
 use crate::package::ZipOut;
 use crate::xml::{esc, esc_attr};
@@ -164,7 +164,7 @@ pub fn person_guid(i: usize) -> String {
 
 /// `$A$1:$D$20` (or `$1:$3` / `$A:$C`).
 pub fn abs_range(r: &RangeRef) -> String {
-    let c = |col: u32| gridcraft_core::col_to_letters(col);
+    let c = |col: u32| nanshe_core::col_to_letters(col);
     if r.is_full_rows() && !r.is_full_cols() {
         return format!("${}:${}", r.start.row + 1, r.end.row + 1);
     }
@@ -256,16 +256,16 @@ pub fn write_xlsx_named(wb: &Workbook, kind: XlsxKind, book_name: Option<&str>) 
 
     let mut w = format!("{XML_DECL}<workbook xmlns=\"{NS_MAIN}\" xmlns:r=\"{NS_REL}\">");
     // A workbook read from a file keeps its <fileVersion> as it was: Excel trusts the saved values
-    // only when appName is "xl" (#799). One without names GridCraft (#1699), and Excel recalculates it.
+    // only when appName is "xl" (#799). One without names Nanshe (#1699), and Excel recalculates it.
     let file_version = crate::passthrough::workbook_elements(wb, "fileVersion");
-    w.push_str(if file_version.is_empty() { "<fileVersion appName=\"gridcraft\"/>" } else { &file_version });
+    w.push_str(if file_version.is_empty() { "<fileVersion appName=\"nanshe\"/>" } else { &file_version });
     w.push_str("<workbookPr");
     match wb.show_objects {
         ShowObjects::All => {}
         ShowObjects::Placeholders => w.push_str(" showObjects=\"placeholders\""),
         ShowObjects::None => w.push_str(" showObjects=\"none\""),
     }
-    if wb.date_system == gridcraft_core::DateSystem::D1904 {
+    if wb.date_system == nanshe_core::DateSystem::D1904 {
         w.push_str(" date1904=\"1\"");
     }
     w.push_str("/>");
@@ -383,7 +383,7 @@ pub fn write_xlsx_named(wb: &Workbook, kind: XlsxKind, book_name: Option<&str>) 
     core.push_str("</cp:coreProperties>");
     out.part("docProps/core.xml", Some("application/vnd.openxmlformats-package.core-properties+xml"), core.into_bytes());
     let mut app = String::from(XML_DECL);
-    app.push_str("<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\" xmlns:vt=\"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes\"><Application>GridCraft</Application>");
+    app.push_str("<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\" xmlns:vt=\"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes\"><Application>Nanshe</Application>");
     if !p.company.is_empty() {
         let _ = write!(app, "<Company>{}</Company>", esc(&p.company));
     }

@@ -3,8 +3,8 @@
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fmt::Write as _;
 
-use gridcraft_core::{CellError, CellRef, MAX_COLS, MAX_ROWS, RangeRef, Value};
-use gridcraft_model::{
+use nanshe_core::{CellError, CellRef, MAX_COLS, MAX_ROWS, RangeRef, Value};
+use nanshe_model::{
     Cell, CfOperator, CfRule, CfValueKind, Color, CondFormat, ErrorStyle, FilterCriterion, LineInfo, NoteBox, NoteCorner, Orientation, Sheet,
     SparklineKind, Style, Table, TotalsFn, Validation, ValidationKind, Workbook, default_icon_thresholds, icon_count,
 };
@@ -33,7 +33,7 @@ pub fn write_sheet(wb: &Workbook, si: usize, selected: bool, out: &mut Out) -> (
     let mut rels = Rels::default();
     let Some(sheet) = wb.sheet(si) else { return (String::new(), rels) };
     let nstyles = wb.styles.len() as u32;
-    let sid = |s: gridcraft_model::StyleId| if s.0 < nstyles { s.0 } else { 0 };
+    let sid = |s: nanshe_model::StyleId| if s.0 < nstyles { s.0 } else { 0 };
 
     // A table's dropdown filter is kept in `sheet.autofilter`, not in `Table::filter` (the
     // engine's only live filter state, which the reader also fills). Where the two coincide,
@@ -130,11 +130,11 @@ pub fn write_sheet(wb: &Workbook, si: usize, selected: bool, out: &mut Out) -> (
     let max_row_outline = sheet.rows.values().map(|r| r.outline).max().unwrap_or(0);
     let max_col_outline = sheet.cols.values().map(|r| r.outline).max().unwrap_or(0);
     s.push_str("<sheetFormatPr");
-    if (sheet.default_col_width - gridcraft_model::DEFAULT_COL_WIDTH).abs() > 0.01 {
+    if (sheet.default_col_width - nanshe_model::DEFAULT_COL_WIDTH).abs() > 0.01 {
         let _ = write!(s, " defaultColWidth=\"{}\"", num(px_to_col_width(sheet.default_col_width)));
     }
     let _ = write!(s, " defaultRowHeight=\"{}\"", num(px_to_pt(sheet.default_row_height)));
-    if (sheet.default_row_height - gridcraft_model::DEFAULT_ROW_HEIGHT).abs() > 0.01 {
+    if (sheet.default_row_height - nanshe_model::DEFAULT_ROW_HEIGHT).abs() > 0.01 {
         s.push_str(" customHeight=\"1\"");
     }
     if max_row_outline > 0 {
@@ -171,7 +171,7 @@ pub fn write_sheet(wb: &Workbook, si: usize, selected: bool, out: &mut Out) -> (
             s.push_str("/>");
         };
         for (&c, info) in &sheet.cols {
-            if c >= gridcraft_core::MAX_COLS {
+            if c >= nanshe_core::MAX_COLS {
                 continue;
             }
             run = match run {
@@ -220,7 +220,7 @@ pub fn write_sheet(wb: &Workbook, si: usize, selected: bool, out: &mut Out) -> (
 struct CellWriteInput<'a> {
     reference: CellRef,
     cell: Option<&'a Cell>,
-    picture: Option<&'a std::sync::Arc<gridcraft_model::CellPicture>>,
+    picture: Option<&'a std::sync::Arc<nanshe_model::CellPicture>>,
     header_override: Option<&'a String>,
     spill_value: Option<&'a Value>,
     dynamic_range: Option<&'a RangeRef>,
@@ -260,8 +260,7 @@ fn write_sheet_extensions(s: &mut String, sheet: &Sheet, prio: &[u32]) {
                 SparklineKind::Column => " type=\"column\"",
                 SparklineKind::WinLoss => " type=\"stacked\"",
             };
-            let src =
-                if sp.source.contains('!') { sp.source.clone() } else { format!("{}!{}", gridcraft_formula::quote_sheet(&sheet.name), sp.source) };
+            let src = if sp.source.contains('!') { sp.source.clone() } else { format!("{}!{}", nanshe_formula::quote_sheet(&sheet.name), sp.source) };
             let color = if sp.color == Color::Auto { "rgb=\"FF376092\"".to_string() } else { color_attrs(&sp.color) };
             let _ = write!(
                 s,
@@ -550,7 +549,7 @@ struct SheetCellData<'a> {
     dynamic: &'a BTreeMap<CellRef, RangeRef>,
 }
 
-fn write_sheet_data(s: &mut String, data: SheetCellData<'_>, sid: &dyn Fn(gridcraft_model::StyleId) -> u32, out: &mut Out) {
+fn write_sheet_data(s: &mut String, data: SheetCellData<'_>, sid: &dyn Fn(nanshe_model::StyleId) -> u32, out: &mut Out) {
     let SheetCellData { workbook, index, sheet, overrides, extra, dynamic } = data;
     // Cell storage is already row-major; sort only when extra cells need merging.
     let mut keys: Vec<(CellRef, Option<&Cell>)> = Vec::with_capacity(sheet.cells.len());
@@ -659,7 +658,7 @@ fn write_sheet_views(s: &mut String, sheet: &Sheet, selected: bool) {
     if sheet.right_to_left {
         s.push_str(" rightToLeft=\"1\"");
     }
-    if sheet.view != gridcraft_model::SheetViewMode::Normal {
+    if sheet.view != nanshe_model::SheetViewMode::Normal {
         let _ = write!(s, " view=\"{}\"", sheet.view.as_str());
     }
     if sheet.zoom != 100 && (10..=400).contains(&sheet.zoom) {
@@ -688,8 +687,8 @@ fn write_sheet_views(s: &mut String, sheet: &Sheet, selected: bool) {
                 s,
                 " topLeftCell=\"{}\" activePane=\"{pane}\" state=\"frozen\"/>",
                 CellRef::new(
-                    rows.max(sheet.view_top_left.row).min(gridcraft_core::MAX_ROWS - 1),
-                    cols.max(sheet.view_top_left.col).min(gridcraft_core::MAX_COLS - 1)
+                    rows.max(sheet.view_top_left.row).min(nanshe_core::MAX_ROWS - 1),
+                    cols.max(sheet.view_top_left.col).min(nanshe_core::MAX_COLS - 1)
                 )
                 .a1()
             );
@@ -702,7 +701,7 @@ fn write_sheet_views(s: &mut String, sheet: &Sheet, selected: bool) {
     s.push_str("</sheetView></sheetViews>");
 }
 
-fn write_cell(s: &mut String, input: CellWriteInput<'_>, sid: &dyn Fn(gridcraft_model::StyleId) -> u32, out: &mut Out) {
+fn write_cell(s: &mut String, input: CellWriteInput<'_>, sid: &dyn Fn(nanshe_model::StyleId) -> u32, out: &mut Out) {
     let CellWriteInput { reference: c, cell, picture, header_override: ov, spill_value: extra, dynamic_range: dynamic } = input;
     let style = cell.map(|x| sid(x.style)).unwrap_or(0);
     s.push_str("<c r=\"");

@@ -108,7 +108,7 @@ pub fn show(app: &mut SheetApp, ui: &mut egui::Ui) {
                 ui.painter().rect_stroke(field, 4.0, Stroke::new(1.0, t.input_border), StrokeKind::Inside);
                 let inner = field.shrink2(vec2(6.0, 3.0));
                 let mut child = ui.new_child(egui::UiBuilder::new().max_rect(inner));
-                let id = egui::Id::unique("gridcraft.formula_bar");
+                let id = egui::Id::unique("nanshe.formula_bar");
                 // A spill child shows its anchor's formula muted and read-only.
                 let read_only = active_spill_anchor(app).is_some();
                 let info = if app.editor.is_some() {
@@ -149,7 +149,7 @@ pub fn show(app: &mut SheetApp, ui: &mut egui::Ui) {
 }
 
 /// Resolve ownership on every frame; never cache a spill range in presentation state.
-pub(crate) fn active_spill_anchor(app: &SheetApp) -> Option<gridcraft_engine::core::CellRef> {
+pub(crate) fn active_spill_anchor(app: &SheetApp) -> Option<nanshe_engine::core::CellRef> {
     let d = app.session.active()?;
     let sh = d.wb.active()?;
     let at = sh.merge_at(d.selection.active).map(|m| m.start).unwrap_or(d.selection.active);
@@ -164,7 +164,7 @@ fn active_input(app: &SheetApp) -> String {
         return if picture.alt.is_empty() { "Picture in cell".into() } else { format!("Picture: {}", picture.alt) };
     }
     if let Some(anchor) = sh.spill_anchor(a) {
-        if gridcraft_engine::display::formula_hidden(&d.wb, sh, anchor) {
+        if nanshe_engine::display::formula_hidden(&d.wb, sh, anchor) {
             return String::new();
         }
         return sh
@@ -181,7 +181,7 @@ fn active_input(app: &SheetApp) -> String {
             // A legacy array formula shows in braces (`{=A1:A2*2}`), as `Cell::bar_text` does.
             if f.array.is_some() { format!("{{{shown}}}") } else { shown }
         } else {
-            gridcraft_engine::display::edit_text(&d.wb, sh, a)
+            nanshe_engine::display::edit_text(&d.wb, sh, a)
         };
     }
     String::new()
@@ -189,7 +189,7 @@ fn active_input(app: &SheetApp) -> String {
 
 /// Draws the Name Box and its name dropdown; Enter jumps to a reference or known name (or defines a new name) and is consumed so the grid does not move down.
 fn name_box(app: &mut SheetApp, ui: &mut egui::Ui, t: &Tokens) -> Rect {
-    let id = egui::Id::unique("gridcraft.name_box");
+    let id = egui::Id::unique("nanshe.name_box");
     let shown = app.name_box_text();
     let mut text = app.name_box.clone().unwrap_or(shown.clone());
     let rect = Rect::from_min_size(ui.cursor().min, vec2(118.0, 24.0));
@@ -217,7 +217,7 @@ fn name_box(app: &mut SheetApp, ui: &mut egui::Ui, t: &Tokens) -> Rect {
             let target = text.trim().to_string();
             if !target.is_empty() && target != shown {
                 // A new name for the selection, or a place to go.
-                let is_ref = gridcraft_engine::core::RangeRef::parse(target.split('!').next_back().unwrap_or("")).is_some();
+                let is_ref = nanshe_engine::core::RangeRef::parse(target.split('!').next_back().unwrap_or("")).is_some();
                 let known = app.session.active().is_some_and(|d| d.wb.name(&target, d.wb.active_sheet()).is_some() || d.wb.table(&target).is_some());
                 let r = if is_ref || known {
                     app.run("edit.goTo", json!({"reference": target}))
@@ -225,7 +225,7 @@ fn name_box(app: &mut SheetApp, ui: &mut egui::Ui, t: &Tokens) -> Rect {
                     app.run("formulas.defineName", json!({"name": target}))
                 };
                 if let Err(e) = r {
-                    app.message = Some(("GridCraft".into(), crate::clean_error(&e)));
+                    app.message = Some(("Nanshe".into(), crate::clean_error(&e)));
                 }
                 app.grid.ensure_visible = true;
             }
@@ -292,7 +292,7 @@ fn show_edit<'t>(
 /// `max_height` of text and scrolls beyond that, keeping the caret in view.
 pub fn editor_widget(app: &mut SheetApp, ui: &mut egui::Ui, id: egui::Id, font: FontId, multiline: bool, width: f32, max_height: f32) -> EditorInfo {
     let Some(mut ed) = app.editor.take() else { return EditorInfo::default() };
-    let mine = ed.from_formula_bar == (id == egui::Id::unique("gridcraft.formula_bar"));
+    let mine = ed.from_formula_bar == (id == egui::Id::unique("nanshe.formula_bar"));
     // Keys the editor handles itself (before the TextEdit sees them), only where it has focus.
     let focused = ui.ctx().memory(|m| m.focused());
     let has_focus = focused == Some(id) || (mine && (ed.request_focus || focused.is_none()));
@@ -300,7 +300,7 @@ pub fn editor_widget(app: &mut SheetApp, ui: &mut egui::Ui, id: egui::Id, font: 
     // The text widget.
     let refs = formula_refs(&ed.text);
     let t = Tokens::get(ui.ctx());
-    let on_sheet = id == egui::Id::unique("gridcraft.cell_editor");
+    let on_sheet = id == egui::Id::unique("nanshe.cell_editor");
     let cell_text_color = if on_sheet { t.cell_text } else { t.text };
     let font2 = font.clone();
     let mut layouter = move |ui: &egui::Ui, buf: &dyn egui::TextBuffer, wrap_width: f32| {
@@ -376,9 +376,9 @@ pub fn editor_widget(app: &mut SheetApp, ui: &mut egui::Ui, id: egui::Id, font: 
         output.state.store(ui.ctx(), id);
     } else if resp.clicked() || resp.gained_focus() {
         // Clicking into the other editor moves editing there.
-        ed.from_formula_bar = id == egui::Id::unique("gridcraft.formula_bar");
+        ed.from_formula_bar = id == egui::Id::unique("nanshe.formula_bar");
         ed.enter_mode = false;
-        app.session.mode = gridcraft_engine::Mode::Edit;
+        app.session.mode = nanshe_engine::Mode::Edit;
     }
     if !synced
         && !dialog_open
@@ -409,11 +409,11 @@ pub fn editor_widget(app: &mut SheetApp, ui: &mut egui::Ui, id: egui::Id, font: 
             .collect();
         ed.update_autocomplete(&names);
         app.session.mode = if ed.can_point() {
-            gridcraft_engine::Mode::Point
+            nanshe_engine::Mode::Point
         } else if ed.enter_mode {
-            gridcraft_engine::Mode::Enter
+            nanshe_engine::Mode::Enter
         } else {
-            gridcraft_engine::Mode::Edit
+            nanshe_engine::Mode::Edit
         };
     }
     show_editor_suggestions(ui, EditorSuggestion { app, id, resp: &resp, ed: &mut ed, galley: &output.galley, tokens: &t, mine });
@@ -622,13 +622,13 @@ fn cycle_anchor(ed: &mut crate::editor::EditState) {
 fn function_names() -> Vec<String> {
     static NAMES: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
     NAMES
-        .get_or_init(|| gridcraft_engine::cmd::formulas::function_list().iter().filter_map(|f| f["name"].as_str().map(str::to_string)).collect())
+        .get_or_init(|| nanshe_engine::cmd::formulas::function_list().iter().filter_map(|f| f["name"].as_str().map(str::to_string)).collect())
         .clone()
 }
 
 fn function_info(name: &str) -> Option<serde_json::Value> {
     static LIST: std::sync::OnceLock<Vec<serde_json::Value>> = std::sync::OnceLock::new();
-    LIST.get_or_init(gridcraft_engine::cmd::formulas::function_list)
+    LIST.get_or_init(nanshe_engine::cmd::formulas::function_list)
         .iter()
         .find(|f| f["name"].as_str().is_some_and(|n| n.eq_ignore_ascii_case(name)))
         .cloned()
@@ -645,7 +645,7 @@ pub fn function_description(name: &str) -> Option<String> {
 #[cfg(test)]
 mod spill_tests {
     use super::*;
-    use gridcraft_engine::Session;
+    use nanshe_engine::Session;
 
     fn app() -> SheetApp {
         let mut s = Session::new();
@@ -689,7 +689,7 @@ mod spill_tests {
         check(&mut app, "D2", "hello", false);
         check(&mut app, "E1", "", false);
         let sh = app.session.active().unwrap().wb.active().unwrap();
-        assert!(sh.cell(gridcraft_engine::core::CellRef::parse("A2").unwrap()).and_then(|c| c.formula.as_ref()).is_none());
+        assert!(sh.cell(nanshe_engine::core::CellRef::parse("A2").unwrap()).and_then(|c| c.formula.as_ref()).is_none());
         // Intentional grid replacement retains the existing entry behavior.
         select(&mut app, "A2");
         app.begin_edit(Some("replacement".into()), false);

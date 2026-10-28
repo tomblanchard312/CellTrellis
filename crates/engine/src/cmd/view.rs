@@ -1,7 +1,7 @@
 //! View tab (sheet view state that's saved with the file) and Page Layout settings.
 
-use gridcraft_core::RangeRef;
-use gridcraft_model::Orientation;
+use nanshe_core::RangeRef;
+use nanshe_model::Orientation;
 use serde_json::{Value as Json, json};
 
 use super::{
@@ -191,7 +191,7 @@ fn sheet_flag(s: &mut Session, p: &Json, which: &str) -> Result<Json> {
 
 /// Ctrl+6: hides every object, or shows them again. Placeholders (from a file) count as shown.
 fn show_objects(s: &mut Session, p: &Json) -> Result<Json> {
-    use gridcraft_model::ShowObjects;
+    use nanshe_model::ShowObjects;
     edit(s, |cx| {
         let on = bool_param(p, "on").unwrap_or(cx.wb.show_objects == ShowObjects::None);
         cx.wb.show_objects = if on { ShowObjects::All } else { ShowObjects::None };
@@ -398,8 +398,8 @@ fn header_footer(s: &mut Session, p: &Json) -> Result<Json> {
                 other => return Err(bad(CMD, format!("`section` must be left, center or right, not `{other}`"))),
             };
             let page = match str_param(p, "page") {
-                None => gridcraft_model::HfPage::Odd,
-                Some(id) => gridcraft_model::HfPage::parse(id).ok_or_else(|| bad(CMD, format!("`page` must be odd, even or first, not `{id}`")))?,
+                None => nanshe_model::HfPage::Odd,
+                Some(id) => nanshe_model::HfPage::parse(id).ok_or_else(|| bad(CMD, format!("`page` must be odd, even or first, not `{id}`")))?,
             };
             Some((page, footer, idx, super::print::fields_to_codes(str_param(p, "text").unwrap_or(""))))
         }
@@ -457,7 +457,7 @@ fn header_footer(s: &mut Session, p: &Json) -> Result<Json> {
     })
 }
 
-/// GridCraft's own theme set (original palettes).
+/// Nanshe's own theme set (original palettes).
 pub fn themes() -> Vec<(&'static str, [u32; 12])> {
     vec![
         ("Craft", [0xFFFFFF, 0x000000, 0xE8E8E8, 0x0E2841, 0x156082, 0xE97132, 0x196B24, 0x0F9ED5, 0xA02B93, 0x4EA72E, 0x467886, 0x96607D]),

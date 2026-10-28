@@ -1,9 +1,9 @@
 //! Cell selection consumes every pointer position without editing cell contents.
 
 use egui::{Event, Modifiers, PointerButton, Pos2};
-use gridcraft_engine::Session;
-use gridcraft_engine::core::{CellRef, RangeRef};
-use gridcraft_ui_egui::{SheetApp, grid::Geo};
+use nanshe_engine::Session;
+use nanshe_engine::core::{CellRef, RangeRef};
+use nanshe_ui_egui::{SheetApp, grid::Geo};
 use serde_json::{Value, json};
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
@@ -232,7 +232,7 @@ fn formula_modifier_shift_click_keeps_its_anchor_in_both_directions() {
 
 #[test]
 fn formula_modifier_command_click_respects_locale_and_a_typed_separator() {
-    use gridcraft_engine::formula::FormulaLocale;
+    use nanshe_engine::formula::FormulaLocale;
     let command = Modifiers { mac_cmd: true, command: true, ..Modifiers::NONE };
     for (locale, prefix, separator) in [(FormulaLocale::En, "=SUM(", ","), (FormulaLocale::Es, "=SUMA(", ";")] {
         let mut h = harness("J10");

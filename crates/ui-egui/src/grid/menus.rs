@@ -25,13 +25,13 @@ pub(super) fn filter_menu(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo, was_
             if let Some(d) = d {
                 let wbm = Arc::make_mut(&mut d.wb);
                 if let Some(s) = wbm.sheet_mut(si) {
-                    s.autofilter = Some(gridcraft_engine::model::AutoFilter { range: r, criteria: vec![] });
+                    s.autofilter = Some(nanshe_engine::model::AutoFilter { range: r, criteria: vec![] });
                 }
             }
         }
     }
     let wb = app.session.active().map(|d| d.wb.clone()).unwrap_or(wb);
-    let values = gridcraft_engine::cmd::data::filter_values(&wb, si, col);
+    let values = nanshe_engine::cmd::data::filter_values(&wb, si, col);
     let key = egui::Id::unique(("filter_sel", col));
     let search_key = egui::Id::unique(("filter_search", col));
     let buttons_key = egui::Id::unique(("filter_buttons", col));
@@ -182,7 +182,7 @@ pub(super) fn context_menu(app: &mut SheetApp, ui: &mut egui::Ui) {
                         "ui:filterValue" => {
                             if let Some(d) = app.session.active() {
                                 let a = d.selection.active;
-                                let text = d.wb.active().map(|sh| gridcraft_engine::display::cell_text(&d.wb, sh, a)).unwrap_or_default();
+                                let text = d.wb.active().map(|sh| nanshe_engine::display::cell_text(&d.wb, sh, a)).unwrap_or_default();
                                 let has = d.wb.active().is_some_and(|sh| sh.autofilter.is_some());
                                 if !has {
                                     let _ = app.run("data.filter", json!({}));
@@ -238,7 +238,7 @@ fn show_details_offered(app: &mut SheetApp) -> bool {
     {
         return cells.as_ref().is_none_or(|c| c.contains(&cell));
     }
-    let cells = gridcraft_engine::pivot::detail_cells(&d.wb, pt, si).ok();
+    let cells = nanshe_engine::pivot::detail_cells(&d.wb, pt, si).ok();
     let on = cells.as_ref().is_none_or(|c| c.contains(&cell));
     app.grid.show_details_cells = Some((key, cells));
     on
@@ -254,7 +254,7 @@ const DATE_FILL_MODES: [(&str, &str); 4] = [("Fill Days", "days"), ("Fill Weekda
 
 /// The fill modes the menus list for a fill from `src` on the active sheet.
 fn fill_modes(app: &SheetApp, src: RangeRef) -> Vec<(&'static str, &'static str)> {
-    let dates = app.session.active().is_some_and(|d| gridcraft_engine::fill::starts_with_date(&d.wb, d.wb.active_sheet(), src));
+    let dates = app.session.active().is_some_and(|d| nanshe_engine::fill::starts_with_date(&d.wb, d.wb.active_sheet(), src));
     FILL_MODES.into_iter().chain(DATE_FILL_MODES.into_iter().filter(|_| dates)).collect()
 }
 
@@ -294,7 +294,7 @@ pub(super) fn fill_options_tag(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo,
         return;
     }
     let lang = crate::i18n::current(ui.ctx());
-    let resp = ui.interact(button, egui::Id::unique("gridcraft.fill_options_tag"), Sense::click()).on_hover_text(lang.tr("Auto Fill Options"));
+    let resp = ui.interact(button, egui::Id::unique("nanshe.fill_options_tag"), Sense::click()).on_hover_text(lang.tr("Auto Fill Options"));
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, lang.tr("Auto Fill Options")));
     let t = Tokens::get(ui.ctx());
     let p = ui.painter();
@@ -323,14 +323,14 @@ pub(super) fn fill_options_tag(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo,
     if let Some(mode) = chosen {
         if let Err(e) = app.run("edit.undo", json!({})) {
             app.grid.fill_tag = None;
-            app.message = Some(("GridCraft".into(), crate::clean_error(&e)));
+            app.message = Some(("Nanshe".into(), crate::clean_error(&e)));
             return;
         }
         match app.run("edit.autoFill", json!({"source": tag.src.a1(), "target": tag.target.a1(), "mode": mode})) {
             Ok(_) => set_fill_tag(app, tag.src, tag.target),
             Err(e) => {
                 app.grid.fill_tag = None;
-                app.message = Some(("GridCraft".into(), crate::clean_error(&e)));
+                app.message = Some(("Nanshe".into(), crate::clean_error(&e)));
             }
         }
     }
@@ -358,7 +358,7 @@ pub(super) fn fill_menu(app: &mut SheetApp, ui: &mut egui::Ui, was_open: bool) {
                         let direction = if target.width() != src.width() { "rows" } else { "columns" };
                         app.open_dialog("series", json!({"direction": direction}));
                     } else if let Err(e) = app.run("edit.autoFill", json!({"source": src.a1(), "target": target.a1(), "mode": mode})) {
-                        app.message = Some(("GridCraft".into(), crate::clean_error(&e)));
+                        app.message = Some(("Nanshe".into(), crate::clean_error(&e)));
                     }
                 }
             }
@@ -418,7 +418,7 @@ pub(super) fn error_check_tag(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo, 
         return;
     }
     let Some(active) = app.session.active().map(|d| d.selection.active) else { return };
-    if sh.cell(active).and_then(gridcraft_engine::cmd::formulas::number_stored_as_text).is_none() {
+    if sh.cell(active).and_then(nanshe_engine::cmd::formulas::number_stored_as_text).is_none() {
         return;
     }
     let cell = geo.cell_rect(sh, active);
@@ -430,7 +430,7 @@ pub(super) fn error_check_tag(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo, 
         return;
     }
     let lang = crate::i18n::current(ui.ctx());
-    let resp = ui.interact(tag, egui::Id::unique("gridcraft.error_check_tag"), Sense::click()).on_hover_text(lang.tr("Number Stored as Text"));
+    let resp = ui.interact(tag, egui::Id::unique("nanshe.error_check_tag"), Sense::click()).on_hover_text(lang.tr("Number Stored as Text"));
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, lang.tr("Error checking options")));
     let t = Tokens::get(ui.ctx());
     let p = ui.painter();

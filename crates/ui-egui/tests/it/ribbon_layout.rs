@@ -3,10 +3,10 @@
 
 use egui::vec2;
 use egui_kittest::kittest::Queryable as _;
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::icons::Icon;
-use gridcraft_ui_egui::ribbon::{RibbonOverflow, TABS};
-use gridcraft_ui_egui::{SheetApp, widgets};
+use nanshe_engine::Session;
+use nanshe_ui_egui::icons::Icon;
+use nanshe_ui_egui::ribbon::{RibbonOverflow, TABS};
+use nanshe_ui_egui::{SheetApp, widgets};
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
 

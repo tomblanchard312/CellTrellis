@@ -1,4 +1,4 @@
-//! Pass-through of package content GridCraft does not model, so that open → edit → save keeps it.
+//! Pass-through of package content Nanshe does not model, so that open → edit → save keeps it.
 //!
 //! On read, the raw bytes of unmodelled parts are kept with their content type and their
 //! relationship graph, per owner: the package root (custom document properties, ribbon
@@ -12,7 +12,7 @@
 //!
 //! On write, kept parts get fresh part names where needed and new relationship ids; the `r:id`s in
 //! kept XML are rewritten to match. Kept content is conservative:
-//! - Anything whose relationship graph reaches a part GridCraft reads and rewrites (worksheets,
+//! - Anything whose relationship graph reaches a part Nanshe reads and rewrites (worksheets,
 //!   drawings, charts, tables, PivotTables, comments, slicers…) is not kept: it would point at
 //!   content that no longer exists in the same form.
 //! - External relationship targets (the path of a linked workbook) are kept as text and never
@@ -30,7 +30,7 @@ use std::fmt::Write as _;
 use std::path::{Component, Path};
 use std::sync::Arc;
 
-use gridcraft_model::{Preserved, PreservedPart, PreservedRel, PreservedSheet, PreservedXml, Sheet, Visibility, Workbook};
+use nanshe_model::{Preserved, PreservedPart, PreservedRel, PreservedSheet, PreservedXml, Sheet, Visibility, Workbook};
 use quick_xml::events::attributes::Attribute;
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::name::QName;
@@ -105,7 +105,7 @@ const NS_CALC_FEATURES: &str = "http://schemas.microsoft.com/office/spreadsheetm
 /// Kept sheet elements, in schema order (all after `<legacyDrawing>`, before `<tableParts>`).
 const SHEET_SLOTS: &[&str] = &["legacyDrawingHF", "picture", "oleObjects", "controls"];
 
-/// Relationship kinds GridCraft reads and rewrites, or that depend on content it rewrites:
+/// Relationship kinds Nanshe reads and rewrites, or that depend on content it rewrites:
 /// kept content whose graph reaches one of them is dropped.
 const REWRITTEN: &[&str] = &[
     "officedocument",
@@ -154,7 +154,7 @@ const REWRITTEN: &[&str] = &[
 /// their style, colour and shape parts are kept byte for byte (the chart sheet is not modelled).
 const CHART_SHEET_GRAPH: &[&str] = &["chartsheet", "drawing", "chart", "chartex", "chartstyle", "chartcolorstyle", "chartusershapes"];
 
-/// Part-name prefixes (lower case) GridCraft's writer never produces: kept parts there keep their
+/// Part-name prefixes (lower case) Nanshe's writer never produces: kept parts there keep their
 /// original names. Anything else is renamed so it can't collide with written parts.
 const OWN_DIRS: &[&str] = &[
     "customxml/",

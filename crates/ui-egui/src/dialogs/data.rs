@@ -43,14 +43,14 @@ pub(super) fn remove_duplicates_range(app: &SheetApp, sel: &str) -> String {
         return sel.to_string();
     }
     let range = match sh.table_at(d.selection.active) {
-        Some(t) => t.data_range().map(|dr| gridcraft_engine::core::RangeRef::new(t.range.start, dr.end)).unwrap_or(t.range),
-        None => gridcraft_engine::selection::current_region(sh, d.selection.active),
+        Some(t) => t.data_range().map(|dr| nanshe_engine::core::RangeRef::new(t.range.start, dr.end)).unwrap_or(t.range),
+        None => nanshe_engine::selection::current_region(sh, d.selection.active),
     };
     range.a1()
 }
 
-pub(super) fn abs(r: &gridcraft_engine::core::RangeRef) -> String {
-    let a = |c: gridcraft_engine::core::CellRef| format!("${}${}", gridcraft_engine::core::col_to_letters(c.col), c.row + 1);
+pub(super) fn abs(r: &nanshe_engine::core::RangeRef) -> String {
+    let a = |c: nanshe_engine::core::CellRef| format!("${}${}", nanshe_engine::core::col_to_letters(c.col), c.row + 1);
     if r.is_single() { a(r.start) } else { format!("{}:{}", a(r.start), a(r.end)) }
 }
 
@@ -193,16 +193,16 @@ pub(super) fn sort(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confir
         .active()
         .and_then(|d| {
             let sh = d.wb.active()?;
-            let region = gridcraft_engine::selection::current_region(sh, d.selection.active);
+            let region = nanshe_engine::selection::current_region(sh, d.selection.active);
             Some(
                 (region.start.col..=region.end.col)
                     .map(|c| {
-                        let letter = gridcraft_engine::core::col_to_letters(c);
+                        let letter = nanshe_engine::core::col_to_letters(c);
                         // The region starts at the header row when one is present, so the
                         // label always comes from start.row: header text with headers on,
                         // first data value with them off.
                         let label_row = region.start.row;
-                        let text = gridcraft_engine::display::cell_text(&d.wb, sh, gridcraft_engine::core::CellRef::new(label_row, c));
+                        let text = nanshe_engine::display::cell_text(&d.wb, sh, nanshe_engine::core::CellRef::new(label_row, c));
                         let text: String = text.chars().take(24).collect();
                         (letter.clone(), if text.is_empty() { letter } else { format!("{letter}: {text}") })
                     })

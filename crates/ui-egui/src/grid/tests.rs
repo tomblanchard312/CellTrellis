@@ -49,7 +49,7 @@ fn list_picker_fits_up_to_eight_rows_then_scrolls() {
 
 #[test]
 fn number_format_colors_resolve_named_and_indexed_rgb() {
-    use gridcraft_engine::numfmt::FormatColor as F;
+    use nanshe_engine::numfmt::FormatColor as F;
     assert_eq!(numfmt_color(F::Green), Color32::from_rgb(0, 255, 0));
     assert_eq!(numfmt_color(F::Indexed(1)), Color32::BLACK);
     assert_eq!(numfmt_color(F::Indexed(10)), Color32::from_rgb(0, 128, 0));
@@ -133,7 +133,7 @@ fn center_across_run_stops_at_first_non_continuing_column() {
 #[test]
 fn conditional_number_format_reaches_the_cell_text() {
     // #1163: a rule's number format replaces the cell's own; unmatched cells keep theirs.
-    let mut session = gridcraft_engine::Session::new();
+    let mut session = nanshe_engine::Session::new();
     session.new_workbook();
     session.execute("range.setValues", json!({"range": "A1", "values": [[1], [3], [4]]})).unwrap();
     session.execute("home.numberFormat", json!({"range": "A3", "code": "0.0"})).unwrap();
@@ -154,7 +154,7 @@ fn conditional_number_format_reaches_the_cell_text() {
 
 #[test]
 fn filter_menu_uses_the_table_whose_header_was_clicked() {
-    use gridcraft_engine::model::Table;
+    use nanshe_engine::model::Table;
     let table = |id: u32, r0: u32, r1: u32| Table {
         id,
         name: format!("T{id}"),

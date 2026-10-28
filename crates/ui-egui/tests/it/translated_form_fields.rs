@@ -2,8 +2,8 @@
 //! and OK/Cancel buttons already were (Page Setup showed "Left margin (in):" in every language).
 
 use egui_kittest::kittest::Queryable as _;
-use gridcraft_ui_egui::SheetApp;
-use gridcraft_ui_egui::i18n::Language;
+use nanshe_ui_egui::SheetApp;
+use nanshe_ui_egui::i18n::Language;
 use serde_json::json;
 
 fn harness() -> egui_kittest::Harness<'static, SheetApp> {

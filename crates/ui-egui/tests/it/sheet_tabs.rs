@@ -1,7 +1,7 @@
 //! Overflowing worksheet tabs, exercised through their actual painted geometry and input.
 use egui::{Event, Modifiers, PointerButton, Rect, Shape, pos2, vec2};
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::SheetApp;
+use nanshe_engine::Session;
+use nanshe_ui_egui::SheetApp;
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
@@ -23,12 +23,12 @@ fn harness_with(width: f32, sheets: usize, active: usize) -> Harness {
     let mut h = crate::common::builder().with_step_dt(1.0 / 60.0).with_size(vec2(width, 120.0)).build_ui_state(
         move |ui, app: &mut SheetApp| {
             if !fonts_ready {
-                ui.ctx().set_fonts(gridcraft_ui_egui::theme::pinned_font_definitions());
+                ui.ctx().set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());
                 fonts_ready = true;
                 return;
             }
             app.grid.cells_rect = Some(Rect::from_min_size(pos2(0.0, 0.0), vec2(ui.max_rect().width(), 80.0)));
-            gridcraft_ui_egui::tabs::sheet_tabs(app, ui);
+            nanshe_ui_egui::tabs::sheet_tabs(app, ui);
         },
         crate::common::app(s),
     );

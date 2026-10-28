@@ -1,8 +1,8 @@
 //! A host that embeds the sheet in its own window can turn off the app's title bar and File tab.
 
 use egui_kittest::kittest::Queryable as _;
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::{Chrome, Services, SheetApp, backstage::Page};
+use nanshe_engine::Session;
+use nanshe_ui_egui::{Chrome, Services, SheetApp, backstage::Page};
 
 fn harness(chrome: Chrome) -> egui_kittest::Harness<'static, SheetApp> {
     let mut session = Session::new();

@@ -6,7 +6,7 @@ use super::{CellRef, Drag, Sheet, SheetApp, json};
 /// Grid keyboard handling when no text field has focus.
 pub(super) fn keyboard(app: &mut SheetApp, ctx: &egui::Context, resp: &egui::Response, geo: &Geo, sh: &Sheet) {
     // Focus left on an editor that no longer exists goes back to the grid.
-    let stale = [egui::Id::unique("gridcraft.cell_editor"), egui::Id::unique("gridcraft.formula_bar"), crate::text_box::editor_id()];
+    let stale = [egui::Id::unique("nanshe.cell_editor"), egui::Id::unique("nanshe.formula_bar"), crate::text_box::editor_id()];
     let editing = app.editor.is_some() || app.text_box_editor.is_some();
     if !editing && ctx.memory(|m| m.focused()).is_some_and(|f| stale.contains(&f)) {
         resp.request_focus();
@@ -51,7 +51,7 @@ pub(super) fn keyboard(app: &mut SheetApp, ctx: &egui::Context, resp: &egui::Res
                 app.copy_to_clipboard(ctx, "edit.cut");
             }
             egui::Event::Paste(text) => app.paste_external(text),
-            // GridCraft has no image-clipboard pipeline and no cell-picture insert-from-clipboard
+            // Nanshe has no image-clipboard pipeline and no cell-picture insert-from-clipboard
             // command. Choosing to ignore `PasteImage` is explicit: inserting the bytes as a
             // floating picture without a chosen anchor/size would be a new feature, not parity.
             // A text representation, when the clipboard has one, still arrives as `Paste` above.

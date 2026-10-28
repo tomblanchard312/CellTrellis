@@ -4,7 +4,7 @@ use super::{
 };
 
 /// Whether `c` has checkbox formatting.
-pub(crate) fn is_checkbox_cell(wb: &gridcraft_model::Workbook, sh: &gridcraft_model::Sheet, c: CellRef) -> bool {
+pub(crate) fn is_checkbox_cell(wb: &nanshe_model::Workbook, sh: &nanshe_model::Sheet, c: CellRef) -> bool {
     wb.styles.get(sh.style_id(c)).num_fmt.as_str() == "checkbox"
 }
 
@@ -129,7 +129,7 @@ pub(super) fn recently_used(s: &mut Session, _: &Json) -> Result<Json> {
             continue;
         }
         let input = p.get("input").and_then(Json::as_str).unwrap_or("");
-        if let Ok(e) = gridcraft_formula::parse(input.trim_start_matches('=')) {
+        if let Ok(e) = nanshe_formula::parse(input.trim_start_matches('=')) {
             for f in e.functions() {
                 if !seen.iter().any(|x| x == f) {
                     seen.push(f.to_string());

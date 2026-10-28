@@ -39,7 +39,7 @@ impl Agg {
             "countNums" | "countnums" => Value::number(self.nums as f64),
             "average" => {
                 if self.nums == 0 {
-                    Value::Error(gridcraft_core::CellError::Div0)
+                    Value::Error(nanshe_core::CellError::Div0)
                 } else {
                     Value::number(self.sum / self.nums as f64)
                 }
@@ -152,9 +152,7 @@ pub(super) fn consolidate(s: &mut Session, p: &Json) -> Result<Json> {
         }
     }
     let (out_r0, out_c0) = (dest.row + top as u32, dest.col + left as u32);
-    if out_r0 as u64 + row_keys.len() as u64 > gridcraft_core::MAX_ROWS as u64
-        || out_c0 as u64 + col_keys.len() as u64 > gridcraft_core::MAX_COLS as u64
-    {
+    if out_r0 as u64 + row_keys.len() as u64 > nanshe_core::MAX_ROWS as u64 || out_c0 as u64 + col_keys.len() as u64 > nanshe_core::MAX_COLS as u64 {
         return Err(EngineError::Other("The consolidated data doesn't fit below and right of the destination.".into()));
     }
     let mut cells: Vec<(CellRef, Value)> = Vec::new();

@@ -3,8 +3,8 @@
 //! Behaviour reference: ISO/IEC 29500-1 §18.4.6 `rPh` (`sb`/`eb` are zero-based offsets into the
 //! base text, `sb < eb`, child `<t>`) and §18.4.7 `phoneticPr` (`fontId`, `type`, `alignment`).
 
-use gridcraft_core::{CellRef, Value};
-use gridcraft_model::{Cell, PhoneticProps, PhoneticRun, PhoneticString, StyleId, Workbook};
+use nanshe_core::{CellRef, Value};
+use nanshe_model::{Cell, PhoneticProps, PhoneticRun, PhoneticString, StyleId, Workbook};
 
 use super::minimal;
 use crate::package::Package;
@@ -32,7 +32,7 @@ fn part(bytes: &[u8], name: &str) -> String {
     String::from_utf8(pkg.read(name).unwrap().unwrap()).unwrap()
 }
 
-fn text_cell(sheet: &mut gridcraft_model::Sheet, a: &str, text: &str) {
+fn text_cell(sheet: &mut nanshe_model::Sheet, a: &str, text: &str) {
     sheet.cells.set(at(a), Cell { value: Value::text(text), formula: None, style: StyleId::DEFAULT });
 }
 

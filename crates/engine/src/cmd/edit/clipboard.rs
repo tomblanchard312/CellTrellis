@@ -50,7 +50,7 @@ fn copy_impl(s: &mut Session, p: &Json, cut: bool) -> Result<Json> {
 /// bottom), without overlapping. Returns a copy of the workbook whose sheet holds the areas packed
 /// into one block at the first area's place, and that block. Formulas travel as their values, as
 /// in Excel. `None` when the areas don't line up.
-fn slide_together(wb: &gridcraft_model::Workbook, sheet: usize, areas: &[RangeRef]) -> Option<(gridcraft_model::Workbook, RangeRef)> {
+fn slide_together(wb: &nanshe_model::Workbook, sheet: usize, areas: &[RangeRef]) -> Option<(nanshe_model::Workbook, RangeRef)> {
     let first = *areas.first()?;
     let across = areas.iter().all(|a| a.start.row == first.start.row && a.end.row == first.end.row);
     let down = areas.iter().all(|a| a.start.col == first.start.col && a.end.col == first.end.col);
@@ -203,7 +203,7 @@ fn paste_text(s: &mut Session, p: &Json, text: &str) -> Result<Json> {
 /// source recorded for it in its HTML, with a format that shows the same text when one can be
 /// inferred and the cell has none. The HTML cell must show the same text as the tab-separated
 /// field, so HTML that belongs to another copy (or a table laid out differently) changes nothing.
-fn numeric_from_html(cell: &mut Cell, field: &str, html: Option<&crate::clip_html::HtmlCell>, wb: &mut gridcraft_model::Workbook) {
+fn numeric_from_html(cell: &mut Cell, field: &str, html: Option<&crate::clip_html::HtmlCell>, wb: &mut nanshe_model::Workbook) {
     let Some(hc) = html else { return };
     let Some(n) = hc.num else { return };
     if cell.formula.is_some() || !matches!(cell.value, Value::Text(_)) || wb.styles.get(cell.style).num_fmt.as_str() == "@" {
@@ -216,7 +216,7 @@ fn numeric_from_html(cell: &mut Cell, field: &str, html: Option<&crate::clip_htm
     if wb.styles.get(cell.style).num_fmt.as_str() == "General"
         && let Some(code) = crate::clip_html::format_for(field, n)
     {
-        cell.style = wb.styles.derive(cell.style, |s| s.num_fmt = gridcraft_model::NumFmt::new(&code));
+        cell.style = wb.styles.derive(cell.style, |s| s.num_fmt = nanshe_model::NumFmt::new(&code));
     }
 }
 

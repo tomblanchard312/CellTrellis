@@ -465,7 +465,7 @@ fn a_list_typed_without_quotes_is_saved_as_a_quoted_list() {
     check(&wb);
 
     let sheet_xml = |wb: &Workbook| {
-        let bytes = gridcraft_xlsx::write_xlsx(wb).unwrap();
+        let bytes = nanshe_xlsx::write_xlsx(wb).unwrap();
         let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
         let mut xml = String::new();
         std::io::Read::read_to_string(&mut zip.by_name("xl/worksheets/sheet1.xml").unwrap(), &mut xml).unwrap();
@@ -475,7 +475,7 @@ fn a_list_typed_without_quotes_is_saved_as_a_quoted_list() {
     for (cell, _, saved) in rules {
         assert!(xml.contains(&format!(r#"sqref="{cell}"><formula1>{saved}</formula1>"#)), "{cell}: {saved} missing from {xml}");
     }
-    let (reopened, _) = gridcraft_xlsx::read_xlsx(&gridcraft_xlsx::write_xlsx(&wb).unwrap()).unwrap();
+    let (reopened, _) = nanshe_xlsx::read_xlsx(&nanshe_xlsx::write_xlsx(&wb).unwrap()).unwrap();
     check(&reopened);
     assert_eq!(sheet_xml(&reopened), xml, "a second save writes the same rules");
 }

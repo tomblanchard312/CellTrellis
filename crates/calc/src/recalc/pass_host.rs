@@ -1,7 +1,7 @@
 use super::graph::{HashMap, HashSet, Key};
 use super::{Evaluator, Host, Workbook, stack_position};
-use gridcraft_core::{Array, CellError, CellRef, RangeRef, Value};
-use gridcraft_formula::Expr;
+use nanshe_core::{Array, CellError, CellRef, RangeRef, Value};
+use nanshe_formula::Expr;
 
 /// Formulas a formula may calculate on demand one inside the other (each needing one another's
 /// value before it is done). Each level takes stack, so a chain deeper than this is suspended and
@@ -113,8 +113,8 @@ fn spill_blocked(host: &PassHost<'_>, (sheet, anchor): Key, a: &Array) -> bool {
         !own.is_some_and(|o| o.contains(c))
             && sh.spill_ranges.iter().any(|(o, r)| *o != anchor && r.contains(c) && !host.exprs.contains_key(&(sheet, *o)))
     };
-    end.row >= gridcraft_core::MAX_ROWS
-        || end.col >= gridcraft_core::MAX_COLS
+    end.row >= nanshe_core::MAX_ROWS
+        || end.col >= nanshe_core::MAX_COLS
         || sh.merges.iter().any(|m| m.intersects(&range))
         || sh.tables.iter().any(|t| t.range.contains(anchor))
         || sh.cells.iter_range(range).any(|(c, cell)| c != anchor && (!cell.value.is_empty() || cell.formula.is_some()))
@@ -123,7 +123,7 @@ fn spill_blocked(host: &PassHost<'_>, (sheet, anchor): Key, a: &Array) -> bool {
 
 /// Whether `arr`, anchored at `anchor`, would spill exactly what the sheet already holds over
 /// `range`: the same area, nothing new in the way, and the same values.
-pub(super) fn spills_as_before(sheet: &gridcraft_model::Sheet, anchor: CellRef, range: RangeRef, arr: &Array) -> bool {
+pub(super) fn spills_as_before(sheet: &nanshe_model::Sheet, anchor: CellRef, range: RangeRef, arr: &Array) -> bool {
     let end =
         CellRef::new(anchor.row.saturating_add((arr.rows as u32).saturating_sub(1)), anchor.col.saturating_add((arr.cols as u32).saturating_sub(1)));
     RangeRef::new(anchor, end) == range
@@ -416,8 +416,8 @@ impl Host for PassHost<'_> {
         );
         let range = RangeRef::new(anchor, end);
         let sh = self.wb.sheet(sheet)?;
-        let blocked = end.row >= gridcraft_core::MAX_ROWS
-            || end.col >= gridcraft_core::MAX_COLS
+        let blocked = end.row >= nanshe_core::MAX_ROWS
+            || end.col >= nanshe_core::MAX_COLS
             || sh.cells.iter_range(range).any(|(c, cell)| c != anchor && (cell.formula.is_some() || !cell.value.is_empty()))
             || sh.merges.iter().any(|m| m.intersects(&range));
         (!blocked).then_some(range)

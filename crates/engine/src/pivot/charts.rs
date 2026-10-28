@@ -17,7 +17,7 @@ pub fn parse_chart_link(link: &str) -> Option<(String, String)> {
     };
     let (sheet, name) = t.rsplit_once('!')?;
     let sheet = sheet.trim();
-    let sheet = gridcraft_core::unquote_sheet(sheet);
+    let sheet = nanshe_core::unquote_sheet(sheet);
     let name = name.trim();
     if sheet.is_empty() || name.is_empty() {
         return None;
@@ -34,7 +34,7 @@ pub fn links_to(link: &str, sheet: &str, pivot: &str) -> bool {
 fn rows_ref(sheet: &str, origin: CellRef, col: u32, rows: &[u32]) -> Option<String> {
     let q = quote_sheet(sheet);
     let c = origin.col.checked_add(col)?;
-    let letters = gridcraft_core::col_to_letters(c);
+    let letters = nanshe_core::col_to_letters(c);
     let mut parts: Vec<String> = Vec::new();
     let mut i = 0;
     while let Some(&start) = rows.get(i) {

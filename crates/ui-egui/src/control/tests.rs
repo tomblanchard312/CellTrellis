@@ -23,7 +23,7 @@ fn search_filters_case_insensitively() {
 }
 
 fn test_app() -> SheetApp {
-    let mut session = gridcraft_engine::Session::new();
+    let mut session = nanshe_engine::Session::new();
     session.new_workbook();
     SheetApp::new(session, crate::Services::default())
 }
@@ -52,7 +52,7 @@ fn oversized_pointer_requests_are_refused_and_leave_the_queue_alone() {
 
 #[test]
 fn print_command_discovery_documents_settings_and_submission() {
-    let mut session = gridcraft_engine::Session::new();
+    let mut session = nanshe_engine::Session::new();
     session.new_workbook();
     let mut app = SheetApp::new(session, crate::Services::default());
     let Outcome::Done(reply) = handle(&mut app, &egui::Context::default(), "engine.commands", &json!({"search":"print"})) else {
@@ -77,7 +77,7 @@ fn print_command_discovery_documents_settings_and_submission() {
 
 #[test]
 fn language_command_docs_list_every_language() {
-    let mut session = gridcraft_engine::Session::new();
+    let mut session = nanshe_engine::Session::new();
     session.new_workbook();
     let mut app = SheetApp::new(session, crate::Services::default());
     let Outcome::Done(reply) = handle(&mut app, &egui::Context::default(), "engine.commands", &json!({"search":"language"})) else {
@@ -140,7 +140,7 @@ fn issue_with(ctx: &egui::Context, app: &mut SheetApp, raw: egui::RawInput) -> V
 
 /// Returns a per-process temporary PNG path after removing any stale file at that path.
 fn temp_png(name: &str) -> std::path::PathBuf {
-    let path = std::env::temp_dir().join(format!("gridcraft-shot-{name}-{}.png", std::process::id()));
+    let path = std::env::temp_dir().join(format!("nanshe-shot-{name}-{}.png", std::process::id()));
     let _ = std::fs::remove_file(&path);
     path
 }

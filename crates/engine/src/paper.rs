@@ -9,8 +9,8 @@
 //! grid with a gap around each: page `(row band, column band)` starts at
 //! `(gap + j·(page_w + gap), gap + i·(page_h + gap))`, and its cells start at its top-left margin.
 
-use gridcraft_core::{CellRef, MAX_COLS, MAX_ROWS, RangeRef};
-use gridcraft_model::{LineIndex, Sheet, Workbook};
+use nanshe_core::{CellRef, MAX_COLS, MAX_ROWS, RangeRef};
+use nanshe_model::{LineIndex, Sheet, Workbook};
 
 use crate::cmd::print::{self, PX_TO_PT, PrintOptions};
 
@@ -244,7 +244,7 @@ pub fn need_for(sh: &Sheet, x: f64, y: f64) -> (u32, u32) {
 
 #[cfg(test)]
 mod tests {
-    use gridcraft_model::{Orientation, Sheet};
+    use nanshe_model::{Orientation, Sheet};
 
     use super::*;
 
@@ -253,7 +253,7 @@ mod tests {
         if let Some(sh) = wb.sheet_mut(0) {
             for r in 0..rows {
                 for c in 0..cols {
-                    sh.set_value(CellRef::new(r, c), gridcraft_core::Value::Number(1.0));
+                    sh.set_value(CellRef::new(r, c), nanshe_core::Value::Number(1.0));
                 }
             }
         }

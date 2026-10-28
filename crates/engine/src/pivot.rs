@@ -8,10 +8,10 @@
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 
-use gridcraft_core::date::datetime_from_serial;
-pub use gridcraft_core::quote_sheet;
-use gridcraft_core::{CellError, CellRef, MAX_COLS, MAX_ROWS, RangeRef, Value, split_sheet};
-use gridcraft_model::{
+use nanshe_core::date::datetime_from_serial;
+pub use nanshe_core::quote_sheet;
+use nanshe_core::{CellError, CellRef, MAX_COLS, MAX_ROWS, RangeRef, Value, split_sheet};
+use nanshe_model::{
     BorderLine, BorderStyle, Cell, Chart, Color, Fill, HAlign, NumFmt, PivotDateGroup, PivotField, PivotFilter, PivotFunc, PivotLayout, PivotShowAs,
     PivotSort, PivotTable, PivotValue, Series, Style, StyleId, Workbook,
 };
@@ -68,7 +68,7 @@ impl Source {
 
 /// Absolute reference text for a range on a sheet: `Sheet1!$A$1:$E$20`.
 pub fn range_text(sheet_name: &str, r: RangeRef) -> String {
-    let abs = |c: CellRef| format!("${}${}", gridcraft_core::col_to_letters(c.col), c.row as u64 + 1);
+    let abs = |c: CellRef| format!("${}${}", nanshe_core::col_to_letters(c.col), c.row as u64 + 1);
     format!("{}!{}:{}", quote_sheet(sheet_name), abs(r.start), abs(r.end))
 }
 

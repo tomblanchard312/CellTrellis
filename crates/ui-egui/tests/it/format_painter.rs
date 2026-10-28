@@ -3,10 +3,10 @@
 use egui::accesskit::Toggled;
 use egui::{Event, Modifiers, PointerButton, Pos2};
 use egui_kittest::kittest::{NodeT, Queryable};
-use gridcraft_engine::Session;
-use gridcraft_engine::core::CellRef;
-use gridcraft_engine::model::Style;
-use gridcraft_ui_egui::{SheetApp, grid::Geo};
+use nanshe_engine::Session;
+use nanshe_engine::core::CellRef;
+use nanshe_engine::model::Style;
+use nanshe_ui_egui::{SheetApp, grid::Geo};
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;

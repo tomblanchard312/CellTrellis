@@ -272,7 +272,7 @@ fn unparseable_font_files_are_rejected_not_fatal() {
 /// A broken existing font candidate is skipped in favor of a later readable candidate.
 fn try_load_skips_a_broken_candidate() {
     // A candidate that exists but is not a readable font must not win over a good one behind it.
-    let dir = std::env::temp_dir().join(format!("gridcraft-font-test-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-font-test-{}", std::process::id()));
     let _ = std::fs::create_dir_all(&dir);
     let bad = dir.join("broken.ttf");
     let good = dir.join("good.ttf");
@@ -292,7 +292,7 @@ fn try_load_skips_a_broken_candidate() {
 fn interface_fonts_are_read_once_and_shared_with_egui() {
     // egui copies owned font bytes into its text engine and keeps the original too; borrowed
     // bytes it shares. A rebuild of the font set reuses the file read the first time.
-    let path = std::env::temp_dir().join(format!("gridcraft-font-shared-{}.ttf", std::process::id()));
+    let path = std::env::temp_dir().join(format!("nanshe-font-shared-{}.ttf", std::process::id()));
     std::fs::write(&path, epaint_default_fonts::UBUNTU_LIGHT).unwrap();
     let p = path.to_string_lossy().into_owned();
     let first = try_load(&[(p.as_str(), 0)]).unwrap();

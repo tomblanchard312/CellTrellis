@@ -1,10 +1,10 @@
 use super::{Dialog, Json, SheetApp, json};
 
-/// The Macros dialog: lists GridCraft's own recorded scripts and (if the file carries one) the
+/// The Macros dialog: lists Nanshe's own recorded scripts and (if the file carries one) the
 /// preserved VBA project. Mirrors Excel's Developer ▸ Macros list, but is honest that VBA is
 /// preserved and not executed.
 pub(super) fn macros(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog) {
-    ui.label("Automation in this workbook. GridCraft runs its own scripts; a file's VBA project is preserved but not executed.");
+    ui.label("Automation in this workbook. Nanshe runs its own scripts; a file's VBA project is preserved but not executed.");
     ui.add_space(6.0);
     let items: Vec<Json> = d.result.as_ref().and_then(Json::as_array).cloned().unwrap_or_default();
     if items.is_empty() {

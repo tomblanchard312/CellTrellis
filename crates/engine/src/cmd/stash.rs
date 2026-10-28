@@ -1,4 +1,4 @@
-//! GridCraft data kept in hidden workbook-scope defined names, so that it travels inside the xlsx
+//! Nanshe data kept in hidden workbook-scope defined names, so that it travels inside the xlsx
 //! file.
 //!
 //! An item `key` is stored as names `_gc_<key>_0`, `_gc_<key>_1`, …, each a formula of string
@@ -18,7 +18,7 @@
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
 
-use gridcraft_model::{DefinedName, Workbook};
+use nanshe_model::{DefinedName, Workbook};
 use serde_json::Value as Json;
 
 use crate::{EngineError, Result};
@@ -183,13 +183,13 @@ pub fn set(wb: &mut Workbook, key: &str, text: &str) -> Result<()> {
     };
     if let Some(n) = wb.names.iter().find(taken) {
         return Err(EngineError::Other(format!(
-            "The workbook has a defined name '{}', which GridCraft needs for its own data. Rename it first.",
+            "The workbook has a defined name '{}', which Nanshe needs for its own data. Rename it first.",
             n.name
         )));
     }
     remove(wb, key);
     for (i, formula) in formulas.into_iter().enumerate() {
-        wb.names.push(DefinedName { name: format!("{PREFIX}{key}_{i}"), scope: None, formula, comment: "GridCraft data".into(), hidden: true });
+        wb.names.push(DefinedName { name: format!("{PREFIX}{key}_{i}"), scope: None, formula, comment: "Nanshe data".into(), hidden: true });
     }
     Ok(())
 }
@@ -556,7 +556,7 @@ mod tests {
         let text: String = (0..20_000).map(|i| ['x', '"', 'ü', '\u{1D11E}', ' '][i % 5]).collect();
         set(&mut wb, "blob", &text).unwrap();
         wb.names.push(name("_sc_watch", "\"[\"\"A1\"\"]\""));
-        let bytes = gridcraft_xlsx::write_xlsx(&wb).unwrap();
+        let bytes = nanshe_xlsx::write_xlsx(&wb).unwrap();
         let (back, warnings) = crate::io::open_bytes("data.xlsx", &bytes).unwrap();
         assert!(warnings.is_empty(), "{warnings:?}");
         assert_eq!(get(&back, "blob").as_deref(), Some(text.as_str()));
@@ -575,7 +575,7 @@ mod tests {
         let controls = "\u{1}".repeat(9_000);
         set(&mut wb, "controls", &controls).unwrap();
         excel_limits_hold(&wb);
-        let bytes = gridcraft_xlsx::write_xlsx(&wb).unwrap();
+        let bytes = nanshe_xlsx::write_xlsx(&wb).unwrap();
         let (back, warnings) = crate::io::open_bytes("data.xlsx", &bytes).unwrap();
         assert!(warnings.is_empty(), "{warnings:?}");
         assert_eq!(get(&back, "odd").as_deref(), Some(text.as_str()));

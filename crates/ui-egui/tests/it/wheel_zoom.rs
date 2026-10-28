@@ -1,8 +1,8 @@
 //! Ctrl+wheel zoom steps along a ladder of percentages that always comes back to 100%.
 
 use egui::{Event, Modifiers, MouseWheelSource, MouseWheelUnit, TouchPhase, vec2};
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::SheetApp;
+use nanshe_engine::Session;
+use nanshe_ui_egui::SheetApp;
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
