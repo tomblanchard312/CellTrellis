@@ -1,5 +1,7 @@
 # Nanshe roadmap
 
+> **Interface update: 2026-10-28** · Automate buttons have distinct original icons for macros, command search, agent control, the action journal, updates and About. Readiness estimates are unchanged.
+
 **Stage: alpha** · next: beta, ~25 points of "ready for real work" and ~160–240 h away
 
 > **Last reviewed:** 2026-10-11 · **Last updated:** 2026-10-25 · **Change:** minor (AutoSum over a selected row puts its total to the right, and fills a selection's empty last row and column) · **Target:** Microsoft Excel (Microsoft 365)

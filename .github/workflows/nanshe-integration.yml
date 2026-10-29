@@ -41,6 +41,12 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - run: dotnet publish vba/src/Nanshe.Vba -c Release -r win-x64 --self-contained true -o target/debug/runtimes/vba
+      - name: Test the self-contained VBA helper
+        shell: pwsh
+        run: |
+          $request = @{source="Sub Main()`nDebug.Print 42`nEnd Sub";macro='Main'} | ConvertTo-Json -Compress
+          $frames = @($request | & target/debug/runtimes/vba/Nanshe.Vba.exe bridge | ForEach-Object { $_ | ConvertFrom-Json })
+          if ($LASTEXITCODE -ne 0 -or 'done' -notin $frames.type) { throw 'Packaged VBA helper failed' }
       - run: Copy-Item NOTICE,ATTRIBUTION.md target/debug
       - uses: actions/upload-artifact@v4
         with:
