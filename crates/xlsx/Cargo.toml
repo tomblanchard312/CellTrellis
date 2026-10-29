@@ -3,7 +3,7 @@ name = "nanshe-xlsx"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Nanshe file formats: XLSX (SpreadsheetML) and CSV import/export"
+description = "CellTrellis file formats: XLSX (SpreadsheetML) and CSV import/export"
 
 [lints]
 workspace = true

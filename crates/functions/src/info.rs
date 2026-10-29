@@ -113,7 +113,7 @@ fn info(a: &[Arg], _c: &mut dyn Ctx) -> R<Value> {
         "directory" => "/".into(),
         "numfile" => Value::Number(1.0),
         "origin" => "$A:$A$1".into(),
-        "osversion" => "Nanshe".into(),
+        "osversion" => "CellTrellis".into(),
         "recalc" => "Automatic".into(),
         "release" => "16.0".into(),
         "system" => "pcdos".into(),

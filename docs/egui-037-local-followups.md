@@ -1,6 +1,6 @@
 # egui 0.37 local port — follow-ups and gates
 
-Status: local implementation on Nanshe `b8771d51fb4da60bd48c13cf313d6d6014dc5e66` with canonical
+Status: local implementation on CellTrellis `b8771d51fb4da60bd48c13cf313d6d6014dc5e66` with canonical
 immutable dependency pins. Final managed full CI
 `egui037-nanshe-candidate-20261024-full-ci-queue-07` succeeded at 2026-10-24 05:21 UTC after both
 accessibility repairs: all ten stages passed, with 2,249 tests passed, none failed and one existing
@@ -21,12 +21,12 @@ push or PR publication is authorized; each requires fresh human approval of cont
 - CI, release and FreeBSD select craft-fonts `b076417b5880bd4154bd22f00695b1d28c6bea83`.
   Local validation uses command-scoped private Git mirrors for unpublished immutable inputs;
   clean remote fetching after approved publication remains a separate gate.
-- The shared capture contract fits Nanshe's requirements without changes: one slot per request,
+- The shared capture contract fits CellTrellis's requirements without changes: one slot per request,
   `take()` at most once, `cancel()`/drop makes late callbacks inert, a per-image byte bound, and a
-  viewport waker that runs after the slot lock is released. Nanshe adds only its admission
+  viewport waker that runs after the slot lock is released. CellTrellis adds only its admission
   budget, request records, geometry epoch and output routing around it.
 - The `CaptureSlot` callback holds only a weak reference and never encodes, writes a file or sends
-  a control reply; Nanshe drains the slot from `logic` and writes outside the slot.
+  a control reply; CellTrellis drains the slot from `logic` and writes outside the slot.
 
 ## Capture lifecycle repair (2026-10-23)
 
@@ -73,8 +73,8 @@ command — including `RequestPaintWhileHidden` — falls into its unhandled-com
 `ui.screenshot` or a queued `ui.key`/`ui.text` step in a hidden browser tab therefore cannot reach
 its `ui` pass until the tab is visible; the screenshot request reports its timeout instead. The
 fix belongs in the shared eframe web runner (paint a hidden tab on request, with the same
-queued-work trigger Nanshe sends from `logic` on native), not in a Nanshe-local channel.
-Nanshe therefore sends `RequestPaintWhileHidden` only off wasm (a visible web tab still gets
+queued-work trigger CellTrellis sends from `logic` on native), not in a CellTrellis-local channel.
+CellTrellis therefore sends `RequestPaintWhileHidden` only off wasm (a visible web tab still gets
 `request_repaint`). The control protocol documents this web limitation instead of claiming hidden
 web screenshots work.
 
@@ -82,7 +82,7 @@ web screenshots work.
 
 The final canonical egui fork includes `IMEOutput::surrounding_text`, owner/context generation
 and the Wayland outgoing adapter; the earlier statement that no shared producer/adapter exists is
-superseded. Nanshe must qualify its actual formula-bar, in-cell and text-box editing paths,
+superseded. CellTrellis must qualify its actual formula-bar, in-cell and text-box editing paths,
 including available-empty versus unavailable, stale epoch/serial deletion and commit, deletion-only
 batches, composition ownership and two-surface isolation. Full CI07 is not a native IME or complete
 E21b/W27 acceptance result. No application-local API stub is introduced.

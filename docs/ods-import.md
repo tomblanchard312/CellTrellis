@@ -1,6 +1,6 @@
 # Importing OpenDocument spreadsheets
 
-Open an `.ods` file with File → Open, drag it onto Nanshe, or pass it to the CLI. Nanshe
+Open an `.ods` file with File → Open, drag it onto CellTrellis, or pass it to the CLI. CellTrellis
 imports worksheet data into a new workbook and shows a warning describing the conversion limits.
 
 The import reads sheets, numbers, text, booleans, supported dates/times, repeated cells/rows and
@@ -9,7 +9,7 @@ may be out of date if the source application did not recalculate before saving. 
 missing values retain available display text and produce a warning.
 
 This is data import, not full ODS compatibility. Source formatting, formulas, charts, images,
-names and other workbook features are not preserved. Nanshe does not write ODS files.
+names and other workbook features are not preserved. CellTrellis does not write ODS files.
 
 Save opens Save As and suggests a new `.xlsx` file. The source ODS file is not used as the
 workbook's save destination; requests to save to `.ods` return an error.

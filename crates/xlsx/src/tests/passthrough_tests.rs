@@ -280,7 +280,7 @@ fn assert_kept_sheet_parts(u: &Unpacked, sheet: &str, sx: &str) {
     assert!(pos("<pageSetup") < pos("<legacyDrawing") && pos("<legacyDrawing") < pos("<oleObjects") && pos("<oleObjects") < pos("<controls"));
     // Query table: a sheet relationship only.
     assert!(u.rels(sheet).iter().any(|r| r.1.ends_with("/queryTable") && u.parts.get(&r.2).is_some_and(|b| b == QUERY_TABLE.as_bytes())));
-    // One VML drawing: the kept control shapes plus Nanshe's note, in a fresh shape block.
+    // One VML drawing: the kept control shapes plus CellTrellis's note, in a fresh shape block.
     let vml_id = attr_of(sx, "legacyDrawing", "r:id");
     let vml_part = u.target(sheet, &vml_id).1;
     let vml = u.text(&vml_part);
@@ -386,7 +386,7 @@ fn damaged_kept_content_is_dropped_without_failing_the_read() {
         ("rId4", "customXml", "../customXml/missing.xml"),
         // A cycle: item1 → itemProps1 → item1.
         ("rId5", "customXml", "../customXml/item1.xml"),
-        // Kept content that points into a part Nanshe rewrites.
+        // Kept content that points into a part CellTrellis rewrites.
         ("rId6", "customXml", "../customXml/item2.xml"),
         // Damaged rels behind a kept part.
         ("rId7", "connections", "connections.xml"),
@@ -831,7 +831,7 @@ fn file_version_and_calc_features_survive_a_save() {
         assert!(text.contains(&format!("<extLst>{calc_features}</extLst>")), "{text}");
     }
 
-    // A workbook that had neither gets a <fileVersion> naming Nanshe (#1699), kept on the next
+    // A workbook that had neither gets a <fileVersion> naming CellTrellis (#1699), kept on the next
     // save, and no calcFeatures: Excel recalculates it on open.
     let new = write_xlsx(&nanshe_model::Workbook::new()).unwrap();
     let (reread, _) = read_xlsx(&new).unwrap();
@@ -850,7 +850,7 @@ const SIGNATURE: &[u8] = b"\x89PNG\r\n\x1a\n footer signature";
 const HF_VML: &str = r##"<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><o:shapelayout v:ext="edit"><o:idmap v:ext="edit" data="1"/></o:shapelayout><v:shapetype id="_x0000_t75" coordsize="21600,21600" o:spt="75" o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f" stroked="f"/><v:shape id="LH" o:spid="_x0000_s1025" type="#_x0000_t75" style="position:absolute;margin-left:0;margin-top:0;width:120pt;height:40pt;z-index:1"><v:imagedata o:relid="rId1" o:title="logo"/><o:lock v:ext="edit" rotation="t"/></v:shape><v:shape id="CF" o:spid="_x0000_s1026" type="#_x0000_t75" style="position:absolute;margin-left:0;margin-top:0;width:80pt;height:20pt;z-index:2"><v:imagedata o:relid="rId2" o:title="signature"/><o:lock v:ext="edit" rotation="t"/></v:shape></xml>"##;
 
 /// #1257: a letterhead in the header and a picture in the footer (`&G`), drawn from a VML part
-/// that `<legacyDrawingHF>` names, next to a note whose VML drawing Nanshe rewrites.
+/// that `<legacyDrawingHF>` names, next to a note whose VML drawing CellTrellis rewrites.
 fn header_picture_package() -> Vec<u8> {
     let types = r#"<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="vml" ContentType="application/vnd.openxmlformats-officedocument.vmlDrawing"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/comments1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml"/></Types>"#;
     let workbook = format!(

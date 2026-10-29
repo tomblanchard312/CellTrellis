@@ -10,7 +10,7 @@ use crate::{SheetApp, code_editor::Lang};
 mod runtime;
 mod scribe;
 
-const SAMPLE: &str = "Sub Main()\n    Range(\"A1\").Value = \"Hello from Nanshe\"\n    Range(\"A1\").Font.Bold = True\nEnd Sub\n";
+const SAMPLE: &str = "Sub Main()\n    Range(\"A1\").Value = \"Hello from CellTrellis\"\n    Range(\"A1\").Font.Bold = True\nEnd Sub\n";
 
 #[derive(Default)]
 pub struct State {
@@ -416,7 +416,7 @@ fn macro_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool
 }
 
 fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool) {
-    ui.label("Scribe · Nanshe");
+    ui.label("Scribe · CellTrellis");
     ui.weak("Ask a question, highlight cells, create formulas, or draft a macro. Review changes before applying them.");
     #[cfg(not(any(unix, windows)))]
     ui.weak("Local Enki requires the desktop app.");
@@ -728,7 +728,7 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
         if let Some(memory) = &memory {
             messages.extend(memory.messages());
         }
-        messages.push(enki::Message::new("user", format!("Request: {prompt}\nLive Nanshe worksheet data: {context}")));
+        messages.push(enki::Message::new("user", format!("Request: {prompt}\nLive CellTrellis worksheet data: {context}")));
         let mut reply = String::new();
         let mut overflow = false;
         let summary = enki::chat(

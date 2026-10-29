@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build and package Nanshe for Linux (<arch> is x86_64 or aarch64, or riscv64 when cross-compiling):
+# Build and package CellTrellis for Linux (<arch> is x86_64 or aarch64, or riscv64 when cross-compiling):
 #
 #   $DIST/nanshe-<version>-linux-<arch>.AppImage  any distro with glibc >= the build host's
 #   $DIST/nanshe-<version>-linux-<arch>.AppImage.zsync  delta updates (needs zsyncmake)
@@ -41,7 +41,7 @@ esac
 export NANSHE_MAINTAINER="${NANSHE_MAINTAINER:-Tom Blanchard <tomblanchard@outlook.com>}"
 BASENAME="nanshe-$VERSION-linux-$ARCH"
 
-echo "==> Nanshe $VERSION for Linux $ARCH ($FORMATS)"
+echo "==> CellTrellis $VERSION for Linux $ARCH ($FORMATS)"
 
 if [[ "$SKIP_BUILD" = 0 ]]; then
   if [[ -n "${CROSS_TARGET:-}" ]]; then

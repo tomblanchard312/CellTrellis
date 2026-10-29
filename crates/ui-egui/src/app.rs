@@ -167,7 +167,7 @@ impl SheetApp {
     /// minimized request has no size, so no hidden pass can reach issuance: the restore pass issues
     /// it instead. Native eframe honours `RequestPaintWhileHidden`; the web runner does not (hidden
     /// tabs only run `run_logic`), so a hidden web tab queues the work until it is shown again.
-    /// This is a shared eframe web follow-up, not a Nanshe-local workaround, and the control
+    /// This is a shared eframe web follow-up, not a CellTrellis-local workaround, and the control
     /// protocol documents the limitation.
     fn request_hidden_paint(&self, ctx: &egui::Context) {
         if !(self.shots.needs_hidden_paint() || self.synthetic_pending || !self.synthetic.is_empty()) {

@@ -1,6 +1,6 @@
 # nanshe-cli
 
-Headless Nanshe: inspect, convert, evaluate, script and serve MCP without a window. Errors go to stderr with a
+Headless CellTrellis: inspect, convert, evaluate, script and serve MCP without a window. Errors go to stderr with a
 non-zero exit code.
 
 `.xls` (Excel 97-2003, BIFF8) files are imported with values, formulas, number formats, merges,
@@ -69,7 +69,7 @@ Measures calculation correctness and file fidelity on any set of `.xlsx`/`.xlsm`
 recursively). Nothing is written next to the inputs.
 
 **Calc oracle.** A file saved by Excel (or another calculating app) stores the app's own result beside every formula.
-`check` reads each file keeping those cached values, recalculates every formula with Nanshe and compares:
+`check` reads each file keeping those cached values, recalculates every formula with CellTrellis and compares:
 numbers within a relative `--tolerance` (absolute when the magnitude is below 1), errors by kind, text and logicals
 exactly. Skipped, and counted separately:
 
@@ -79,16 +79,16 @@ exactly. Skipped, and counted separately:
   every formula that reads such a cell (through the dependency graph).
 
 A logical result the producer cached as the number 1 or 0, without `t="b"` (Business Central's "Open in Excel"
-exports write `<c><f>TRUE()</f><v>1</v></c>`), holds the same value: it matches Nanshe's TRUE or FALSE and is also
+exports write `<c><f>TRUE()</f><v>1</v></c>`), holds the same value: it matches CellTrellis's TRUE or FALSE and is also
 counted as *booleans saved as 1/0* (`boolAsNumber`). Excel types logical results, so on files it saved this count
-should be 0; a non-zero count there would point at a formula where Nanshe returns a logical and Excel a number.
+should be 0; a non-zero count there would point at a formula where CellTrellis returns a logical and Excel a number.
 
-Each mismatch lists the cell, formula, expected (cached) and actual (Nanshe) values and the functions the formula
+Each mismatch lists the cell, formula, expected (cached) and actual (CellTrellis) values and the functions the formula
 calls. Mismatches roll up by function: *checked* (formula cells calling it), *mismatched*, and *primary* (mismatched
 while none of the cell's precedents mismatch — the likely culprit, as opposed to a downstream effect). They also roll
 up by *signature*, `expected type → actual type` (e.g. `number → #SPILL!`), which often groups one root cause.
 
-**Round trip.** The recalculated workbook is written with Nanshe's XLSX writer, the package is validated (every
+**Round trip.** The recalculated workbook is written with CellTrellis's XLSX writer, the package is validated (every
 part has a content type, every content-type override and internal relationship target exists, relationship ids are
 unique: what Excel would "repair"), compared with the source (no kind of relationship it had, such as `xmlMaps`, is
 missing; a calculation chain doesn't count, Excel rebuilds it, nor do a link to a place in the workbook and a
@@ -102,7 +102,7 @@ sheet's rules in priority order, priority numbers aside), `validations`, `charts
 `hyperlinks`, `pivots`. `#SPILL!`/`#CALC!` compare equal to `#VALUE!` and `#CIRC!` to 0, as
 that's what the file format stores.
 
-Files that fail to open are reported with Nanshe's error and don't stop the run. Unreadable directories,
+Files that fail to open are reported with CellTrellis's error and don't stop the run. Unreadable directories,
 directory-entry/metadata errors, and subtrees or files omitted by the depth (32) and file (100,000) limits appear
 as failed path reports too, in both human and JSON output. Intentional hidden/lock-file exclusions remain ignored.
 JSON `totals.files` includes failed discovery paths; `totals.opened` counts only workbooks that opened successfully.
@@ -121,14 +121,14 @@ added, a changed meaning bumps the version):
   "files": [{
     "path": "book.xlsx",
     "opened": true,
-    "error": null,                     // Nanshe's message when the file can't be opened
+    "error": null,                     // CellTrellis's message when the file can't be opened
     "warnings": ["..."],               // import warnings
     "calc": {
       "formulaCells": 3, "checked": 2, "matched": 1, "mismatched": 1, "noOracle": 1, "volatile": 0,
       "staleCache": false,             // fullCalcOnLoad: nothing compared
       "boolAsNumber": 0,               // matched TRUE/FALSE results the producer saved as 1/0 (no t="b")
       "mismatches": [{"cell": "Sheet1!B1", "formula": "=SUM(A1:A2)", "expected": 7, "actual": 6,
-                      "kind": "numeric",  // numeric | text | bool | error | blank (Nanshe empty) | type
+                      "kind": "numeric",  // numeric | text | bool | error | blank (CellTrellis empty) | type
                       "functions": ["SUM"], "primary": true}],
       "functions": [{"name": "SUM", "checked": 1, "mismatched": 1, "primary": 1}],
       "signatures": {"number → number": 1}

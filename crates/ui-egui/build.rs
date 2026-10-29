@@ -41,7 +41,7 @@ fn main() {
 /// `1`; any other value leaves required mode off), which turns a missing checkout, a missing
 /// required face or a malformed row into a build error.
 ///
-/// Nanshe never copies font bytes into this repository and never reads a fixture from Cargo
+/// CellTrellis never copies font bytes into this repository and never reads a fixture from Cargo
 /// configuration: the only input is the environment variable. Barred Adobe/Source/Noto CJK faces
 /// stay in the shared repository for other consumers but are filtered here. A web build embeds
 /// only the explicit `WEB_ALLOWED` faces (no CJK collection). Native builds additionally opt into
@@ -75,7 +75,7 @@ fn emit_craft_fonts() {
     }
 }
 
-/// One `CraftFont { .. }` initialiser per manifest row Nanshe may embed.
+/// One `CraftFont { .. }` initialiser per manifest row CellTrellis may embed.
 fn craft_fonts(dir: &std::path::Path, wasm: bool, required: bool) -> Result<String, String> {
     let manifest = dir.join("fonts/manifest.txt");
     println!("cargo::rerun-if-changed={}", manifest.display());

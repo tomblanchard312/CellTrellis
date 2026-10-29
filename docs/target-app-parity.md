@@ -1,4 +1,4 @@
-# Target-app parity: Nanshe vs Microsoft Excel
+# Target-app parity: CellTrellis vs Microsoft Excel
 
 > **Last reviewed:** 2026-10-11 · **Last updated:** 2026-10-25 · **Change:** minor (automation: macro interface; earlier: catalog count 276 / 292, as `cargo xtask parity` measures; automation: typed macros in the engine; several windows: a native window per workbook window, New Window on the same workbook, Arrange All; no score change) · **Target:** Microsoft Excel (Microsoft 365)
 
@@ -93,7 +93,7 @@ performance 8, stability 8, localization 4, hardware 2, platforms 2, ecosystem 2
 | Get & Transform, external data, data model | 5 | ~15% | ~10% | 60–100 | Import of CSV/TSV, JSON, HTML. No Power Query editor, no From Web, database or folder sources, no connections or refresh, no relationships or data model, no external workbook links (dropped with a warning) |
 | Insert objects | 3 | ~55% | ~45% | 25–40 | Pictures, 8 shape kinds (Excel has ~170), text boxes, own icon set, ink with Ink to Shape, hyperlinks, checkboxes. Missing: SmartArt, WordArt, equations, signature line, objects, 3-D models, screenshot, pictures in cells (PR #105) |
 | Review, comments, protection, collaboration | 4 | ~55% | ~40% | 35–55 | Threaded comments, notes, spelling (system dictionary), thesaurus, sheet and workbook protection, Allow Edit Ranges with Excel-compatible password hashes (#307). Missing: comment navigation, Show Changes, notes-to-comments conversion, accessibility checker, co-authoring, opening password-encrypted files (refused with a message since #17) |
-| Automation | 4 | ~30% | ~20% | 12–20 | Recorded, editable Nanshe scripts (Automate tab). Typed macros in the engine (`macro.*`: recorder, runner with input checks and a footprint dry run, debugger; [macros.md](macros.md)), recorded from Automate › Macros, edited and debugged in a step editor, and run from the Macros dialog or a Ctrl+Shift shortcut. The fork also retains its opt-in Developer/VBA workflow and local Scribe assistance; `.xlsm` keeps its VBA project unchanged on save and opening a workbook never executes it automatically. No Office Scripts compatibility |
+| Automation | 4 | ~30% | ~20% | 12–20 | Recorded, editable CellTrellis scripts (Automate tab). Typed macros in the engine (`macro.*`: recorder, runner with input checks and a footprint dry run, debugger; [macros.md](macros.md)), recorded from Automate › Macros, edited and debugged in a step editor, and run from the Macros dialog or a Ctrl+Shift shortcut. The fork also retains its opt-in Developer/VBA workflow and local Scribe assistance; `.xlsm` keeps its VBA project unchanged on save and opening a workbook never executes it automatically. No Office Scripts compatibility |
 | **Weighted** | 100 | **~75%** | **~59%** | **300–485** | |
 
 ## Dimensions
@@ -149,7 +149,7 @@ Discounts for what still stops real work:
 | File exchange with Excel users | × 0.88 | Excel opening our output is unverified across features; unmodelled parts dropped on save; advanced chart kinds lose their type; 100 MB files fail (#175); `.xls` and encrypted files are refused with a clear message (#17) rather than opened. Harsher than a drawing app's discount because spreadsheets are exchanged constantly |
 
 **Mainstream practitioner: 69.5 × 0.90 × 0.92 × 0.88 = 50.6 → ~50%** (estimated). Unlike most
-apps it is not higher than the full number: Nanshe's breadth is wide (functions, formatting,
+apps it is not higher than the full number: CellTrellis's breadth is wide (functions, formatting,
 ribbon), so excluding the long tail removes little, while the discounts land on exactly what
 mainstream users do every week (exchange files with Excel users).
 
@@ -186,7 +186,7 @@ Counted from all 83 GitHub issues and 109 PRs on 2026-10-10; none of the issues 
 the maintainer.
 
 - **Praise:** 3 explicit ("this is brilliant. Tiny fast native binaries", #16; "Thanks for the
-  great work on Nanshe", #61; "i didnt have excel kind app on my macos", #69), plus polite
+  great work on CellTrellis", #61; "i didnt have excel kind app on my macos", #69), plus polite
   thanks in feature requests (#39, #45, #142).
 - **"Switched from Excel" reports:** 0. One counter-signal: "without macro support most
   professionals cannot switch from excel" (#6).
@@ -200,7 +200,7 @@ the maintainer.
 Excel recalculates on every core (multi-threaded recalculation), streams large files, and handles
 1,048,576 × 16,384 sheets with millions of formulas.
 
-| Measure | Nanshe | Excel | Kind |
+| Measure | CellTrellis | Excel | Kind |
 |---|---|---|---|
 | Sheet size limits | 1,048,576 × 16,384 | same | measured (`crates/core/src/addr.rs`) |
 | Recalc threads | 1 | all cores | measured (no threading in `crates/calc`) |
@@ -215,7 +215,7 @@ clamping, a `cargo xtask bench` with fixed workbooks so the numbers become measu
 
 ## Platforms
 
-| Platform | Excel | Nanshe |
+| Platform | Excel | CellTrellis |
 |---|---|---|
 | Windows x64 / arm64 | yes | yes (signed MSI and portable zip; also x86) |
 | macOS (Apple silicon, Intel) | yes | yes (signed, notarized universal DMG) |
@@ -224,17 +224,17 @@ clamping, a `cargo xtask bench` with fixed workbooks so the numbers become measu
 | Linux | no | yes (AppImage, Flatpak, deb, rpm, tarball; x86_64, aarch64, riscv64) |
 | FreeBSD | no | yes |
 
-Mobile is the gap (30–60 h for a touch layout over the same engine). Nanshe is ahead on
+Mobile is the gap (30–60 h for a touch layout over the same engine). CellTrellis is ahead on
 Linux, BSD and RISC-V, where Excel doesn't run.
 
 ## Ecosystem and AI
 
 - **Add-ins:** Excel has Office JavaScript add-ins, COM/XLL add-ins, VBA, Office Scripts and
-  Power Automate. Nanshe has its own recorded scripts, plus a control channel, MCP server and
+  Power Automate. CellTrellis has its own recorded scripts, plus a control channel, MCP server and
   CLI that reach every command. VBA is out of scope (owner decision). A plugin or custom-function
   API (for example LAMBDA libraries and WASM custom functions) is the open-equivalent path: 25–40 h.
 - **AI:** Excel has Copilot, the COPILOT() function, Analyze Data, Python in Excel and Flash
-  Fill. Nanshe has Flash Fill and best-in-class agent control (any MCP client can drive every
+  Fill. CellTrellis has Flash Fill and best-in-class agent control (any MCP client can drive every
   command headless or live), but no in-app assistant, no natural-language formulas and no
   Analyze Data. Local-model equivalents: 30–50 h; model choice needs the owner.
 

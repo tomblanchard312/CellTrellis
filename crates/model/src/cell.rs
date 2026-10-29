@@ -20,7 +20,7 @@ pub struct Formula {
     /// Read from a file that marks this formula as a dynamic-array formula (cell metadata `cm`).
     /// The writer keeps the mark, so a formula Excel evaluates as an array is never saved as a
     /// legacy formula (which Excel evaluates with implicit intersection). Formulas entered or
-    /// rewritten in Nanshe start without it, and the writer decides from their shape.
+    /// rewritten in CellTrellis start without it, and the writer decides from their shape.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub dynamic: bool,
 }

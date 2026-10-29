@@ -330,7 +330,7 @@ impl KeptReader {
             }
         }
         // Header and footer pictures (`&G`): a VML drawing of their own and the images it shows,
-        // kept byte for byte (Nanshe writes the header text, not the pictures).
+        // kept byte for byte (CellTrellis writes the header text, not the pictures).
         if let Some(id) = scan.legacy_drawing_hf.as_deref()
             && scan.legacy_drawing.as_deref() != Some(id)
             && let Some(r) = rels.iter().find(|r| r.id == id && is_kind(r, &["vmlDrawing"]))
@@ -383,7 +383,7 @@ impl KeptReader {
         }
     }
 
-    /// The sheet's VML drawing without its notes (Nanshe writes those), and the parts its
+    /// The sheet's VML drawing without its notes (CellTrellis writes those), and the parts its
     /// shapes refer to (preview images).
     fn vml(
         &mut self,
@@ -595,7 +595,7 @@ pub(super) fn vml_block_max(vml: &str) -> u64 {
     used.max(claimed)
 }
 
-/// Kept VML (controls, OLE objects) plus Nanshe's note shapes: the notes get ids in a fresh
+/// Kept VML (controls, OLE objects) plus CellTrellis's note shapes: the notes get ids in a fresh
 /// shape block so they can't collide with the kept shapes the sheet XML refers to.
 pub(super) fn merge_vml(kept: &str, ours: &str) -> String {
     let Some(close) = kept.rfind("</xml>") else { return ours.to_string() };

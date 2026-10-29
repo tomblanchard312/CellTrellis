@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build and package Nanshe for FreeBSD (<arch> is x86_64 or aarch64):
+# Build and package CellTrellis for FreeBSD (<arch> is x86_64 or aarch64):
 #
 #   $DIST/nanshe-<version>-freebsd-<arch>.tar.gz   bin/ + share/ (desktop entry, icons,
 #                                                      AppStream, MIME), extract under /usr/local
@@ -41,7 +41,7 @@ else
 fi
 BASENAME="nanshe-$VERSION-freebsd-$ARCH"
 
-echo "==> Nanshe $VERSION for FreeBSD $ARCH"
+echo "==> CellTrellis $VERSION for FreeBSD $ARCH"
 
 if [[ "$SKIP_BUILD" = 0 ]]; then
   (cd "$ROOT" && cargo build --release --locked -p nanshe -p nanshe-cli ${CARGO_BUILD_TARGET:+--target "$CARGO_BUILD_TARGET"})

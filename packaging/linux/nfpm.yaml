@@ -14,7 +14,7 @@ section: misc
 priority: optional
 maintainer: ${NANSHE_MAINTAINER}
 vendor: Tom Blanchard
-homepage: https://github.com/tomblanchard312/Nanshe
+homepage: https://github.com/tomblanchard312/CellTrellis
 license: MIT OR Apache-2.0
 description: |-
   Open-source, native spreadsheet that works the way Excel users expect.

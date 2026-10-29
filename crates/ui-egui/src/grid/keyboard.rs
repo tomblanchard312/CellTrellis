@@ -52,7 +52,7 @@ pub(super) fn keyboard(app: &mut SheetApp, ctx: &egui::Context, resp: &egui::Res
                 app.copy_to_clipboard(ctx, "edit.cut");
             }
             egui::Event::Paste(text) => app.paste_external(text),
-            // Nanshe has no image-clipboard pipeline and no cell-picture insert-from-clipboard
+            // CellTrellis has no image-clipboard pipeline and no cell-picture insert-from-clipboard
             // command. Choosing to ignore `PasteImage` is explicit: inserting the bytes as a
             // floating picture without a chosen anchor/size would be a new feature, not parity.
             // A text representation, when the clipboard has one, still arrives as `Paste` above.

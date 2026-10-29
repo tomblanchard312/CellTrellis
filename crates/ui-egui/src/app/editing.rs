@@ -106,7 +106,7 @@ impl SheetApp {
         let text = match self.session.active().map(|d| formula_locale::canonical(&text, ed.locale, &d.wb, ed.sheet, ed.cell)) {
             Some(Ok(text)) => text,
             Some(Err(error)) => {
-                self.message = Some(("Nanshe".into(), error.to_string()));
+                self.message = Some(("CellTrellis".into(), error.to_string()));
                 self.editor = Some(ed);
                 self.session.mode = nanshe_engine::Mode::Edit;
                 return false;
@@ -118,7 +118,7 @@ impl SheetApp {
             && let Some((dv, msg)) = nanshe_engine::cmd::data::check_validation(&d.wb, ed.sheet, ed.cell, &text)
         {
             if dv.error_style == nanshe_engine::model::ErrorStyle::Stop {
-                let title = if dv.error_title.is_empty() { "Nanshe".to_string() } else { dv.error_title.clone() };
+                let title = if dv.error_title.is_empty() { "CellTrellis".to_string() } else { dv.error_title.clone() };
                 self.message = Some((title, msg));
                 self.editor = Some(ed);
                 self.session.mode = nanshe_engine::Mode::Edit;
@@ -130,7 +130,7 @@ impl SheetApp {
         if self.session.active().is_some_and(|d| d.wb.active_sheet() != ed.sheet)
             && let Err(e) = self.session.run("sheet.activate", json!({"sheet": ed.sheet}))
         {
-            self.message = Some(("Nanshe".into(), clean_error(&e)));
+            self.message = Some(("CellTrellis".into(), clean_error(&e)));
             self.editor = Some(ed);
             self.session.mode = nanshe_engine::Mode::Edit;
             return false;
@@ -161,7 +161,7 @@ impl SheetApp {
                 true
             }
             Err(e) => {
-                self.message = Some(("Nanshe".into(), clean_error(&e)));
+                self.message = Some(("CellTrellis".into(), clean_error(&e)));
                 self.editor = Some(ed);
                 self.session.mode = nanshe_engine::Mode::Edit;
                 false

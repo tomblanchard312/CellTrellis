@@ -18,7 +18,7 @@ fn text_to_columns_preserves_doubled_quotes() {
         .arg(&script)
         .args(["--print", "A1:B1", "--csv", "--quiet"])
         .output()
-        .expect("run Nanshe CLI");
+        .expect("run CellTrellis CLI");
     std::fs::remove_file(script).expect("remove script");
     std::fs::remove_dir(dir).expect("remove temp directory");
     assert!(output.status.success(), "{}", String::from_utf8_lossy(&output.stderr));

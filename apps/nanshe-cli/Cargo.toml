@@ -3,7 +3,7 @@ name = "nanshe-cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Nanshe command line: inspect, convert, evaluate, script and serve MCP without a window"
+description = "CellTrellis command line: inspect, convert, evaluate, script and serve MCP without a window"
 publish = false
 
 [lints]
@@ -18,6 +18,6 @@ nanshe-engine = { workspace = true }
 nanshe-mcp = { workspace = true }
 serde_json = { workspace = true }
 log = { workspace = true }
-# `check`: validating the packages Nanshe writes (content types, relationships).
+# `check`: validating the packages CellTrellis writes (content types, relationships).
 zip = { workspace = true }
 quick-xml = { workspace = true }

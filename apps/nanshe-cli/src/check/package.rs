@@ -7,7 +7,7 @@ const MAX_XML_PART: u64 = 64 * 1024 * 1024;
 const MAX_ENTRIES: usize = 200_000;
 
 /// Relationship kinds (lower case) whose absence after a save isn't a loss: the calculation chain is
-/// a cache Excel rebuilds, and Nanshe never writes it.
+/// a cache Excel rebuilds, and CellTrellis never writes it.
 pub(super) const REBUILT_KINDS: [&str; 1] = ["calcchain"];
 
 // ---------------------------------------------------------------- package validation

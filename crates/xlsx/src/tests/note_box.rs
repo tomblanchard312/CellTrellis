@@ -23,7 +23,7 @@ fn package() -> Vec<u8> {
     )
 }
 
-/// The written VML part (Nanshe writes one per sheet with notes).
+/// The written VML part (CellTrellis writes one per sheet with notes).
 fn written_vml(bytes: &[u8]) -> String {
     let mut z = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
     let name = (0..z.len()).map(|i| z.by_index(i).unwrap().name().to_string()).find(|n| n.ends_with(".vml")).expect("a VML part");
@@ -56,7 +56,7 @@ fn an_unedited_notes_box_is_saved_where_and_as_big_as_it_was() {
     let vml = written_vml(&write_xlsx(&wb).unwrap());
     assert!(vml.contains("<x:Anchor>1, 10, 0, 2, 5, 32, 5, 8</x:Anchor>"), "{vml}");
     assert!(vml.contains("width:224.25pt;height:89.25pt"), "{vml}");
-    // and once more through Nanshe's own output
+    // and once more through CellTrellis's own output
     let (wb2, _) = read_xlsx(&write_xlsx(&wb).unwrap()).unwrap();
     assert_eq!(wb2.sheets[0].comments[&b2()].note_box, wb.sheets[0].comments[&b2()].note_box);
 }

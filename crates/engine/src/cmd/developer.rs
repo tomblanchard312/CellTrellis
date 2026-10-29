@@ -1,4 +1,4 @@
-//! Nanshe's source editor and bounded, transactional macro/Scribe edits.
+//! CellTrellis's source editor and bounded, transactional macro/Scribe edits.
 use std::sync::Arc;
 
 use serde_json::{Value as Json, json};
@@ -117,7 +117,7 @@ fn apply(s: &mut Session, p: &Json) -> Result<Json> {
     if commands.len() > MAX_STEPS || p.to_string().len() > 4 * 1024 * 1024 {
         return Err(bad("developer.apply", "too many commands or more than 4 MiB of changes"));
     }
-    s.grouped("Nanshe reviewed changes", |s| {
+    s.grouped("CellTrellis reviewed changes", |s| {
         for step in commands {
             let id = str_param(step, "command").ok_or_else(|| bad("developer.apply", "command is required"))?;
             execute(s, id, step.get("params").cloned().unwrap_or_else(|| json!({})))?;

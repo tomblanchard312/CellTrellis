@@ -7,7 +7,7 @@
 //! - **Simplex LP**: the model is linearised from `n + 1` evaluations and checked for linearity
 //!   at one more point; then a dense two-phase simplex (Dantzig's rule, Bland's rule when it
 //!   stalls) solves it exactly. Integer and binary constraints use depth-first branch and bound.
-//! - **GRG Nonlinear** (the name Excel's dialog uses): Nanshe's method is *not* a generalised
+//! - **GRG Nonlinear** (the name Excel's dialog uses): CellTrellis's method is *not* a generalised
 //!   reduced gradient. It is an augmented-Lagrangian method (Powell–Hestenes–Rockafellar) whose
 //!   inner problems are solved by projected gradient descent with Barzilai–Borwein steps and an
 //!   Armijo line search, on central-difference gradients. Variable bounds are kept by

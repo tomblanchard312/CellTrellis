@@ -3,7 +3,7 @@ name = "nanshe-numfmt"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Nanshe number formats: Excel format codes, General display, TEXT()"
+description = "CellTrellis number formats: Excel format codes, General display, TEXT()"
 
 [lints]
 workspace = true

@@ -55,7 +55,7 @@ if (-not $haveCert -and -not $haveAzure) {
 }
 
 $script:SignTool = Find-SignTool
-$common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', 'Nanshe', '/du', 'https://github.com/tomblanchard312/Nanshe')
+$common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', 'CellTrellis', '/du', 'https://github.com/tomblanchard312/CellTrellis')
 $tmp = Join-Path ([IO.Path]::GetTempPath()) "nanshe-sign-$([IO.Path]::GetRandomFileName())"
 New-Item -ItemType Directory -Path $tmp | Out-Null
 

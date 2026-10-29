@@ -6,7 +6,7 @@ impl SheetApp {
             Ok(r) => self.after_open(Some(path), &r),
             // A password-protected workbook: ask for the password; the dialog opens it.
             Err(e) if e.contains(nanshe_engine::io::PASSWORD_REQUIRED) => self.open_dialog("openPassword", json!({"path": path})),
-            Err(e) => self.message = Some(("Nanshe".into(), clean_error(&e))),
+            Err(e) => self.message = Some(("CellTrellis".into(), clean_error(&e))),
         }
         self.after_engine();
     }
@@ -48,7 +48,7 @@ impl SheetApp {
             let text = if dropped {
                 "This workbook's VBA macros could not be loaded and were dropped, so they will not be in the saved file. Keep the original file."
             } else {
-                "This workbook contains VBA macros. Nanshe keeps them when you save as .xlsm, but does not run them."
+                "This workbook contains VBA macros. CellTrellis keeps them when you save as .xlsm, but does not run them."
             };
             self.notice = Some(Notice { text: text.into(), kind: NoticeKind::Warning, action: Some(("What this means".into(), "macros".into())) });
         } else {
@@ -95,7 +95,7 @@ impl SheetApp {
                     self.backstage = None;
                     self.open_dialog("openPassword", json!({"name": name, "base64": b64}));
                 }
-                Err(e) => self.message = Some(("Nanshe".into(), clean_error(&e))),
+                Err(e) => self.message = Some(("CellTrellis".into(), clean_error(&e))),
             }
             self.after_engine();
         }

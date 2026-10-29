@@ -8,7 +8,7 @@ version = "0.13.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 rust-version = "1.95"
-repository = "https://github.com/tomblanchard312/Nanshe"
+repository = "https://github.com/tomblanchard312/CellTrellis"
 
 [workspace.dependencies]
 # internal

@@ -3,7 +3,7 @@ name = "nanshe-chart"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Nanshe charts: data resolution, layout into toolkit-free primitives, sparklines and a small rasteriser"
+description = "CellTrellis charts: data resolution, layout into toolkit-free primitives, sparklines and a small rasteriser"
 
 [lints]
 workspace = true

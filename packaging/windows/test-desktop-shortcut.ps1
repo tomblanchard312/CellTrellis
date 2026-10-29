@@ -2,7 +2,7 @@
 .SYNOPSIS
   Exercise the actual MSI's desktop-shortcut choices on a disposable GitHub Windows runner.
 .DESCRIPTION
-  Compiles original no-op GUI/CLI fixtures instead of Rust, uses Nanshe's existing icon,
+  Compiles original no-op GUI/CLI fixtures instead of Rust, uses CellTrellis's existing icon,
   and builds adjacent MSI versions. Installs the real package (including its registrations),
   checks default/explicit choices, repair and major upgrades, then uninstalls in finally.
   Run through the Packaging lint workflow, never on a developer's Windows installation.
@@ -17,15 +17,15 @@ if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUN
 if (-not $WorkDir) { $WorkDir = Join-Path $env:RUNNER_TEMP 'nanshe-shortcut-smoke' }
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $InstallDir = Join-Path $env:ProgramFiles 'ArtCraft\Nanshe'
-$DesktopLink = Join-Path ([Environment]::GetFolderPath('CommonDesktopDirectory')) 'Nanshe.lnk'
-$StartLink = Join-Path ([Environment]::GetFolderPath('CommonPrograms')) 'Nanshe.lnk'
+$DesktopLink = Join-Path ([Environment]::GetFolderPath('CommonDesktopDirectory')) 'CellTrellis.lnk'
+$StartLink = Join-Path ([Environment]::GetFolderPath('CommonPrograms')) 'CellTrellis.lnk'
 $ChoiceKey = 'HKLM:\Software\Nanshe\Installer'
 $ComponentKey = 'HKLM:\Software\Nanshe\Installer'
 $UninstallRoot = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
 $Icon = Join-Path $Root 'assets\app-icon\nanshe.ico'
 if ((Test-Path $InstallDir) -or (Test-Path $DesktopLink) -or (Test-Path $StartLink) -or
     (Test-Path 'HKLM:\Software\Nanshe') -or (Test-Path 'HKCU:\Software\Nanshe')) {
-  throw 'Refusing to run against an existing Nanshe installation or its settings.'
+  throw 'Refusing to run against an existing CellTrellis installation or its settings.'
 }
 New-Item -ItemType Directory -Force -Path $WorkDir | Out-Null
 $Bin = Join-Path $WorkDir 'bin'
@@ -109,7 +109,7 @@ function Assert-Desktop([bool] $Enabled) {
     Assert-That ($shortcut.IconLocation -match '^(.*),\s*0$') 'Desktop shortcut must use icon index zero'
     $iconPath = [Environment]::ExpandEnvironmentVariables($Matches[1].Trim('"'))
     Assert-That (Test-Path $iconPath) 'Desktop shortcut icon is missing'
-    Assert-That ((Get-FileHash $iconPath).Hash -eq (Get-FileHash $Icon).Hash) 'Desktop shortcut does not use the packaged Nanshe icon'
+    Assert-That ((Get-FileHash $iconPath).Hash -eq (Get-FileHash $Icon).Hash) 'Desktop shortcut does not use the packaged CellTrellis icon'
   } finally {
     foreach ($item in $shortcut, $shell) {
       if ($item) { [Runtime.InteropServices.Marshal]::FinalReleaseComObject($item) | Out-Null }
@@ -130,7 +130,7 @@ function Assert-Removed($Package) {
 function Uninstall-AsSystem($Package) {
   # Exercise removal under a different account without creating a user or credentials.
   # This function is covered by the disposable hosted-runner guard at the top of the script.
-  $taskName = 'Nanshe-shortcut-' + [Guid]::NewGuid().ToString('N')
+  $taskName = 'CellTrellis-shortcut-' + [Guid]::NewGuid().ToString('N')
   $log = Join-Path $WorkDir 'uninstall-as-system.log'
   $action = New-ScheduledTaskAction -Execute (Join-Path $env:WINDIR 'System32\msiexec.exe') `
     -Argument "/x $($Package.Code) /qn /norestart /l*v `"$log`""

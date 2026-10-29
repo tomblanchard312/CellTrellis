@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Repackage a Nanshe Linux tarball as a single-file Flatpak bundle:
+# Repackage a CellTrellis Linux tarball as a single-file Flatpak bundle:
 #
 #   $DIST/nanshe-<version>-linux-<arch>.flatpak
 #
@@ -43,7 +43,7 @@ for tool in flatpak flatpak-builder; do
   command -v "$tool" >/dev/null || { echo "error: $tool not found (apt install flatpak flatpak-builder librsvg2-common)" >&2; exit 1; }
 done
 
-echo "==> Nanshe $VERSION Flatpak bundle for $ARCH from $(basename "$TARBALL")"
+echo "==> CellTrellis $VERSION Flatpak bundle for $ARCH from $(basename "$TARBALL")"
 
 WORK="$CARGO_TARGET_DIR/flatpak-bundle"
 rm -rf "$WORK"

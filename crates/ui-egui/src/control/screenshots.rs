@@ -397,7 +397,7 @@ pub fn issue_screenshots(app: &mut SheetApp, ctx: &egui::Context) {
     let now = crate::monotonic_ms();
     let pass = ctx.cumulative_pass_nr();
     // A pass whose output is already going to be discarded is not a settling frame and its
-    // layout is not the one to capture. Nanshe requests no discard after this call.
+    // layout is not the one to capture. CellTrellis requests no discard after this call.
     let discard = ctx.will_discard();
     let active_document = app.session.active().map(|d| d.uid);
     let current_viewport = ctx.viewport_id();

@@ -6,7 +6,7 @@
 //! bag whose `XFControls` key names an `XFControls` bag, whose `CellControl` key names a
 //! `Checkbox` bag. Bag references are zero-based indexes into the part's list of `bag` elements.
 //!
-//! Nanshe keeps a checkbox as the `checkbox` number format in its model, so reading maps each
+//! CellTrellis keeps a checkbox as the `checkbox` number format in its model, so reading maps each
 //! `xfComplement` that resolves to a `Checkbox` bag onto that format, and writing emits one chain
 //! that every checkbox `xf` points at.
 

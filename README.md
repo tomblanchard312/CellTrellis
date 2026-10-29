@@ -1,11 +1,13 @@
-# Nanshe
+# CellTrellis
+
+> **Product name:** CellTrellis (formerly Nanshe). Existing application IDs, settings directories, command names and repository URLs remain compatible.
 
 A Rust spreadsheet with a Developer workspace for **VBA, Python and R**, and **Scribe**, a local
 assistant powered by [Enki](https://github.com/tomblanchard312/Enki).
 
-Nanshe is a fork of [Nanshe](https://github.com/storytold/gridcraft) by the ArtCraft team.
-It keeps Nanshe's engine, command protocol, file formats and internal crate names so upstream
-improvements remain easy to merge. The desktop uses a separate Nanshe settings profile, dark
+CellTrellis is a fork of [GridCraft](https://github.com/storytold/gridcraft) by the ArtCraft team.
+It keeps CellTrellis's engine, command protocol, file formats and internal crate names so upstream
+improvements remain easy to merge. The desktop uses a separate CellTrellis settings profile, dark
 surfaces and blue accents. About lists the upstream contributors and licenses.
 
 ## Run
@@ -39,12 +41,12 @@ dotnet build vba/NansheVba.sln -m:1
 dotnet run --project vba/tests/Nanshe.Vba.Tests --no-build
 ```
 
-The inherited Nanshe architecture and format documentation is in [`docs/`](docs/). Packaged
+The inherited CellTrellis architecture and format documentation is in [`docs/`](docs/). Packaged
 installer identifiers and artwork still follow upstream; this branch is a source-build port,
-not a signed Nanshe release. The upstream self-update feed is disabled for this fork.
+not a signed CellTrellis release. The upstream self-update feed is disabled for this fork.
 
 ## License and credits
 
 MIT OR Apache-2.0. Nanshe is copyright (c) 2026 ArtCraft Team and the Nanshe contributors;
 Nisaba-derived and Nanshe changes are copyright (c) 2026 Tom Blanchard. See [NOTICE](NOTICE) and
-[ATTRIBUTION.md](ATTRIBUTION.md). Nanshe is not sponsored or endorsed by the ArtCraft team.
+[ATTRIBUTION.md](ATTRIBUTION.md). CellTrellis is not sponsored or endorsed by the ArtCraft team.

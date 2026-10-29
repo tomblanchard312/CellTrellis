@@ -1,4 +1,4 @@
-//! Nanshe desktop app.
+//! CellTrellis desktop app.
 //!
 //! Usage: `nanshe [--control <port> [--control-token <token>]] [--sample <name>] [files…]`
 //!
@@ -256,7 +256,7 @@ fn main() -> eframe::Result<()> {
     }));
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args.iter().any(|a| a == "--version" || a == "-V") {
-        println!("Nanshe {}", env!("CARGO_PKG_VERSION"));
+        println!("CellTrellis {}", env!("CARGO_PKG_VERSION"));
         return Ok(());
     }
     let mut control_port: Option<u16> = std::env::var("NANSHE_CONTROL_PORT").ok().and_then(|p| p.parse().ok());
@@ -290,7 +290,7 @@ fn main() -> eframe::Result<()> {
     if let Some(logger) = logger {
         match log_dir().filter(|_| prefs_enabled()) {
             Some(dir) => match logger.attach_dir(&dir) {
-                Ok(path) => log::info!("Nanshe {}, log file {}", env!("CARGO_PKG_VERSION"), path.display()),
+                Ok(path) => log::info!("CellTrellis {}, log file {}", env!("CARGO_PKG_VERSION"), path.display()),
                 // Standard error only by now (`attach_dir` gave up on the file); unlike `eprintln!`, never panics.
                 Err(e) => log::warn!("no log file: {e}"),
             },
@@ -319,7 +319,7 @@ fn main() -> eframe::Result<()> {
         app.open_path(f);
     }
     let mut viewport = egui::ViewportBuilder::default()
-        .with_title("Nanshe")
+        .with_title("CellTrellis")
         .with_inner_size([1440.0, 900.0])
         .with_min_inner_size([640.0, 420.0])
         .with_app_id("io.github.tomblanchard312.nanshe")
@@ -421,8 +421,8 @@ mod packaging_tests {
         v
     }
 
-    /// macOS Open With (`CFBundleDocumentTypes`) offers Nanshe for the same files as Windows
-    /// Open with, and Nanshe opens each of them. #321 added `.xlsb` and `.ods` on Windows and
+    /// macOS Open With (`CFBundleDocumentTypes`) offers CellTrellis for the same files as Windows
+    /// Open with, and CellTrellis opens each of them. #321 added `.xlsb` and `.ods` on Windows and
     /// Linux only.
     #[test]
     fn macos_and_windows_offer_the_same_file_types() {
@@ -433,7 +433,7 @@ mod packaging_tests {
         assert!(mac.iter().any(|e| e == "xlsx"), "Info.plist.in extensions not found: {mac:?}");
         assert_eq!(mac, win);
         for ext in &mac {
-            assert!(FileKind::from_path(&format!("book.{ext}")).is_some(), "Nanshe doesn't open .{ext}");
+            assert!(FileKind::from_path(&format!("book.{ext}")).is_some(), "CellTrellis doesn't open .{ext}");
         }
     }
 }

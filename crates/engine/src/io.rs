@@ -7,7 +7,7 @@ use nanshe_model::{Sheet, Workbook};
 
 use crate::{EngineError, Result};
 
-/// File formats Nanshe reads or writes.
+/// File formats CellTrellis reads or writes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FileKind {
     Xlsx,
@@ -44,7 +44,7 @@ pub const PASSWORD_REQUIRED: &str = "is password-protected. Enter its password t
 /// The error for a wrong password contains this.
 pub const WRONG_PASSWORD: &str = "The password is incorrect.";
 /// The first open warning of a workbook decrypted with its password.
-pub const DECRYPTED_NOTICE: &str = "This workbook was password-protected. Nanshe saves it without the password.";
+pub const DECRYPTED_NOTICE: &str = "This workbook was password-protected. CellTrellis saves it without the password.";
 
 /// Parses a file's bytes into a workbook. `name` picks the format by extension when the bytes
 /// don't say. An encrypted workbook needs [`open_bytes_with_password`].
@@ -112,7 +112,7 @@ fn decrypt_message(name: &str, e: nanshe_xlsx::DecryptError) -> String {
     match e {
         nanshe_xlsx::DecryptError::WrongPassword => format!("{WRONG_PASSWORD} Check that Caps Lock is off and try again."),
         nanshe_xlsx::DecryptError::Unsupported(scheme) => {
-            format!("'{name}' uses {scheme} encryption, which Nanshe can't open yet. Remove the password in Excel and try again.")
+            format!("'{name}' uses {scheme} encryption, which CellTrellis can't open yet. Remove the password in Excel and try again.")
         }
         nanshe_xlsx::DecryptError::Malformed(detail) => format!("We can't open '{name}': the encrypted file is damaged ({detail})."),
     }
@@ -134,7 +134,7 @@ fn read_plain(name: &str, bytes: &[u8], csv_as_text: bool) -> Result<(Workbook, 
     }
     if sniffed == nanshe_xlsx::Format::LegacyBinary {
         return Err(EngineError::Other(format!(
-            "'{name}' is a legacy binary file but not an Excel workbook (no workbook stream). Nanshe can't open it."
+            "'{name}' is a legacy binary file but not an Excel workbook (no workbook stream). CellTrellis can't open it."
         )));
     }
     // Content wins over the extension: an ODS or XLSB package is imported as what it is,
@@ -163,7 +163,7 @@ fn read_plain(name: &str, bytes: &[u8], csv_as_text: bool) -> Result<(Workbook, 
     }
     match kind {
         Some(FileKind::Json) => {
-            let mut wb: Workbook = serde_json::from_slice(bytes).map_err(|e| EngineError::Other(format!("not a Nanshe JSON workbook: {e}")))?;
+            let mut wb: Workbook = serde_json::from_slice(bytes).map_err(|e| EngineError::Other(format!("not a CellTrellis JSON workbook: {e}")))?;
             wb.styles.rebuild_index();
             if wb.sheets.is_empty() {
                 // The file's macros are read after this (`macros::load`), so they come along.
@@ -211,7 +211,7 @@ fn part_too_large_message(name: &str, part: &str, size: u64) -> String {
         "To open it, save the data as CSV, which keeps only its values."
     };
     format!(
-        "We can't open '{name}': its part {part} unpacks to {size}, over Nanshe's limit of {limit} MB for one part \
+        "We can't open '{name}': its part {part} unpacks to {size}, over CellTrellis's limit of {limit} MB for one part \
          (a guard against damaged or malicious files). {remedy}"
     )
 }

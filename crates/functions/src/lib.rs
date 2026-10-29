@@ -1,4 +1,4 @@
-//! Nanshe worksheet function library.
+//! CellTrellis worksheet function library.
 //!
 //! Every function is described by a [`FnSpec`] (name, arity, category, which parameters take
 //! scalars, a signature and a one-line description) and implemented as a plain Rust function over

@@ -221,7 +221,7 @@ fn answer_and_limits_reports_describe_the_wyndor_glass_solution() {
     assert_eq!(d.wb.active().unwrap().name, "Sheet1", "the model's sheet stays active");
     assert_eq!(saved(&s), "solver_opt", "the saved model follows its sheet");
     let a = "Answer Report 1";
-    assert_eq!(at(&s, a, "A1"), Value::text("Nanshe Answer Report"));
+    assert_eq!(at(&s, a, "A1"), Value::text("CellTrellis Answer Report"));
     // Objective: $D$6 "Profit Used", from 0 to 36.
     let r = row_of(&s, a, "$D$6");
     assert_eq!(at(&s, a, &format!("C{}", r + 1)), Value::text("Profit Used"));

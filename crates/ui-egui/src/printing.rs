@@ -8,7 +8,7 @@ pub use craft_ui::printing::{Discover, Duplex, Feedback, Printer, Settings, Stat
 /// [`crate::SheetApp::poll_printing`] in `logic`. That poll is idempotent (it only drains worker
 /// messages into the same state), and the logic-side poll is what lets a hidden window and a
 /// logic-only frame see completion, so it stays. Splitting poll out of the shared `show` API is a
-/// craft-ui follow-up, not a Nanshe-local change.
+/// craft-ui follow-up, not a CellTrellis-local change.
 pub fn show(state: &mut State, ui: &mut egui::Ui, discover: &Discover, translate: impl Fn(&str) -> String) {
     let labels = Labels {
         printer: &translate("Printer"),

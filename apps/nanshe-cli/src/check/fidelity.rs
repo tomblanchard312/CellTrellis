@@ -4,7 +4,7 @@ use super::{BTreeSet, Category, Cell, CellError, CellRef, Diffs, Options, RoundT
 
 // ---------------------------------------------------------------- round trip
 
-/// Writes `wb` with Nanshe's XLSX writer, validates the package against itself and against
+/// Writes `wb` with CellTrellis's XLSX writer, validates the package against itself and against
 /// `source` (the file `wb` was read from), reads it back and compares.
 pub fn round_trip(wb: &Workbook, source: &[u8], opts: &Options) -> RoundTrip {
     let bytes = match nanshe_engine::io::save_bytes(wb, "roundtrip.xlsx") {

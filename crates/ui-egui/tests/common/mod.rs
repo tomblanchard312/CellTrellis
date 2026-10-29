@@ -14,7 +14,7 @@ use nanshe_ui_egui::{Services, SheetApp};
 
 pub type Harness = egui_kittest::Harness<'static, SheetApp>;
 
-/// A kittest builder with the deterministic font set and Nanshe's visuals installed.
+/// A kittest builder with the deterministic font set and CellTrellis's visuals installed.
 pub fn builder<State>() -> HarnessBuilder<State> {
     egui_kittest::Harness::builder().with_context_setup(|ctx| {
         ctx.set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());

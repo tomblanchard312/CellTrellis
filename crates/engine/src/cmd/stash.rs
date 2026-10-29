@@ -1,4 +1,4 @@
-//! Nanshe data kept in hidden workbook-scope defined names, so that it travels inside the xlsx
+//! CellTrellis data kept in hidden workbook-scope defined names, so that it travels inside the xlsx
 //! file.
 //!
 //! An item `key` is stored as names `_gc_<key>_0`, `_gc_<key>_1`, …, each a formula of string
@@ -214,7 +214,7 @@ pub fn set_many(wb: &mut Workbook, items: &[(String, String)]) -> Result<()> {
     let names: HashSet<String> = planned.iter().map(|n| n.name.to_ascii_lowercase()).collect();
     if let Some(n) = wb.names.iter().find(|n| n.scope.is_none() && !n.hidden && names.contains(&n.name.to_ascii_lowercase())) {
         return Err(EngineError::Other(format!(
-            "The workbook has a defined name '{}', which Nanshe needs for its own data. Rename it first.",
+            "The workbook has a defined name '{}', which CellTrellis needs for its own data. Rename it first.",
             n.name
         )));
     }

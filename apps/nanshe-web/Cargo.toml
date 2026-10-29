@@ -1,6 +1,6 @@
 [package]
 name = "nanshe-web"
-description = "Nanshe in the browser (eframe web runner, WebGPU with WebGL2 fallback)"
+description = "CellTrellis in the browser (eframe web runner, WebGPU with WebGL2 fallback)"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

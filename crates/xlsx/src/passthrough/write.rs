@@ -16,7 +16,7 @@ pub struct KeptOut {
 
 impl KeptOut {
     /// Reserves the VML shape blocks the kept header and footer drawings of `wb` use, so that the
-    /// notes drawings Nanshe writes don't reuse their shape ids.
+    /// notes drawings CellTrellis writes don't reuse their shape ids.
     pub fn reserve_vml_blocks(&mut self, wb: &Workbook) {
         let vmls =
             wb.sheets.iter().filter_map(|s| s.preserved.as_deref()).flat_map(|p| &p.parts).filter(|q| q.content_type.eq_ignore_ascii_case(CT_VML));

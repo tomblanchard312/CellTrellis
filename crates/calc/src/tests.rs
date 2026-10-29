@@ -2184,7 +2184,7 @@ fn n_lifts_over_a_computed_array_but_reads_the_first_cell_of_a_range() {
 #[test]
 fn a_dynamic_array_of_one_value_still_anchors_a_spill() {
     // In Excel a dynamic-array formula anchors a spill range even while its result is a single
-    // value, so `C1#` is the 1 x 1 range and ROWS/SUM/COUNT of it work. Nanshe gave #REF!
+    // value, so `C1#` is the 1 x 1 range and ROWS/SUM/COUNT of it work. CellTrellis gave #REF!
     // (and COUNT 0), so every formula counting a filtered list broke the moment the list had
     // exactly one entry (#1491). Values and cells follow the reported fixture.
     let mut t = T::new();

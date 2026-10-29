@@ -1,4 +1,10 @@
-# Nanshe roadmap
+# CellTrellis roadmap
+
+> **Integration update: 2026-10-29** · Combined local product branding, Enki and file-picker changes with the synchronized upstream code. Existing settings and installation identities are retained. Readiness estimates are unchanged.
+
+> **Naming update: 2026-10-29** · Nanshe is now CellTrellis. Existing user data, installation identities and automation interfaces are retained; readiness estimates are unchanged.
+
+> **Brand update: 2026-10-29** · The application icon now uses original blue-and-gold folded spreadsheet artwork across runtime and platform packaging. Readiness estimates are unchanged.
 
 > **Interface update: 2026-10-28** · Automate buttons have distinct original icons for macros, command search, agent control, the action journal, updates and About. Readiness estimates are unchanged.
 
@@ -6,7 +12,7 @@
 
 > **Last reviewed:** 2026-10-11 · **Last updated:** 2026-10-25 · **Change:** minor (AutoSum over a selected row puts its total to the right, and fills a selection's empty last row and column; earlier: macro engine and `macro.*` commands; macro interface on the Automate tab) · **Target:** Microsoft Excel (Microsoft 365)
 
-Nanshe aims at full Microsoft Excel parity, and at being better in places: faster, open (XLSX
+CellTrellis aims at full Microsoft Excel parity, and at being better in places: faster, open (XLSX
 is the native format), fully scriptable by agents (MCP, control channel, CLI), and on the web.
 This page is the summary. The detail is in:
 
@@ -202,7 +208,7 @@ Ranked; estimates in Opus 5.5 agent-hours. Detail and the full beta-gate list in
 | 2026-10-12 | File › Print selects a system printer, copies, duplex and grayscale, submits PDF jobs through craft-print on a worker and shows spooler errors; browser printing and PDF export remain available |
 | 2026-10-11 | UI building blocks: theme tokens with a WCAG contrast test over both themes (icons and reference colours follow dark mode); ribbon scroll arrows and a large split button (Formulas › AutoSum opens its menu); the formula bar grows from one to five lines, then scrolls; a code editor widget with Python and LaTeX colouring |
 | 2026-10-11 | Command-sequence fuzzing: random command sequences checked against undo/redo, XLSX round-trip and full recalculation; fixes for the table, legacy-array, spill, AutoSum, Watch Window and sheet-copy bugs it found |
-| 2026-10-11 | Password-protected workbooks open: Nanshe asks for the password and decrypts Agile and Standard encryption (#11) |
+| 2026-10-11 | Password-protected workbooks open: CellTrellis asks for the password and decrypts Agile and Standard encryption (#11) |
 | 2026-10-11 | Text boxes keep their formatting: run size, bold, italic, typeface, text colour and outline, alignment, vertical anchor and "no outline" (#377) |
 | 2026-10-11 | Desktop printing opens the print PDF in the system viewer; Save As offers CSV, web page and PDF; macOS File › Properties opens File › Info (#370, #343) |
 | 2026-10-11 | Windows: DirectX 12 shaders compile with FXC, so a missing or stray `dxcompiler.dll` no longer stops the app at start (#339, #354) |
@@ -301,7 +307,7 @@ Ranked; estimates in Opus 5.5 agent-hours. Detail and the full beta-gate list in
 | 2026-10-10 | major | Re-measured against Excel for Mac 16.113.4: stage alpha, breadth ~75%, ready ~50%, ~160–240 h to beta, ~700–1,100 h to full parity; restructured to the progress-docs standard; detail moved to `docs/` |
 | 2026-10-07 | major | First estimates: catalog 89%, functions ~93%, depth ~65%, ~35 h to alpha, ~215 h to full parity |
 
-## Nanshe fork · 2026-10-28
+## CellTrellis fork · 2026-10-28
 
 Developer source editor with VBA, Python and R preview/apply; Excel-style VBA object model;
 Scribe via local Enki. See [scope and platform limits](docs/nanshe-developer.md). Native Windows

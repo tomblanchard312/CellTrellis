@@ -60,14 +60,14 @@ fn cell_name(wb: &Workbook, (sheet, c): Key) -> String {
     format!("{}!{}", quote_sheet(name), c.a1())
 }
 
-/// Whether the producer cached Nanshe's logical result as the number 1 or 0. Excel types a
+/// Whether the producer cached CellTrellis's logical result as the number 1 or 0. Excel types a
 /// logical result `t="b"`; a writer that leaves the type out (`<c><f>TRUE()</f><v>1</v></c>`, as
 /// Business Central's "Open in Excel" exports do) stores the same value, read back as a number.
 pub fn bool_cached_as_number(expected: &Value, actual: &Value) -> bool {
     matches!((expected, actual), (Value::Number(n), Value::Bool(b)) if *n == if *b { 1.0 } else { 0.0 })
 }
 
-/// Whether Nanshe's `actual` agrees with the producer's `expected`.
+/// Whether CellTrellis's `actual` agrees with the producer's `expected`.
 pub fn values_match(expected: &Value, actual: &Value, tolerance: f64) -> bool {
     match (expected, actual) {
         (Value::Number(a), Value::Number(b)) => (a - b).abs() <= tolerance * a.abs().max(b.abs()).max(1.0),
@@ -126,7 +126,7 @@ impl MismatchIndex {
 }
 
 /// Compares every formula cell of `cached` (as the producer saved it) with `fresh` (recalculated
-/// by Nanshe). Without `trust_cache` nothing is compared (see [`CalcReport::stale_cache`]).
+/// by CellTrellis). Without `trust_cache` nothing is compared (see [`CalcReport::stale_cache`]).
 pub fn oracle(cached: &Workbook, fresh: &Workbook, calc: &Calc, trust_cache: bool, opts: &Options) -> CalcReport {
     let mut r = CalcReport { stale_cache: !trust_cache, ..Default::default() };
     let vnames = volatile_names(cached);

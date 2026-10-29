@@ -1,4 +1,4 @@
-//! Headless Nanshe.
+//! Headless CellTrellis.
 //!
 //! ```text
 //! nanshe-cli info <file> [--json]
@@ -533,7 +533,7 @@ fn mcp(args: &[String]) -> Result<(), String> {
             let addr = control_addr(c);
             Box::new(
                 Remote::connect(&addr)
-                    .map_err(|e| format!("cannot connect to the Nanshe app at {addr}: {e} (start it with `nanshe --control PORT`)"))?,
+                    .map_err(|e| format!("cannot connect to the CellTrellis app at {addr}: {e} (start it with `nanshe --control PORT`)"))?,
             )
         }
         None => {
@@ -568,8 +568,8 @@ fn send(args: &[String]) -> Result<(), String> {
         return Err(format!("unexpected argument `{x}`"));
     }
     let addr = control_addr(port);
-    let mut r =
-        Remote::connect(&addr).map_err(|e| format!("cannot connect to the Nanshe app at {addr}: {e} (start it with `nanshe --control {port}`)"))?;
+    let mut r = Remote::connect(&addr)
+        .map_err(|e| format!("cannot connect to the CellTrellis app at {addr}: {e} (start it with `nanshe --control {port}`)"))?;
     let v = r.call(method, params)?;
     outln!("{}", pretty(&v));
     Ok(())

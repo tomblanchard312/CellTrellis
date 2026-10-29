@@ -66,7 +66,7 @@ pub fn fallback_backends(backend_override: Option<Backends>, first: Backends) ->
 /// The DirectX 12 shader compiler: `env_choice` (normally `Dx12Compiler::from_env()`, i.e.
 /// `WGPU_DX12_COMPILER`, for troubleshooting) or else FXC.
 ///
-/// wgpu's default (`Auto`) loads the first `dxcompiler.dll` on the DLL search path. Nanshe ships
+/// wgpu's default (`Auto`) loads the first `dxcompiler.dll` on the DLL search path. CellTrellis ships
 /// none, so that is another program's copy (a Windows SDK, an Edge or WebView folder, anything on
 /// `PATH`). Without a matching `dxil.dll` beside it, DXC prints "DXIL signing library not found",
 /// wgpu treats that warning as a compile error, its internal compute pipelines fail, the device is

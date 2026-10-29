@@ -494,7 +494,7 @@ pub fn t_el(s: &str) -> String {
 pub fn si_body(text: &str, phonetic: Option<&PhoneticString>) -> String {
     let mut s = t_el(text);
     let Some(p) = phonetic else { return s };
-    // The model is public and restored from Nanshe JSON too, so the reader's checks are not the
+    // The model is public and restored from CellTrellis JSON too, so the reader's checks are not the
     // only way data gets here: validate again and write only what the schema allows (§18.4.6: an
     // `sb` before `eb`, both inside the base text, a non-empty reading; §18.18.56/57: a known enum
     // value). Damaged data is dropped, never written back invalid.

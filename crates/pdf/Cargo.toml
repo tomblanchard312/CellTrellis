@@ -3,7 +3,7 @@ name = "nanshe-pdf"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Nanshe's tiny self-contained PDF 1.7 writer (standard 14 fonts, vector drawing, RGBA images)"
+description = "CellTrellis's tiny self-contained PDF 1.7 writer (standard 14 fonts, vector drawing, RGBA images)"
 readme = "README.md"
 
 [lints]

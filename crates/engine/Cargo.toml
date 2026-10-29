@@ -3,7 +3,7 @@ name = "nanshe-engine"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Nanshe engine: sessions, commands, history, clipboard, fill, sort, filter"
+description = "CellTrellis engine: sessions, commands, history, clipboard, fill, sort, filter"
 
 [lints]
 workspace = true

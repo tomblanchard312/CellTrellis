@@ -146,7 +146,7 @@ fn iteration_options(app: &mut SheetApp, ui: &mut Ui, lang: Language, calc: &nan
 /// committed the field is consumed so it doesn't also dismiss the message box in this frame.
 fn refuse(app: &mut SheetApp, ui: &mut Ui, text: &str) {
     ui.input_mut(|i| i.consume_key(Modifiers::NONE, Key::Enter));
-    app.message = Some(("Nanshe".into(), app.ui.language.tr(text).into()));
+    app.message = Some(("CellTrellis".into(), app.ui.language.tr(text).into()));
 }
 
 /// Maximum Iterations as typed: a whole number from 1 to 32767, or `None` (Excel refuses others).

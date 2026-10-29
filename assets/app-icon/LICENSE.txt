@@ -1,13 +1,8 @@
-Nanshe app icon (nanshe.svg and every file derived from it in this directory:
-nanshe-1024.png, nanshe-macos-512.png, nanshe.icns, nanshe.ico, hicolor/).
+Nanshe blue-and-gold app icon (2026-10-29)
 
-PLACEHOLDER artwork: original work written for this project by GridCraft contributors (simple
-hand-written SVG geometry). No third-party material. Licensed like the rest of Nanshe, under
-either of
+Original AI-assisted SVG artwork created for Tom Blanchard's Nanshe project.
+No third-party artwork. The SVG and all derived PNG, ICO and ICNS renditions
+are licensed under MIT OR Apache-2.0, like Nanshe.
 
-  * Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
-  * MIT license (https://opensource.org/licenses/MIT)
-
-at your option.
-
-Regenerate the derived files with packaging/icons.sh.
+Regenerate every format with packaging/icons.sh.
+Original upstream icon attribution remains in the repository history.

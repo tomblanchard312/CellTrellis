@@ -141,7 +141,7 @@ pub struct Theme {
 }
 
 impl Default for Theme {
-    /// Nanshe's own default theme ("Craft"): original palette. The East Asian and
+    /// CellTrellis's own default theme ("Craft"): original palette. The East Asian and
     /// complex-script typefaces stay empty: the file did not set one.
     fn default() -> Self {
         Theme {

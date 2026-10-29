@@ -40,7 +40,7 @@ pub(super) fn all_scripts(s: &mut Session, _: &Json) -> Result<Json> {
         .as_object()
         .map(|o| o.iter().map(|(k, v)| json!({"name": k, "steps": v.as_array().map_or(0, Vec::len), "trusted": trusted})).collect())
         .unwrap_or_default();
-    // A preserved VBA project is reported alongside Nanshe's own scripts; it is carried on
+    // A preserved VBA project is reported alongside CellTrellis's own scripts; it is carried on
     // save but never executed here, so it has no step count.
     if let Some(bytes) = &wb.vba_project {
         list.push(json!({"name": "(VBA)", "steps": 0, "kind": "vba", "size": bytes.len(), "executed": false}));
@@ -48,7 +48,7 @@ pub(super) fn all_scripts(s: &mut Session, _: &Json) -> Result<Json> {
     Ok(Json::Array(list))
 }
 
-/// Whether `wb` carries Nanshe scripts (a workbook opened with them starts untrusted).
+/// Whether `wb` carries CellTrellis scripts (a workbook opened with them starts untrusted).
 pub(crate) fn has_scripts(wb: &Workbook) -> bool {
     stash_map(wb, SCRIPTS_NAME).as_object().is_some_and(|o| !o.is_empty())
 }

@@ -1,8 +1,8 @@
 # Architecture
 
-> **Last reviewed:** 2026-10-10 · ** Last updated:** 2026-10-28 · **Change:** major (Nanshe Developer and local Scribe integration) · **Target:** Microsoft Excel (Microsoft 365)
+> **Last reviewed:** 2026-10-10 · ** Last updated:** 2026-10-28 · **Change:** major (CellTrellis Developer and local Scribe integration) · **Target:** Microsoft Excel (Microsoft 365)
 
-How Nanshe is built today. Rules for contributors are in [`AGENTS.md`](../AGENTS.md).
+How CellTrellis is built today. Rules for contributors are in [`AGENTS.md`](../AGENTS.md).
 
 ## Workspace and layering
 
@@ -165,9 +165,9 @@ rpm, tarball), FreeBSD, and web (WASM; WebGPU or WebGL2). Release workflows in
 | 2026-10-14 | minor | Document Undo's retained-cell-storage budget and latest-step guarantee |
 | 2026-10-10 | major | Created from the code on main: crates, layers, data flow, agent control, known gaps |
 
-## Nanshe Developer and Scribe
+## CellTrellis Developer and Scribe
 
-The Nanshe fork adds an L0 `nanshe-enki` protocol client, engine commands for per-language
+The CellTrellis fork adds an L0 `nanshe-enki` protocol client, engine commands for per-language
 source storage and bounded grouped replay, and thin Developer/Scribe panes in the existing
 egui frontend. VBA (.NET), Python and R run in separate local processes using private JSON
 lines; each command operates on a copied `Session` until the user applies a preview. The

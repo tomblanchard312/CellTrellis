@@ -1,4 +1,4 @@
-//! Renders the whole Nanshe window offscreen (wgpu, no window) to a PNG.
+//! Renders the whole CellTrellis window offscreen (wgpu, no window) to a PNG.
 //!
 //! `cargo run --release -p nanshe-ui-egui --example snapshot -- [--sample sales] [--in file.xlsx]
 //!  [--size 1440x900] [--scale 2] [--cmd 'id={json}']... [--tab Insert] [--dark] [--language en|es|zh|ja|ko|ru|pt|de|cs|fr|tr]

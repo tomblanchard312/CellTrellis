@@ -177,7 +177,7 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
                 "solverResults" => solver_results(app, ui, &mut d, &mut open),
                 "spelling" => spelling(app, ui, &mut d, &mut open),
                 "agents" => {
-                    ui.label("Nanshe is fully drivable by agents. Every menu item, button and gesture is a command:");
+                    ui.label("CellTrellis is fully drivable by agents. Every menu item, button and gesture is a command:");
                     ui.add_space(4.0);
                     ui.monospace("nanshe --control 7979        # JSON-lines control channel\nnanshe-cli mcp --connect 7979   # MCP bridged to this window\nnanshe-cli mcp                   # headless MCP server");
                     ui.add_space(4.0);

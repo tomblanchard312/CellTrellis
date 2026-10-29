@@ -5,14 +5,14 @@
   <id>io.github.tomblanchard312.nanshe</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT OR Apache-2.0</project_license>
-  <name>Nanshe</name>
+  <name>CellTrellis</name>
   <summary>Calculate, analyse and chart data in workbooks</summary>
   <developer id="io.github.tomblanchard312">
     <name>Tom Blanchard</name>
   </developer>
   <description>
     <p>
-      Nanshe is an open-source, native spreadsheet. It opens and saves .xlsx workbooks and
+      CellTrellis is an open-source, native spreadsheet. It opens and saves .xlsx workbooks and
       CSV/TSV files, evaluates hundreds of worksheet functions, and formats, sorts, filters and
       charts your data.
     </p>
@@ -24,9 +24,9 @@
   <launchable type="desktop-id">io.github.tomblanchard312.nanshe.desktop</launchable>
   <icon type="stock">io.github.tomblanchard312.nanshe</icon>
   <!-- Only url types known to appstream 0.15 (Ubuntu 22.04, where CI validates): no vcs-browser. -->
-  <url type="homepage">https://github.com/tomblanchard312/Nanshe</url>
-  <url type="bugtracker">https://github.com/tomblanchard312/Nanshe/issues</url>
-  <url type="help">https://github.com/tomblanchard312/Nanshe</url>
+  <url type="homepage">https://github.com/tomblanchard312/CellTrellis</url>
+  <url type="bugtracker">https://github.com/tomblanchard312/CellTrellis/issues</url>
+  <url type="help">https://github.com/tomblanchard312/CellTrellis</url>
   <url type="contact">https://discord.gg/artcraft</url>
   <categories>
     <category>Office</category>
@@ -39,7 +39,7 @@
     <keyword>xlsx</keyword>
     <keyword>csv</keyword>
   </keywords>
-  <!-- Proposed app colour (Nanshe green #1f9d55 / ink #147a40); see assets/app-icon/README.md. -->
+  <!-- Proposed app colour (CellTrellis green #1f9d55 / ink #147a40); see assets/app-icon/README.md. -->
   <branding>
     <color type="primary" scheme_preference="light">#a7e3bf</color>
     <color type="primary" scheme_preference="dark">#147a40</color>

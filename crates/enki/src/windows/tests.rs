@@ -18,7 +18,7 @@ fn rejects_remote_other_user_and_malformed_pipes() {
     assert!(validate(&pipe("bad\\path"), &sid).is_err());
     assert!(validate(&pipe(&"a".repeat(65)), &sid).is_err());
     assert_eq!(endpoint(pipe("configured").to_str().unwrap()).unwrap(), pipe("configured"));
-    assert!(crate::daemon_candidates(Some(Path::new(r"C:\Nanshe\nanshe.exe")), None).iter().all(|p| p.ends_with("sharedai-daemon.exe")));
+    assert!(crate::daemon_candidates(Some(Path::new(r"C:\CellTrellis\nanshe.exe")), None).iter().all(|p| p.ends_with("sharedai-daemon.exe")));
 }
 
 #[test]

@@ -70,7 +70,7 @@ fn store_scenarios(wb: &mut Workbook, list: &[Scenario]) {
             .map(|c| format!("\"{}\"", c.iter().collect::<String>().replace('"', "\"\"")))
             .collect::<Vec<_>>()
             .join("&"),
-        comment: "Nanshe Scenario Manager data".into(),
+        comment: "CellTrellis Scenario Manager data".into(),
         hidden: true,
     });
 }

@@ -3,7 +3,7 @@ name = "nanshe-core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Nanshe core types: cell addresses, values, errors, date serials"
+description = "CellTrellis core types: cell addresses, values, errors, date serials"
 
 [lints]
 workspace = true

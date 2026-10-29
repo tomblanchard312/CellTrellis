@@ -155,7 +155,7 @@ fn check_exit_codes_and_json() {
     let book = dir.join("calc.xlsx");
     let book_s = book.to_str().unwrap();
     ok(&["run", "--cmd", r#"cell.set={"cell":"A1","input":"2"}"#, "--cmd", r#"cell.set={"cell":"B1","input":"=A1*3"}"#, "--out", book_s, "--quiet"]);
-    // Nanshe's own file: its cached values are its own results, and it round-trips.
+    // CellTrellis's own file: its cached values are its own results, and it round-trips.
     let o = run(&["check", dir.to_str().unwrap()]);
     let out = String::from_utf8_lossy(&o.stdout);
     assert_eq!(o.status.code(), Some(0), "{out}");

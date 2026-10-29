@@ -53,7 +53,7 @@ public static class NansheMsiPreview {
             if (owner != process) return true;
             var title = new StringBuilder(128);
             GetWindowText(window, title, title.Capacity);
-            if (title.ToString() != "Nanshe Setup") return true;
+            if (title.ToString() != "CellTrellis Setup") return true;
             found = window;
             return false;
         }, IntPtr.Zero);

@@ -1,4 +1,4 @@
-# Nanshe — egui 0.37 migration plan
+# CellTrellis — egui 0.37 migration plan
 
 Status (2026-10-25): the local migration incorporates main
 `52fa4406c1ebff8b260a2922472f03aba198b9cf`. Canonical pins are egui
@@ -25,7 +25,7 @@ this status governs current pins and acceptance. Final commit/source/CI bindings
 
 Scope: `storytold/nanshe` only. The shared `storytold/craft-libs`, egui fork and winit fork are
 dependencies of this plan, not files this plan changes. Application document models, commands, undo
-semantics, XLSX persistence and UI policy remain owned by Nanshe.
+semantics, XLSX persistence and UI policy remain owned by CellTrellis.
 
 ## 1. Baseline, source identity and targets
 
@@ -33,8 +33,8 @@ semantics, XLSX persistence and UI policy remain owned by Nanshe.
 
 | Item | Revision / value |
 | --- | --- |
-| Nanshe checkout | `/home/codex/work/CraftApps/egui037-migration-20261022/nanshe-implementation` |
-| Nanshe baseline SHA | `b8771d51fb4da60bd48c13cf313d6d6014dc5e66` (current `main` merge base for this migration; the earlier `ac8da7d4` release baseline is retained as historical evidence below) |
+| CellTrellis checkout | `/home/codex/work/CraftApps/egui037-migration-20261022/nanshe-implementation` |
+| CellTrellis baseline SHA | `b8771d51fb4da60bd48c13cf313d6d6014dc5e66` (current `main` merge base for this migration; the earlier `ac8da7d4` release baseline is retained as historical evidence below) |
 | Workspace version / edition / MSRV | `0.11.1`, edition 2024, declared `rust-version = "1.95"` |
 | Lockfile | `Cargo.lock`, format version 4 |
 | Current egui family | selected packages at 0.37.0 from canonical6d518fc7; `egui_extras` declared at 0.37 but unused |
@@ -42,7 +42,7 @@ semantics, XLSX persistence and UI policy remain owned by Nanshe.
 | Current accesskit / kittest | accesskit 0.25.1, accesskit_consumer 0.39.1, kittest 0.5.0, accesskit_winit 0.34.1 |
 | Current skrifa | 0.44.0, shared by `epaint` and `nanshe-ui-egui` |
 | Shared UI dependency | craft-ui and craft-print both pin canonical 25da1314; the complete 0.37 UI/capture tree is included |
-| Shared capture helper | `craft-ui` CL-2 provisional capture slot; Nanshe/DesignCraft adapters are the pilot and precede CL-2F. CL-1 and CL-2F are the shared gate for the eleven craft-ui consumers |
+| Shared capture helper | `craft-ui` CL-2 provisional capture slot; CellTrellis/DesignCraft adapters are the pilot and precede CL-2F. CL-1 and CL-2F are the shared gate for the eleven craft-ui consumers |
 | Target upstream release | egui annotated tag `0.37.0`, peeled commit `841a328ba2dd8f6996beb7189ebb7fc00e668a2a` (2026-10-15) |
 | Historical review candidate egui (superseded by current immutable pin) | `aiongg/egui` `craft/0.37` at `a4f9a17f64a6bae61350fb85804c9df0d9865916`; inspect only, never publish this branch |
 | Historical review candidate winit (superseded by current immutable pin) | `aiongg/winit` `craft/0.30.13-lang` at `8b35388bd719e8cc86a95971ba0bc026c9a8f058`; published base `storytold/winit` `craft/0.30.13` at `ffae5198770d7730e718043f035a772b7dbc3b1b` |
@@ -53,7 +53,7 @@ semantics, XLSX persistence and UI policy remain owned by Nanshe.
 
 The existing audit merge `ec8840af8c5fda695cf195cdd05e5ae078415c07` is not a base: its
 `Cargo.lock` still resolves egui 0.36.2 while the source expects 0.37. The PR-199 branch itself has a
-0.37 registry lock but no fork/winit pin. Neither is accepted evidence for Nanshe.
+0.37 registry lock but no fork/winit pin. Neither is accepted evidence for CellTrellis.
 
 `rust-version = "1.90"` is already inconsistent with the current eframe 0.36.2, whose manifest says
 Rust 1.95. Cargo only checks the active compiler, so this has not surfaced. The migration must align
@@ -68,14 +68,14 @@ because 0.37.0's egui/epaint/eframe manifests declare 1.95.
 | Web | `nanshe-web` (`apps/nanshe-web`) | `WebShell::logic` / `WebShell::ui` wrapping `SheetApp` | wasm32, eframe web runner, WebGPU with WebGL2 fallback, rfd async picker, no TCP control channel |
 | UI library/tests | `nanshe-ui-egui` | `SheetApp::logic`, `SheetApp::ui`, `examples/snapshot.rs` | 85 integration test files (750 `#[test]` in `tests/`) plus 153 in-crate unit tests: 903 `#[test]` attributes in the crate by static count |
 | CLI/headless | `nanshe-cli` | none | no egui dependency; must keep building/tests |
-| Shared controls | `craft-ui` (`printing` only) | `printing::State::show` inside dialogs | Nanshe does not use craft-ui docking/tabs/buttons |
+| Shared controls | `craft-ui` (`printing` only) | `printing::State::show` inside dialogs | CellTrellis does not use craft-ui docking/tabs/buttons |
 | macOS native menu test | `apps/nanshe/tests/mac_menu_appkit.rs` | AppKit/muda, no egui | must still run on macOS |
 | Tooling | `xtask` | `ci`, `layers`, `wasm`, `assets`, `parity`, `keytips` | `cargo xtask ci` is the repository gate |
 
 There are no child `ViewportId`s, deferred viewports, docking areas, audio/playback queues, or
-nested workspaces in Nanshe. The single root viewport is the only egui window. `view.newWindow`
+nested workspaces in CellTrellis. The single root viewport is the only egui window. `view.newWindow`
 is an engine document command, not an egui child window. The plan therefore does **not** add
-viewport routing or docking migrations that Nanshe does not use.
+viewport routing or docking migrations that CellTrellis does not use.
 
 ### 1.3 Historical pre-migration manifest/feature inventory
 
@@ -121,7 +121,7 @@ The 0.37 graph also changes the egui feature contract:
 
 ## 2. Historical diagnostics and what they already prove
 
-The audit logs from 2026-10-22 (not current acceptance) list five fork errors in Nanshe:
+The audit logs from 2026-10-22 (not current acceptance) list five fork errors in CellTrellis:
 
 1. `control.rs`: `egui::UserData` no longer exists.
 2. `control.rs`: `egui::Event::Screenshot` no longer exists.
@@ -137,7 +137,7 @@ only the first compilation wall; they do not cover the behavioural work in secti
 
 ### 3.1 Root `Ui`, lifecycle and hidden-window logic
 
-Nanshe already uses the correct 0.36/0.37 shape:
+CellTrellis already uses the correct 0.36/0.37 shape:
 
 - `crates/ui-egui/src/lib.rs:1148` `SheetApp::logic(&Context)` handles control polling, font
   readiness, desktop theme, zoom, close guard and the asynchronous file inbox; the screenshot
@@ -206,7 +206,7 @@ does not make synthetic input run, nor does it issue itself. Audit `SheetApp::ui
 pass-dependent effects:
 
 - `control::issue_screenshots` runs after every widget but before `collect_screenshots`, autosave
-  and the title update; it is the last UI-only command issuer, so no Nanshe widget can request a
+  and the title update; it is the last UI-only command issuer, so no CellTrellis widget can request a
   discard after it. It issues once per admitted request (section 3.5). Do not gate it on
   `will_discard()`: that query only reports a discard already requested and cannot predict a later
   one.
@@ -334,9 +334,9 @@ Current code (`crates/ui-egui/src/control.rs`):
 - `selection_glide` and `grid` use `app.shots.in_flight()` to freeze animation while a capture is
   pending.
 
-0.37 replaces both the input event and `UserData` with a one-shot callback. Nanshe adopts the
+0.37 replaces both the input event and `UserData` with a one-shot callback. CellTrellis adopts the
 shared CL-2 completion slot; it does not add a local `SyncSender` channel or a second token map.
-The selected topology is CL-2 provisional slot API -> Nanshe and DesignCraft adapters against
+The selected topology is CL-2 provisional slot API -> CellTrellis and DesignCraft adapters against
 that exact revision -> CL-2F API freeze after joint review. The slot owns one result and the
 request record owns the slot; the screenshot callback holds only a `Weak` reference to it:
 
@@ -386,7 +386,7 @@ Design:
   allocation is recorded separately in peak RSS; a post-callback size check alone does not prove
   the peak is bounded.
 - `issue_screenshots` runs after every widget but before autosave and the title update, so no
-  Nanshe widget can request a discard later in that pass. Issue once per admitted request (one
+  CellTrellis widget can request a discard later in that pass. Issue once per admitted request (one
   callback, one command); `Context::run_dyn` appends each pass's output before it checks
   `requested_discard()`, so a command issued in a discarded pass still reaches the integration.
   Settling counts one real pass per request (`cumulative_pass_nr`, so repeated `ui` calls in one
@@ -415,7 +415,7 @@ Design:
 - `in_flight()` remains true while any request record has an unfinished slot, so animation stays
   frozen through a late/queued capture.
 - If CL-2's stress tests expose a weakness, fix it in CL-2/CL-2F with the DesignCraft adapter in
-  the same review; a Nanshe-local channel is not a fallback.
+  the same review; a CellTrellis-local channel is not a fallback.
 
 Tests (`crates/ui-egui/src/control.rs` unit tests or `tests/screenshot_callback.rs`):
 
@@ -465,7 +465,7 @@ choose explicitly (section 6.4).
 ### 3.7 Style and geometry pinning
 
 0.37 changes default widget styling (`#8617`, `#8445`): widget `corner_radius` rises from 2/3 to
-4/6, button padding from 4/1 to 8/2, and `interact_size.y` from 18 to 20. Nanshe already sets
+4/6, button padding from 4/1 to 8/2, and `interact_size.y` from 18 to 20. CellTrellis already sets
 `button_padding = (6,3)` and `interact_size.y = 22` in `theme::apply` (`theme.rs:804`, values at
 831–832), but does not
 set widget corner radii. To avoid an unintended restyle:
@@ -474,8 +474,8 @@ set widget corner radii. To avoid an unintended restyle:
   `inactive = 2`, `hovered = 3`, `active = 2`, `open = 2` (the 0.36 defaults), in both light and
   dark themes. Keep the existing `window_corner_radius = 10`, `menu_corner_radius = 8`, popup
   shadow, and all token colours.
-- Do not rely on `Visuals::dark()`/`light()` defaults for anything Nanshe paints with egui
-  widgets. Nanshe's custom-painted ribbon/grid already set their own radii.
+- Do not rely on `Visuals::dark()`/`light()` defaults for anything CellTrellis paints with egui
+  widgets. CellTrellis's custom-painted ribbon/grid already set their own radii.
 - `TextEdit::horizontal_align(Align)` is deprecated (`paper_view.rs:489`). Replace with
   `TextEdit::align(Align2)`, preserving vertical top alignment:
   `[LEFT_TOP, CENTER_TOP, RIGHT_TOP][e.section.min(2)]`. Do not use `Align2::LEFT_CENTER`, which
@@ -504,9 +504,9 @@ Test anchors: `tests/interaction.rs` (harness shape), `tests/interface_scale.rs`
 
 ## 5. Dependency graph, fork and vendoring decisions
 
-### 5.1 Intended Nanshe graph
+### 5.1 Intended CellTrellis graph
 
-For suite validation, Nanshe must resolve one copy of each egui-family crate and one winit:
+For suite validation, CellTrellis must resolve one copy of each egui-family crate and one winit:
 
 ```text
 nanshe (eframe + egui + egui-wgpu + egui-winit + epaint)
@@ -525,7 +525,7 @@ G1 explicitly enables native `eframe/clipboard`; verify `egui-winit/clipboard` a
 copy/paste must work in the grid, formula bar and in-cell TextEdit, including text from
 an independent process and copy back to it; an in-process clipboard is not acceptance.
 
-Add a root `[patch.crates-io]` in `nanshe/Cargo.toml` for every egui-family package Nanshe
+Add a root `[patch.crates-io]` in `nanshe/Cargo.toml` for every egui-family package CellTrellis
 actually resolves: `egui`, `epaint`, `ecolor`, `emath`, `eframe`, `egui-wgpu`, `egui-winit`,
 `egui_kittest`, `epaint_default_fonts`, plus `winit`. Use full revision SHAs, never branches. A
 dependency's patch section does not propagate; this root patch is required. `egui_extras` can be
@@ -548,9 +548,9 @@ Publication rules:
 
 ### 5.2 `craft-libs` PR 199 and issue 198
 
-Nanshe consumes only `craft_ui::printing` today; G1 adds `craft_ui::capture` (CL-2) for
+CellTrellis consumes only `craft_ui::printing` today; G1 adds `craft_ui::capture` (CL-2) for
 screenshots. PR 199's role/ID/docking/ellipsis edits are relevant to craft-libs itself, not to
-Nanshe's source. Integration decisions:
+CellTrellis's source. Integration decisions:
 
 - Do **not** rebase or merge PR 199's tree. Its head `b68de8c` and the audit merge `ec8840a` are
   stale relative to `49190884278f16c9a9f5823d7698a8ffb5deb062`: they omit `craft-platform` and
@@ -559,9 +559,9 @@ Nanshe's source. Integration decisions:
   `1764bca` onto current `4919088`, preserving intervening commits; gate the result with a diff
   check against `4919088` that shows only those intended hunks.
 - CL-1 must add the winit patch and a publication-compatible check (registry egui 0.37 build of the
-  packaged crate). Nanshe needs the fork pin separately.
+  packaged crate). CellTrellis needs the fork pin separately.
 - CL-1 and CL-2F are the shared gate for all eleven `craft-ui` consumers at the P8 stage.
-  Nanshe and DesignCraft are the CL-2 provisional pilot; both adapters are reviewed before
+  CellTrellis and DesignCraft are the CL-2 provisional pilot; both adapters are reviewed before
   CL-2F freezes the API. A consumer already bumped to an incompatible `craft-ui` revision must
   land that bump in the same atomic dependency stage as the egui P8 landing; no mixed
   `craft-ui`/egui graph is acceptable.
@@ -569,31 +569,31 @@ Nanshe's source. Integration decisions:
   at `d27646a5` while `craft-ui` moves creates two git checkouts of the same repository and an
   incoherent graph.
 - Issue 198 is a language-support proposal, not a merged dependency. Do not import its locale or
-  formatting roadmap. Nanshe keeps its own `i18n` table and formula locale; only consume the
+  formatting roadmap. CellTrellis keeps its own `i18n` table and formula locale; only consume the
   fork APIs the suite actually selects (for example `Context::set_language` on the fork, E17).
 - If craft-libs' `printing::State` API changes in CL-1, update
   `crates/ui-egui/src/printing.rs` and `apps/nanshe/src/print.rs`; the current wrapper already
-  isolates Nanshe from most of craft-ui.
+  isolates CellTrellis from most of craft-ui.
 
 ### 5.3 Vendored fixes and provenance
 
-Nanshe has no vendor directory. Its current root uses canonical egui/winit Cargo patches;
+CellTrellis has no vendor directory. Its current root uses canonical egui/winit Cargo patches;
 those dependency selections do not replace these app-local workarounds, which must be preserved:
 
 | Fix | Provenance | Decision |
 | --- | --- | --- |
-| `graphics.rs` backend selection, no Vulkan by default, FXC for DX12, GL fallback | Nanshe #120, #339, #354 | Keep in `apps/nanshe/src/graphics.rs`; E2/E3 fork errors make the existing fallback path effective |
-| `theme.rs` font parse guard and `drop_unparseable_fonts` | Nanshe #226 | Keep and adapt to `Blob`; add a corrupt-font regression |
-| Custom `text_box.rs` wrapper and selection glide | Nanshe UI | Keep the wrapper, its state sync and selection glide; its inner field is built-in `TextEdit` and inherits E21b. Do not replace the wrapper with a bare `TextEdit` |
-| `cell_pictures` 64 MiB/4096-entry texture cache, `floating_pictures` size cap | Nanshe image work | Keep; verify texture IDs/uploads under 0.37 |
-| macOS AppKit exit workaround in `apps/nanshe/src/main.rs` `on_exit` | Nanshe #117 | Keep; re-test on macOS; the 0.37 AccessKit adapter may change the teardown |
+| `graphics.rs` backend selection, no Vulkan by default, FXC for DX12, GL fallback | CellTrellis #120, #339, #354 | Keep in `apps/nanshe/src/graphics.rs`; E2/E3 fork errors make the existing fallback path effective |
+| `theme.rs` font parse guard and `drop_unparseable_fonts` | CellTrellis #226 | Keep and adapt to `Blob`; add a corrupt-font regression |
+| Custom `text_box.rs` wrapper and selection glide | CellTrellis UI | Keep the wrapper, its state sync and selection glide; its inner field is built-in `TextEdit` and inherits E21b. Do not replace the wrapper with a bare `TextEdit` |
+| `cell_pictures` 64 MiB/4096-entry texture cache, `floating_pictures` size cap | CellTrellis image work | Keep; verify texture IDs/uploads under 0.37 |
+| macOS AppKit exit workaround in `apps/nanshe/src/main.rs` `on_exit` | CellTrellis #117 | Keep; re-test on macOS; the 0.37 AccessKit adapter may change the teardown |
 | `fmv-macos-events`, `muda` pins | macOS file-open/menu | Keep; winit remains 0.30.13 |
 
 Relevant fork patches by provenance:
 
 - **E2+E3** (`9dd799ab`): surface fit within `max_texture_dimension_2d` and returned
   `WgpuError::ConfigureSurface`/`CreateRenderer`; provenance is PdfCraft's vendored egui-wgpu
-  (pdfcraft#609, #617, #1042), now in the shared fork. Required by Nanshe #761 and by the
+  (pdfcraft#609, #617, #1042), now in the shared fork. Required by CellTrellis #761 and by the
   existing `graphics.rs` fallback/retry logic. Without it, a too-large window or a GL surface
   timeout can panic before the app exists and the fallback never runs.
 - **E4** (`66bacf23`) is only the regular-clipboard half: it initializes arboard, leaves
@@ -601,23 +601,23 @@ Relevant fork patches by provenance:
   selected completion is winit **W15P**: SCTK 0.19.2 `PrimarySelectionManagerState` on the existing
   connection/event queue, with per-seat PRIMARY device/source/offer objects and no second regular
   `wl_data_device`. E4's `get_primary_text`/`set_primary_text` route through W15P in the separate
-  P2b stage. Nanshe's own arboard handle is used for HTML (`wayland-data-control`); plain-text
+  P2b stage. CellTrellis's own arboard handle is used for HTML (`wayland-data-control`); plain-text
   and PRIMARY routing must follow the single-path design in 6.4, with real compositor evidence.
 - **E5/E8/E12/E13/E14/E15/E16** (epaint/egui): bidi shaping/order, TextEdit clipping, grapheme
-  caret/delete, fallback alignment, line breaking, visual cursor. Nanshe draws CJK/Thai/Hebrew/
+  caret/delete, fallback alignment, line breaking, visual cursor. CellTrellis draws CJK/Thai/Hebrew/
   Arabic workbook text and uses an app-managed in-cell editor built on `TextEdit`; preserve and
   test.
 - **E7/E19/E10** (keyboard layout): letter keys from Latin layout/physical code. E19 needs winit
-  W25 (`KeyEventExtLatinLayout`). Nanshe's keytips and shortcuts must keep working on
+  W25 (`KeyEventExtLatinLayout`). CellTrellis's keytips and shortcuts must keep working on
   Russian/Arabic/Hebrew layouts and web keyboard events.
 - **E17/E18/E20** (language): `Context::set_language`, `UiBuilder::language`, accessible language,
-  widget text language. Nanshe's `UiState.language` should drive these; map `PtBr` to `pt-BR`
+  widget text language. CellTrellis's `UiState.language` should drive these; map `PtBr` to `pt-BR`
   rather than the current short `code()` string, and do not duplicate RTL processing in app text.
-- **E21** (`a70470b0`): `ImeEvent::DeleteSurroundingBytes` and exact-byte deletion. Nanshe's cell
+- **E21** (`a70470b0`): `ImeEvent::DeleteSurroundingBytes` and exact-byte deletion. CellTrellis's cell
   editor undo transaction must remain one step; pair with W26/W27.
 - **E21b/P7b** (new prerequisite, no candidate commit yet): bounded outgoing IME surrounding text in
   `IMEOutput`, produced by the built-in `TextEdit` and sent by egui-winit through W27
-  `set_ime_surrounding_text` on Wayland. Nanshe's acceptance is the complete shared E21b/W27
+  `set_ime_surrounding_text` on Wayland. CellTrellis's acceptance is the complete shared E21b/W27
   contract, not a payload restatement: the owner/context generation is present even when text is
   `Unavailable`; an available-empty document is distinct and sent as an explicit
   `set_surrounding_text("", 0, 0)` plus commit; an owner/unavailable transition clears caches and
@@ -627,18 +627,18 @@ Relevant fork patches by provenance:
   serial, while an obsolete epoch invalidates the batch; the new <=4,000-byte payload extraction
   must not allocate a full-document clone (existing TextEdit change-detection/undo clones are
   baseline, not this requirement). Preedit is excluded and cursor/anchor are valid UTF-8 byte
-  offsets; password input never supplies text. Nanshe's formula bar
+  offsets; password input never supplies text. CellTrellis's formula bar
   (`formula_bar.rs:321-323`) and text-box/in-cell editors (`text_box.rs:151`) use built-in
   `TextEdit`, so they inherit the producer; they still need focus, deletion+commit,
   deletion-only, preedit, reversed-selection, emoji/combining/RTL, empty-vs-unavailable,
   final-pass `None`, both serial cases, owner generation, committed clear and two-surface tests.
-  Custom painters that synthesize `IMEOutput` would need their own model adapter; Nanshe
+  Custom painters that synthesize `IMEOutput` would need their own model adapter; CellTrellis
   currently has none, and must not set the new field to `None` as a port.
-- **E1** (`ViewportHooks`): not used by Nanshe (single viewport); do not add a hook.
+- **E1** (`ViewportHooks`): not used by CellTrellis (single viewport); do not add a hook.
 - **E6** (`request_focus` during IME): relevant to the in-cell editor; test.
-- **E9** (`Style::right_to_left`): Nanshe's sheet mirroring is app-level; do not turn on global
+- **E9** (`Style::right_to_left`): CellTrellis's sheet mirroring is app-level; do not turn on global
   RTL UI style. It would mirror the ribbon/dialogs incorrectly.
-- **E11** (vello multithreading): not enabled by Nanshe; no action unless a dependency turns it on.
+- **E11** (vello multithreading): not enabled by CellTrellis; no action unless a dependency turns it on.
 
 ## 6. Behaviour-specific refactors and tests
 
@@ -669,11 +669,11 @@ Anchors: `crates/engine/src/cmd/*` (unchanged), `crates/ui-egui/src/lib.rs::run_
   cell-italic, cell-bold-italic, serif, mono, plus loadable script fallbacks and workbook families.
 - `FontData` API refactor as in 3.4; keep the `Blob` cache and `drop_unparseable_fonts`.
 - 0.37 `MissingGlyphPolicy`: the production `Context` default is Tofu; `egui_kittest` defaults to
-  `MissingGlyphPolicy::Panic` and `check_accessibility = true`. Nanshe has 76
+  `MissingGlyphPolicy::Panic` and `check_accessibility = true`. CellTrellis has 76
   `Harness::builder`/`build_ui_state`/`build_state` call sites in 73 test files (plus the snapshot
   example) and no shared harness module, so the default would make CI depend on installed fonts and
   on names that do not exist yet. `egui_kittest`'s own `default_fonts`/`monochrome_emoji_fonts`
-  dev-dependencies do not propagate into Nanshe, so the harness must enable
+  dev-dependencies do not propagate into CellTrellis, so the harness must enable
   `egui/default_fonts` itself or install pinned fonts. G1 must make the suite green **without
   globally disabling the checks**:
   - `crates/ui-egui/tests/common/mod.rs` is the one harness constructor now used by the `tests/it`
@@ -732,10 +732,10 @@ Anchors: `crates/engine/src/cmd/*` (unchanged), `crates/ui-egui/src/lib.rs::run_
   Symbols faces. Raw font bytes, raw wasm and compressed wasm still need measuring against the
   consumer's real hosting limit; do not record "within budget" before that measurement.
 - Font rebuild gate: 0.37 applies `set_fonts` immediately when no text has been laid out this pass
-  (`#8602`, `#8609`). Nanshe's one-frame `fonts_ready` skip remains correct but may now skip a
+  (`#8602`, `#8609`). CellTrellis's one-frame `fonts_ready` skip remains correct but may now skip a
   frame unnecessarily. Re-test language switch, workbook-font discovery and installed-font rebind;
   if the extra frame is observable, gate only when text already exists.
-- 0.37 `#8512` system-font discovery/provider: Nanshe has its own `fonts::start_scan` and
+- 0.37 `#8512` system-font discovery/provider: CellTrellis has its own `fonts::start_scan` and
   `theme` candidate probing. Do not switch to `egui_system_font_provider` without measuring
   startup, preserving workbook font names, and keeping fallback order. This is a blocking
   comparison, not an automatic adoption.
@@ -752,7 +752,7 @@ Anchors: `crates/engine/src/cmd/*` (unchanged), `crates/ui-egui/src/lib.rs::run_
 ### 6.3 Accessibility and input
 
 0.37 makes unnamed input widgets a kittest failure (`#8589`) and improves popup/menu/panel trees
-(`#8581`, `#8607`, `#8608`, `#8612`). Nanshe has many custom-painted controls and several
+(`#8581`, `#8607`, `#8608`, `#8612`). CellTrellis has many custom-painted controls and several
 TextEdits without labels. The names and roles exercised by the existing harnesses land in **G1**
 with the shared strict harness; the broader coverage below lands in G3. Required work:
 
@@ -797,14 +797,14 @@ Accessibility acceptance:
 
 ### 6.4 Clipboard, PRIMARY and files
 
-- **One routing design for two clipboard owners.** Nanshe's `Services` owns an arboard handle
+- **One routing design for two clipboard owners.** CellTrellis's `Services` owns an arboard handle
   for HTML and plain text (`apps/nanshe/src/main.rs:150-163`; `wayland-data-control` on
   Linux/FreeBSD), while egui/egui-winit owns the text
   clipboard used by `TextEdit` copy/paste. After E4/W15P both must not compete for the same Wayland
   selection:
   - Grid copy/cut keeps using the one arboard data-control handle, because winit's selected
     clipboard API has no multi-MIME HTML offer; it publishes HTML+plain text. TextEdit copy/paste
-    and PRIMARY go through egui/egui-winit (and W15P for PRIMARY). Nanshe must not create a
+    and PRIMARY go through egui/egui-winit (and W15P for PRIMARY). CellTrellis must not create a
     second arboard handle or a second `wl_data_device` for the plain-text path.
   - Paste reads HTML first through arboard, then the current plain text (arboard or the egui
     clipboard), with one defined owner order and no stale re-read. A grid copy followed by a
@@ -826,7 +826,7 @@ Accessibility acceptance:
   empty/absent offers, self-paste, trickle/oversized/canceled transfers and event-loop
   responsiveness; non-PRIMARY platforms unaffected. Native gates are wlroots/Hyprland, KWin and
   Mutter, not one compositor only.
-- `Event::PasteImage` and `Event::MiddleClickPaste` are new. Nanshe deliberately ignores both in
+- `Event::PasteImage` and `Event::MiddleClickPaste` are new. CellTrellis deliberately ignores both in
   the grid: there is no image-clipboard pipeline or cell-picture insert-from-clipboard command, and
   inserting at an unchosen anchor/size would be a new feature. A clipboard with a text
   representation still arrives as `Event::Paste`; PRIMARY middle-click paste belongs to egui's
@@ -847,7 +847,7 @@ Accessibility acceptance:
   upload deltas, eviction at 64 MiB, images larger than `max_texture_side`, and drop on workbook
   close.
 - E2/E3: verify the Windows fallback still triggers on a failed renderer/surface. The fork's
-  `surface_fit` test is a dependency test; Nanshe adds a visible large-window/resize workflow on
+  `surface_fit` test is a dependency test; CellTrellis adds a visible large-window/resize workflow on
   the owned Windows clone where the adapter limit permits it.
 - 0.37 color emoji changes texture sampling. Keep `TextureOptions` semantics for cell pictures and
   icons (nearest/linear, wrap mode); do not accept a clamp-only optimisation as a replacement for
@@ -931,7 +931,7 @@ predeclared budget says so. Required gate:
   fixture, use the printer settings (discovery may have no printer), resize/minimize, and capture
   screenshots.
 - Measure renderer construction separately from first frame because of `#8736` (FXC DX12 shader
-  compile). Nanshe forces FXC, so this is on its default path. Time a fresh-process
+  compile). CellTrellis forces FXC, so this is on its default path. Time a fresh-process
   `egui_wgpu::Renderer::new` probe (or the `wgpu_core=trace` bracket between
   `create_pipeline_layout` and `create_render_pipeline`) separately from the first presented
   frame; record both.
@@ -1148,7 +1148,7 @@ Freeze these before candidate runs (stricter repo budgets win):
   corroborate with allocation/instruction counts.
 - Text tessellation: compare 0.36.2, stock 0.37.0 and the fork on the same scene. If #8731
   reproduces (expected from the upstream report), the row-level color-glyph fast path must land in
-  the fork before Nanshe accepts the migration; do not accept a 60% text-tessellation regression
+  the fork before CellTrellis accepts the migration; do not accept a 60% text-tessellation regression
   as “expected 0.37 cost”.
 - Windows startup: measure renderer construction separately. If #8736's reported cost reproduces
   as a repeatable >5% total startup regression, evaluate the fork shader fix with equivalent wrap
@@ -1166,7 +1166,7 @@ Freeze these before candidate runs (stricter repo budgets win):
 | S1 | Shared craft-libs CL-1 for the eleven `craft-ui` consumers: port only `8614e4a` API hunks + `1764bca` README onto `4919088`, final approved egui/winit pins (blocked until those refs exist), registry compatibility, release SHA | P0 review, final refs selected | revert CL-1; keep old `d27646a5` |
 | S2 | Complete reviewed/published `storytold` egui **P8** (E1–E21 + E21b, P2b async W15P routing, P7 held-key pairing, P7b/E21b, P7c selected #8763/#8748 fixes, justified perf fixes) and completed winit (W17–W27 + W15P + W27 lifecycle), immutable approved SHAs. No stock 0.37 or intermediate stage | P0 review, fork review, final refs selected and published | revert fork pins; keep 0.36.2/0.36 craft set |
 | CL-2 | craft-libs provisional capture-slot API in `crates/ui/src/capture.rs`; cancellation/out-of-order/shutdown stress; lazy-print tests | P0 review | revert helper with its adapters |
-| CL-2F | Shared capture API freeze for the eleven `craft-ui` consumers after reviewing the DesignCraft and Nanshe CL-2 pilot adapters | CL-2, G1 (Grid adapter), DesignCraft adapter | keep CL-2 revision; no app change |
+| CL-2F | Shared capture API freeze for the eleven `craft-ui` consumers after reviewing the DesignCraft and CellTrellis CL-2 pilot adapters | CL-2, G1 (Grid adapter), DesignCraft adapter | keep CL-2 revision; no app change |
 | G0 | Baseline harnesses on `ac8da7d4`: frame bench, phase-tagged frame log, 0.36-compatible geometry/screenshot tests, benchmark evidence (0.37-only assertions arrive in G1/G3) | P0 | remove harnesses; no production behavior change |
 | G1 | Atomic dependency/compile migration: root patches, manifests (native eframe `clipboard`), lock, `craft-ui`/`craft-print` bump, CL-2 slot adapter, E21b/W15P consumption, Role/ID/FontData/screenshot-callback source changes including `drain_screenshots`, timeout and the basic reply, strict shared harness with required names/fonts, style pin | S1+S2+CL-2, G0 baseline | revert G1; restore baseline lock/manifests |
 | G2 | Lifecycle: autosave/title/printing in logic, adversarial screenshot byte-budget/discard/timeout/epoch tests, hidden synthetic-input paint | G1 | revert G2; G1 still builds |
@@ -1195,9 +1195,9 @@ Before each publication:
 - `cargo metadata --locked` and `cargo tree` show one egui-family source/revision and one winit.
 - Root `[patch.crates-io]` entries use full SHAs; no branch/path.
 - `craft-ui` and `craft-print` resolve to one approved craft-libs SHA that contains CL-1, CL-2's
-  provisional-or-frozen capture slot and any CL-3 contract fixes Nanshe consumes. CL-1 and
-  CL-2F are published for the eleven sharing consumers; Nanshe/DesignCraft use the CL-2
-  provisional pilot and their adapters precede CL-2F. Do not add a Nanshe-local capture
+  provisional-or-frozen capture slot and any CL-3 contract fixes CellTrellis consumes. CL-1 and
+  CL-2F are published for the eleven sharing consumers; CellTrellis/DesignCraft use the CL-2
+  provisional pilot and their adapters precede CL-2F. Do not add a CellTrellis-local capture
   channel/token map while the shared slot is the selected design, and do not leave a mixed
   `craft-ui`/egui stage.
 - The lockfile has no second `egui`/`eframe` version and no stale accesskit_consumer duplicates
@@ -1232,9 +1232,9 @@ separate; the final qualification update records what actually passed.
    E2/E3, #761's crash/fallback behavior is not qualified; without E4/W15P and E19/E21/E21b,
    Wayland clipboard, PRIMARY, non-Latin and IME behavior regress.
 2. **craft-libs CL-1 and CL-2 exact revisions.** PR 199's tree is stale; CL-1 is the hunk port onto
-   `4919088`, not a rebase. Nanshe cannot bump `craft-ui`/`craft-print` until CL-1 and CL-2's
+   `4919088`, not a rebase. CellTrellis cannot bump `craft-ui`/`craft-print` until CL-1 and CL-2's
    provisional capture slot exist with clean tests and a coherent lock. CL-1 and CL-2F are the
-   shared gate for the eleven `craft-ui` consumers; Nanshe/DesignCraft are the CL-2 pilot and
+   shared gate for the eleven `craft-ui` consumers; CellTrellis/DesignCraft are the CL-2 pilot and
    their adapters are reviewed before CL-2F freezes the API. Any incompatible existing `craft-ui`
    bump must land in the same atomic dependency stage.
 3. **PRIMARY and HTML coexistence.** W15P must land in the approved winit revision, and the 6.4
@@ -1243,7 +1243,7 @@ separate; the final qualification update records what actually passed.
    arboard handle or `wl_data_device`, password exclusion and owner handoff intact. Native evidence
    is required.
 4. **E21b outgoing IME text.** The final canonical fork includes the shared producer and Wayland
-   adapter; the original candidate lacked them. Nanshe-specific acceptance still requires the
+   adapter; the original candidate lacked them. CellTrellis-specific acceptance still requires the
    complete shared contract: owner generation present even when unavailable, available-empty
    distinct and explicitly sent as an empty payload, cache clear plus committed disable/enable on
    owner/unavailable transition, final completed pass including `None` authoritative, a
@@ -1253,18 +1253,18 @@ separate; the final qualification update records what actually passed.
    focus/password clearing and two-window isolation remain gates; E21 alone is not enough.
 5. **#8763/#8748 TextEdit selection and hidden-child regressions.** 0.37 collapses a focused
    TextEdit's selection before the clicked widget runs. The final egui P8's P7c owns the selected
-   #8763/#8748 fixes and regression coverage; Nanshe verifies its formula-bar/context-action
+   #8763/#8748 fixes and regression coverage; CellTrellis verifies its formula-bar/context-action
    paths under section 8.5. A local workaround requires a demonstrated app-specific need and
    removal condition; PR #8764 itself is open/unmerged.
 6. **#8731 text tessellation.** Stock 0.37 is reported ~60% slower for plain text; stock is the
    measurement control. If reproduced, the fork needs the justified row-level fast path in P8
-   before Nanshe accepts. Nanshe renders a large text grid, so this is a release blocker,
+   before CellTrellis accepts. CellTrellis renders a large text grid, so this is a release blocker,
    not a note.
-7. **#8736 DX12 shader compile.** FXC is Nanshe's default. Measure renderer construction and
+7. **#8736 DX12 shader compile.** FXC is CellTrellis's default. Measure renderer construction and
    first frame; decide on the fork shader fix without weakening wrap modes. The upstream figure is
    a report, not our measurement.
 8. **#8512 system fonts.** Do not adopt the new provider without a measured startup/coverage
-   comparison; Nanshe's per-workbook font binding and script fallback must remain.
+   comparison; CellTrellis's per-workbook font binding and script fallback must remain.
 9. **Strict harness names/fonts.** G1 must pass `egui_kittest`'s Panic/accessibility defaults using
    pinned fonts and complete accessible names, not a global opt-out. If a specific fixture cannot
    be pinned, record the gap and the per-test exception; do not make CI depend on host fonts.
@@ -1280,7 +1280,7 @@ separate; the final qualification update records what actually passed.
     candidate regression is fixed or explicitly budgeted; moving generation to a background engine
     is a separate, designed change.
 13. **No generic compatibility layer.** craft-ui owns the capture slot because multiple apps need
-    the same completion lifecycle. Nanshe keeps its timeout, paths, tokens, JSON and animation
+    the same completion lifecycle. CellTrellis keeps its timeout, paths, tokens, JSON and animation
     policy and does not add a local channel alternative.
 
 Acceptance for G1 is: `cargo xtask ci` passes at the exact approved P8/winit revisions with actual

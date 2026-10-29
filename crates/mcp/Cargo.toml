@@ -3,7 +3,7 @@ name = "nanshe-mcp"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Nanshe MCP server: JSON-RPC 2.0 over stdio, driving a running app or a headless session"
+description = "CellTrellis MCP server: JSON-RPC 2.0 over stdio, driving a running app or a headless session"
 
 [lints]
 workspace = true

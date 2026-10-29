@@ -1,4 +1,4 @@
-//! Nanshe file formats: XLSX (transitional and strict) and CSV import/export, plus XLSB and ODS data import
+//! CellTrellis file formats: XLSX (transitional and strict) and CSV import/export, plus XLSB and ODS data import
 //! and legacy Excel 97-2003 `.xls` (BIFF8) import, and password-encrypted workbooks (Agile and Standard encryption).
 //!
 //! Clean-room implementation from ECMA-376 / ISO/IEC 29500 and observed behaviour. All entry

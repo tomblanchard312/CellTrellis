@@ -1,4 +1,4 @@
-//! Greek (el) interface localization for Nanshe.
+//! Greek (el) interface localization for CellTrellis.
 //! Command ids, cell references and formula identifiers are not translated.
 //! Source labels are kept verbatim and unmatched labels fall back to English.
 
@@ -327,7 +327,7 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Command\nPalette" => "Παλέτα\nεντολών",
         "Agent\nControl" => "Έλεγχος\nπρακτόρων",
         "Action\nJournal" => "Ιστορικό\nενεργειών",
-        "About\nNanshe" => "Πληροφορίες για\nτο Nanshe",
+        "About\nCellTrellis" => "Πληροφορίες για\nτο CellTrellis",
         "Share" => "Κοινή χρήση",
         "Add Chart\nElement" => "Προσθήκη στοιχείου\nγραφήματος",
         "Change\nChart Type" => "Αλλαγή τύπου\nγραφήματος",
@@ -476,7 +476,7 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Hide Sheet" => "Απόκρυψη φύλλου",
         "Hierarchy & more" => "Ιεραρχία και άλλα",
         "Highlighter" => "Εργαλείο επισήμανσης",
-        "How agents drive Nanshe (MCP / control channel)" => "Πώς οι πράκτορες χειρίζονται το Nanshe (MCP / κανάλι ελέγχου)",
+        "How agents drive CellTrellis (MCP / control channel)" => "Πώς οι πράκτορες χειρίζονται το CellTrellis (MCP / κανάλι ελέγχου)",
         "Import a text or CSV file" => "Εισαγωγή αρχείου κειμένου ή CSV",
         "Insert\nSlicer" => "Εισαγωγή\nαναλυτή",
         "Insert Function (⇧F3)" => "Εισαγωγή συνάρτησης (⇧F3)",
@@ -588,7 +588,7 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Conditional Formatting Rules Manager" => "Διαχείριση κανόνων μορφοποίησης υπό όρους",
         "Search Commands" => "Αναζήτηση εντολών",
         "Agent Control" => "Έλεγχος πρακτόρων",
-        "About Nanshe" => "Πληροφορίες για το Nanshe",
+        "About CellTrellis" => "Πληροφορίες για το CellTrellis",
         "Insert Chart" => "Εισαγωγή γραφήματος",
         "Select Data Source" => "Επιλογή προέλευσης δεδομένων",
         "Action Journal" => "Ιστορικό ενεργειών",

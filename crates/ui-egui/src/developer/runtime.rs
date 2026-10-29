@@ -49,7 +49,7 @@ pub(super) fn missing_runtime(language: &str) -> Option<String> {
             "NANSHE_VBA_RUNNER",
             "vba/Nanshe.Vba.exe",
             if cfg!(windows) { "Nanshe.Vba.exe" } else { "Nanshe.Vba" },
-            "Use the complete Nanshe Windows package, including runtimes/vba, or configure NANSHE_VBA_RUNNER.",
+            "Use the complete CellTrellis Windows package, including runtimes/vba, or configure NANSHE_VBA_RUNNER.",
         ),
         "Python" => {
             ("NANSHE_PYTHON", "python/python.exe", if cfg!(windows) { "python" } else { "python3" }, "Install Python 3 and configure NANSHE_PYTHON.")

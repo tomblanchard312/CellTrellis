@@ -1,18 +1,18 @@
-# Releasing Nanshe
+# Releasing CellTrellis
 
 Every push to the `release` branch runs `.github/workflows/release.yml`. The workflow builds
 signed installers for macOS, Windows, Linux, FreeBSD and the web, then creates or updates a
-**draft** GitHub Release named `Nanshe v<version>`. Nobody sees a draft until a maintainer
+**draft** GitHub Release named `CellTrellis v<version>`. Nobody sees a draft until a maintainer
 publishes it.
 
-This is Nanshe's implementation of the shared [release playbook](release-playbook.md)
+This is CellTrellis's implementation of the shared [release playbook](release-playbook.md)
 (craftrules `release/playbook.md`), copied from DesignCraft and renamed. User-facing names say
-**Nanshe**. Files, binaries and ids stay lowercase
+**CellTrellis**. Files, binaries and ids stay lowercase
 (`nanshe-<version>-<platform>-<arch>.<ext>`, `io.github.tomblanchard312.nanshe`).
 
 | App-specific value | Where |
 |---|---|
-| Display name `Nanshe`, binaries `nanshe` + `nanshe-cli` | every script and workflow |
+| Display name `CellTrellis`, binaries `nanshe` + `nanshe-cli` | every script and workflow |
 | Bundle / app id `io.github.tomblanchard312.nanshe` | `packaging/macos/Info.plist.in`, `packaging/linux/*`, flatpak manifest |
 | WiX UpgradeCode `DDB2D04D-57BC-4BE1-AB53-01CD68EC147A` (fixed forever) | `packaging/windows/nanshe.wxs` |
 | File types `.xlsx` `.xlsm` `.xlsb` `.ods` `.csv` `.tsv` | Info.plist (`CFBundleDocumentTypes`), WiX (ProgIds/OpenWithProgids), `.desktop` `MimeType=`, `io.github.tomblanchard312.nanshe.mime.xml`, metainfo |
@@ -31,7 +31,7 @@ The pipeline references crates that don't exist yet; the first release run fails
   fails, and it checks that `nanshe.exe` is a GUI-subsystem binary, so `main.rs` needs
   `#![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]`.
 - **Build info:** CI exports `NANSHE_BUILD_SHA` and `NANSHE_BUILD_DATE`; read them
-  with `option_env!` (fallback: "dev build") for `--version` and *Help › About Nanshe*.
+  with `option_env!` (fallback: "dev build") for `--version` and *Help › About CellTrellis*.
 - **Runtime icon:** embed `assets/app-icon/nanshe-macos-512.png` (macOS Dock) and
   `hicolor/256x256/apps/io.github.tomblanchard312.nanshe.png` (Windows/Linux) as the window icon, and
   use `io.github.tomblanchard312.nanshe` as the Wayland app id / `StartupWMClass`.
@@ -52,7 +52,7 @@ The pipeline references crates that don't exist yet; the first release run fails
    Commit the change (`Cargo.toml` + `Cargo.lock`) through the normal review flow.
 2. **Merge `main` into `release`** (or fast-forward it) and push. The workflow starts by itself.
 3. **Wait for the draft.** Notarization and the FreeBSD VM are the slow parts. The Releases
-   page then has a draft `Nanshe v0.2.0`, tagged `v0.2.0` on the pushed commit, with every
+   page then has a draft `CellTrellis v0.2.0`, tagged `v0.2.0` on the pushed commit, with every
    artifact and `SHA256SUMS.txt`. The notes are generated from the merged PRs.
 4. **Check it.** Download an installer or two and read the job summaries. Any `::warning::`
    there means a signing secret was missing and that artifact is unsigned.
@@ -90,12 +90,12 @@ and upload their artifacts, the environment refuses macOS and Windows, and no re
 ### macOS
 
 `packaging/macos/package.sh` builds `aarch64-apple-darwin` and `x86_64-apple-darwin` with
-`MACOSX_DEPLOYMENT_TARGET=11.0`, joins them with `lipo`, and assembles `Nanshe.app`:
+`MACOSX_DEPLOYMENT_TARGET=11.0`, joins them with `lipo`, and assembles `CellTrellis.app`:
 
 - `Info.plist` comes from `Info.plist.in`: bundle id `io.github.tomblanchard312.nanshe`,
   `LSMinimumSystemVersion` 11.0, `NSHighResolutionCapable`, category productivity, and
   `CFBundleDocumentTypes` for `.xlsx`, `.xlsm`, `.xlsb`, `.ods`, `.csv` and `.tsv` with rank
-  **Alternate**, so Nanshe is offered in *Open With* without taking over Numbers' (or another
+  **Alternate**, so CellTrellis is offered in *Open With* without taking over Numbers' (or another
   app's) defaults. `.xlsm` and `.xlsb` get imported UTIs in case macOS doesn't know them.
 - **Signing** goes inside-out with the hardened runtime and a secure timestamp; no `--deep` on
   the final signature; `entitlements.plist` is deliberately empty.
@@ -103,7 +103,7 @@ and upload their artifacts, the environment refuses macOS and Windows, and no re
   stapled. The DMG (with an `Applications` link) is signed, notarized and stapled too, and
   checked with `codesign --verify --strict`, `stapler validate` and `spctl -a -vvv`.
   Its Finder window (background, icon size and positions) comes from
-  [`packaging/macos/dmg/`](../packaging/macos/dmg/README.md), and its volume is named `Nanshe`
+  [`packaging/macos/dmg/`](../packaging/macos/dmg/README.md), and its volume is named `CellTrellis`
   without the version, which the window's background needs; the DMG file name keeps the version.
 - **CLI:** the universal `nanshe-cli` is signed, zipped and notarized.
 
@@ -125,9 +125,9 @@ the MSI, and zips a portable build.
 - `nanshe.wxs`: a dual-scope package (per-user by default into
   `%LOCALAPPDATA%\Programs\ArtCraft\Nanshe`, per-machine into `Program Files\ArtCraft\Nanshe` (`Program Files (x86)` for the 32-bit build),
   see `packaging/windows/INSTALLATION.md`), advertised Start Menu shortcut, App
-  Paths (Win+R `nanshe`). File types: ProgIds `Nanshe.Workbook` (`.xlsx`, `.xlsm`) and
-  `Nanshe.TextData` (`.csv`, `.tsv`), listed under each extension's `OpenWithProgids` and
-  in `Capabilities` + `RegisteredApplications`, so Nanshe appears in *Open with* and
+  Paths (Win+R `nanshe`). File types: ProgIds `CellTrellis.Workbook` (`.xlsx`, `.xlsm`) and
+  `CellTrellis.TextData` (`.csv`, `.tsv`), listed under each extension's `OpenWithProgids` and
+  in `Capabilities` + `RegisteredApplications`, so CellTrellis appears in *Open with* and
   *Settings › Default apps* but never silently becomes the default. The MSI version is the
   numeric `X.Y.Z`; same-version upgrades let release candidates replace each other.
 - **Desktop shortcut:** full installer UI offers an unchecked checkbox on a new installation.
@@ -274,7 +274,7 @@ the publisher.
 ## Icons
 
 `assets/app-icon/nanshe.svg` is a **placeholder** (an original ledger-page drawing on
-Nanshe green) until the owner makes Nanshe's engraved creature portrait (craftrules
+CellTrellis green) until the owner makes CellTrellis's engraved creature portrait (craftrules
 `standards/icon-design.md`). `packaging/icons.sh` regenerates the 1024 px PNG, the macOS 512 px
 PNG, the `.icns` (iconutil), the `.ico` (`cargo xtask ico`) and the hicolor PNGs from it; it
 needs `resvg`. The outputs are committed, so packaging never needs those tools. Every file has a

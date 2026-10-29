@@ -3,7 +3,7 @@ name = "nanshe-enki"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "A small blocking client for the SharedAI local inference daemon (protocol v2 chat streaming), used by Nanshe's Scribe pane"
+description = "A small blocking client for the SharedAI local inference daemon (protocol v2 chat streaming), used by CellTrellis's Scribe pane"
 
 [lints]
 workspace = true

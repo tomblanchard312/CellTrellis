@@ -3,7 +3,7 @@ name = "nanshe-functions"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Nanshe worksheet function library: math, statistics, text, dates, lookup, financial, engineering"
+description = "CellTrellis worksheet function library: math, statistics, text, dates, lookup, financial, engineering"
 
 [lints]
 workspace = true

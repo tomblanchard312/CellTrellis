@@ -2,7 +2,7 @@
 # Regenerate every app icon from assets/app-icon/nanshe.svg.
 #
 # Needs: resvg (brew install resvg / cargo install resvg). On macOS, iconutil also writes the
-# .icns. The outputs are committed, so builds and packaging never need these tools.
+# .icns; elsewhere Python 3 writes the same PNG-backed container. The outputs are committed, so builds and packaging never need these tools.
 #
 #   packaging/icons.sh
 set -euo pipefail
@@ -56,6 +56,22 @@ if command -v iconutil >/dev/null; then
   done
   iconutil -c icns -o "$DIR/nanshe.icns" "$SET"
 else
-  echo "warning: iconutil not found (macOS only); nanshe.icns not regenerated" >&2
+  # PNG-backed ICNS entries also work without Apple's iconutil.
+  for s in 16 32 64 128 256 512 1024; do
+    render "$MAC" "$s" "$TMP/mac-$s.png"
+  done
+  python3 - "$DIR/nanshe.icns" "$TMP" <<'ICNS'
+from pathlib import Path
+import struct, sys
+out, root = Path(sys.argv[1]), Path(sys.argv[2])
+entries = [(b'icp4',16),(b'icp5',32),(b'icp6',64),(b'ic07',128),(b'ic08',256),
+           (b'ic09',512),(b'ic10',1024),(b'ic11',32),(b'ic12',64),(b'ic13',256),(b'ic14',512)]
+chunks = []
+for tag, size in entries:
+    data = (root / f'mac-{size}.png').read_bytes()
+    chunks.append(tag + struct.pack('>I',len(data)+8) + data)
+body = b''.join(chunks)
+out.write_bytes(b'icns' + struct.pack('>I',len(body)+8) + body)
+ICNS
 fi
 echo "icons written to $DIR"

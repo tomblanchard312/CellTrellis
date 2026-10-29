@@ -1,11 +1,11 @@
 //! The `postMessage` bridge to a same-origin parent page (`?host=parent`), for pages that embed
-//! Nanshe in an `<iframe>` (such as a Nextcloud app). Messages are plain objects with a `type`:
+//! CellTrellis in an `<iframe>` (such as a Nextcloud app). Messages are plain objects with a `type`:
 //!
 //! - `nanshe:ready` (to the parent): `{ version }`, the app is listening; send a file now.
 //! - `nanshe:open` (from the parent): `{ name, bytes }`, bytes an `ArrayBuffer` or
 //!   `Uint8Array`. It opens like a workbook picked with File › Open or dropped on the window.
 //! - `nanshe:save` (to the parent): `{ name, bytes }` (a transferred `ArrayBuffer`) for every
-//!   file Nanshe would otherwise download: Save and Save As (an .xlsx workbook) and Export
+//!   file CellTrellis would otherwise download: Save and Save As (an .xlsx workbook) and Export
 //!   as PDF. The parent stores it and reports failures itself.
 //! - `nanshe:dirty` (to the parent): `{ dirty }` whenever unsaved changes appear or go away.
 //! - `nanshe:failed` (to the parent): `{ error }` when the app couldn't start.

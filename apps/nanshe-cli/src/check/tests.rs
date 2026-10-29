@@ -71,7 +71,7 @@ fn matching_cached_values_pass() {
 
 #[test]
 fn wrong_cached_value_is_a_mismatch_and_ranks_its_function() {
-    // Excel "said" SUM gives 7; Nanshe computes 6. C1 reads B1 and is consistent with
+    // Excel "said" SUM gives 7; CellTrellis computes 6. C1 reads B1 and is consistent with
     // Excel's 7, so it mismatches too, but only as a downstream effect.
     let wb = book(&[("A1", "2", n(2.0)), ("A2", "4", n(4.0)), ("B1", "=SUM(A1:A2)", n(7.0)), ("C1", "=B1+1", n(8.0))]);
     let r = check(&wb, &Options::default());
@@ -150,7 +150,7 @@ fn missing_cached_values_and_volatile_formulas_are_skipped() {
 
 #[test]
 fn full_calc_on_load_means_no_oracle() {
-    // A formula without a cached value makes Nanshe's writer flag the file
+    // A formula without a cached value makes CellTrellis's writer flag the file
     // `fullCalcOnLoad`, like libraries that store 0 for every formula: B1's wrong "cached"
     // value must not count as a mismatch then.
     let wb = book(&[("A1", "=1+1", Value::Empty), ("B1", "=2+2", n(0.0))]);
@@ -312,7 +312,7 @@ fn plain() -> Vec<u8> {
 
 #[test]
 fn package_reports_relationship_kinds_the_output_lost() {
-    // A kind Nanshe doesn't know is dropped on save; a calculation chain is never written
+    // A kind CellTrellis doesn't know is dropped on save; a calculation chain is never written
     // (Excel rebuilds it), so its absence isn't a loss.
     let calc_chain =
         r#"<Relationship Id="rId91" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain" Target="calcChain.xml"/>"#;
@@ -325,7 +325,7 @@ fn package_reports_relationship_kinds_the_output_lost() {
 
 #[test]
 fn an_internal_link_written_as_a_relationship_is_not_a_loss() {
-    // openpyxl writes `#Sheet1!B2` as an external relationship; Nanshe writes `location`.
+    // openpyxl writes `#Sheet1!B2` as an external relationship; CellTrellis writes `location`.
     let link = r##"<Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="#Sheet1!B2" TargetMode="External"/>"##;
     let source = with_rels(&plain(), &[(WB_RELS, MADE_UP), (SHEET_RELS, link)], &[MADE_UP_PART]);
     assert_eq!(package_of(&source), ["lost relationship madeUp"]);

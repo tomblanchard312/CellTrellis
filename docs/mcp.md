@@ -1,6 +1,6 @@
-# Nanshe MCP server
+# CellTrellis MCP server
 
-`nanshe-cli mcp` exposes Nanshe to AI agents over the [Model Context Protocol](https://modelcontextprotocol.io):
+`nanshe-cli mcp` exposes CellTrellis to AI agents over the [Model Context Protocol](https://modelcontextprotocol.io):
 newline-delimited JSON-RPC 2.0 on stdin/stdout (protocol `2025-06-18`; `2025-03-26` and `2024-11-05` clients are
 answered in their own version). Logs go to stderr.
 

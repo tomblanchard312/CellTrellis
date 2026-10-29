@@ -7,11 +7,11 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleDisplayName</key>
-  <string>Nanshe</string>
+  <string>CellTrellis</string>
   <key>CFBundleName</key>
-  <string>Nanshe</string>
+  <string>CellTrellis</string>
   <key>CFBundleExecutable</key>
-  <string>Nanshe</string>
+  <string>CellTrellis</string>
   <key>CFBundleIdentifier</key>
   <string>io.github.tomblanchard312.nanshe</string>
   <key>CFBundleInfoDictionaryVersion</key>
@@ -29,7 +29,7 @@
   <key>NansheBuildCommit</key>
   <string>@BUILD_SHA@</string>
   <key>CFBundleIconFile</key>
-  <string>Nanshe</string>
+  <string>CellTrellis</string>
   <key>LSApplicationCategoryType</key>
   <string>public.app-category.productivity</string>
   <!-- Must match MACOSX_DEPLOYMENT_TARGET in package.sh. Big Sur is the first release on
@@ -45,7 +45,7 @@
   <key>NSHumanReadableCopyright</key>
   <string>Copyright © the GridCraft authors. MIT OR Apache-2.0.</string>
 
-  <!-- Files Nanshe opens. Rank Alternate: it's offered under "Open With" without taking
+  <!-- Files CellTrellis opens. Rank Alternate: it's offered under "Open With" without taking
        over the default app (Numbers, another spreadsheet) for these types. -->
   <key>CFBundleDocumentTypes</key>
   <array>

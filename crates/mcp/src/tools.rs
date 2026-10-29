@@ -132,7 +132,7 @@ fn base_tool_definitions() -> Vec<Value> {
         tool(
             "execute_command",
             "Execute command",
-            "Run ANY Nanshe command by id with JSON params — every ribbon/menu action is a command. Find ids and parameter \
+            "Run ANY CellTrellis command by id with JSON params — every ribbon/menu action is a command. Find ids and parameter \
              docs with list_commands. Examples: {\"command\":\"cell.set\",\"params\":{\"cell\":\"B2\",\"input\":\"=SUM(A1:A9)\"}}; \
              {\"command\":\"home.bold\",\"params\":{\"range\":\"A1:C1\"}}; {\"command\":\"sheet.insert\"}; \
              {\"command\":\"data.removeDuplicates\",\"params\":{\"range\":\"A1:C20\"}}. Most commands act on the current selection \
@@ -154,7 +154,7 @@ fn base_tool_definitions() -> Vec<Value> {
         tool(
             "list_commands",
             "List commands",
-            "List Nanshe commands: id, label, ribbon path, shortcut, a parameter description (`params`) and whether it can run \
+            "List CellTrellis commands: id, label, ribbon path, shortcut, a parameter description (`params`) and whether it can run \
              right now. Use it to discover what execute_command can do (e.g. search \"sort\", \"border\", \"chart\", \"sheet\").",
             obj(json!({"search": string("Case-insensitive substring matched against id, label and ribbon path")}), &[]),
             true,
@@ -386,7 +386,7 @@ fn base_tool_definitions() -> Vec<Value> {
         tool(
             "screenshot",
             "Screenshot",
-            "Save a PNG screenshot of the Nanshe window to `path`. Desktop app only (`nanshe-cli mcp --connect 7979`).",
+            "Save a PNG screenshot of the CellTrellis window to `path`. Desktop app only (`nanshe-cli mcp --connect 7979`).",
             obj(json!({"path": string("Output PNG path")}), &["path"]),
             true,
         ),

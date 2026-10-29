@@ -1,4 +1,4 @@
-//! Nanshe's egui frontend: an Excel-style window (title bar with Quick Access Toolbar,
+//! CellTrellis's egui frontend: an Excel-style window (title bar with Quick Access Toolbar,
 //! ribbon, formula bar, grid, sheet tabs, status bar) over `nanshe-engine`.
 //!
 //! The UI is thin: it reads engine state and acts through [`SheetApp::run`] (engine commands by
@@ -174,7 +174,7 @@ impl UiState {
 }
 
 /// A dismissible bar under the ribbon, in the spirit of Excel's message bar. Used to tell the
-/// user what an opened file carried that Nanshe handled differently (e.g. preserved macros).
+/// user what an opened file carried that CellTrellis handled differently (e.g. preserved macros).
 #[derive(Clone, Debug, PartialEq)]
 pub struct Notice {
     pub text: String,
@@ -260,11 +260,11 @@ pub struct SheetApp {
     pub(crate) capture_geometry_from_raw: bool,
     /// Chart selected on the sheet (id).
     pub selected_chart: Option<u32>,
-    /// The system clipboard's text when Nanshe last copied without publishing to it (a
+    /// The system clipboard's text when CellTrellis last copied without publishing to it (a
     /// control-channel or MCP `edit.copy`/`edit.cut`). While the system clipboard still holds this
-    /// text, Nanshe's copy is the newer one and Paste uses it.
+    /// text, CellTrellis's copy is the newer one and Paste uses it.
     clipboard_text_at_copy: Option<String>,
-    /// The system clipboard's text right after Nanshe's last cut (the published text, or the
+    /// The system clipboard's text right after CellTrellis's last cut (the published text, or the
     /// text noted for an unpublished cut); `None` after a copy, or once the clipboard is seen
     /// holding other text. Once the cut has been pasted, Paste leaves this text alone.
     cut_text: Option<String>,

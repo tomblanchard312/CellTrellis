@@ -93,7 +93,7 @@ pub(super) struct ReportInput<'a> {
 }
 
 fn title(out: &mut Lines, kind: ReportKind, sheet: &str) -> u32 {
-    out.push((0, 0, Value::text(format!("Nanshe {} Report", kind.title())), true));
+    out.push((0, 0, Value::text(format!("CellTrellis {} Report", kind.title())), true));
     out.push((1, 0, Value::text(format!("Worksheet: {sheet}")), false));
     3
 }

@@ -171,7 +171,7 @@ pub struct Workbook {
     /// which holds unmodelled parts), so it is saved to JSON as well as to XLSX.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub phonetics: Vec<PhoneticString>,
-    /// VBA project (`xl/vbaProject.bin`) carried through unchanged. Nanshe does not run
+    /// VBA project (`xl/vbaProject.bin`) carried through unchanged. CellTrellis does not run
     /// macros; the blob is preserved so that saving a macro-enabled workbook never destroys the
     /// macros it arrived with. base64 in JSON. `None` = the workbook has no macros. Shared, so a
     /// copy of the workbook (every edit's undo step) doesn't copy it.

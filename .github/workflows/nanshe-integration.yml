@@ -1,4 +1,4 @@
-name: Nanshe language integration
+name: CellTrellis language integration
 on:
   pull_request:
   push:

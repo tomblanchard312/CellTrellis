@@ -8,7 +8,7 @@ impl SheetApp {
     pub fn run(&mut self, id: &str, params: Json) -> Result<Json, String> {
         let r = self.run_command(id, params);
         // This copy leaves the system clipboard alone: note what it holds, so Paste can tell
-        // that Nanshe's copy is newer while that text is still there.
+        // that CellTrellis's copy is newer while that text is still there.
         if matches!(id, "edit.copy" | "edit.cut") && r.is_ok() {
             self.clipboard_text_at_copy = self.system_clipboard_text();
             self.cut_text = if id == "edit.cut" { self.clipboard_text_at_copy.clone() } else { None };
@@ -120,7 +120,7 @@ impl SheetApp {
         if e.contains("is not available right now") {
             self.toast = Some((e, now_ms()));
         } else {
-            self.message = Some(("Nanshe".into(), clean_error(&e)));
+            self.message = Some(("CellTrellis".into(), clean_error(&e)));
         }
     }
 
@@ -266,7 +266,7 @@ impl SheetApp {
         for req in self.session.take_ui_requests() {
             match req {
                 UiRequest::Dialog(name, params) => self.open_dialog(&name, params),
-                UiRequest::Message(m) => self.message = Some(("Nanshe".into(), m)),
+                UiRequest::Message(m) => self.message = Some(("CellTrellis".into(), m)),
                 UiRequest::EditCell(text) => {
                     let text = text.map(|text| {
                         self.session

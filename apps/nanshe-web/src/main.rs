@@ -1,4 +1,4 @@
-//! Nanshe in the browser.
+//! CellTrellis in the browser.
 //!
 //! Runs the same [`nanshe_ui_egui::SheetApp`] as the desktop app through eframe's web runner
 //! (wgpu: WebGPU where available, WebGL2 otherwise). Build with `trunk build --release` from
@@ -10,7 +10,7 @@
 //!
 //! URL query flags: `?webgl` forces WebGL2; `?sample=sales|budget|grades` opens a sample;
 //! `?host=parent` (inside an `<iframe>`) talks to a same-origin parent page instead: it sends the
-//! workbook to open and stores what Nanshe saves (`host`), and `&author=` names the user for
+//! workbook to open and stores what CellTrellis saves (`host`), and `&author=` names the user for
 //! notes and comments. `?chrome=none|notitlebar|nofiletab` leaves the title bar and/or the File tab
 //! undrawn for a host that embeds the sheet in its own window (see `Chrome`). Preferences (theme,
 //! interface size, editing options…) are kept in `localStorage` (`prefs`).

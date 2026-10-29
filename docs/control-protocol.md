@@ -1,4 +1,4 @@
-# Nanshe control protocol
+# CellTrellis control protocol
 
 Start the desktop app with a control port:
 
@@ -139,4 +139,4 @@ false. Set `printer` to a discovered name, integer `copies` from 1 to 999, `dupl
 rejected without changing earlier settings. `ui.printSubmit` explicitly submits the current
 print-ready PDF without opening a dialog; inspect `ui.printSettings` until `busy` becomes false
 and check `status`/`detail`. The browser keeps its own print hook. PDF export remains separate.
-Nanshe accepts the existing `file.print` sheet/pagination params on `ui.printSubmit`; the engine `file.print` command returns the PDF without spooling.
+CellTrellis accepts the existing `file.print` sheet/pagination params on `ui.printSubmit`; the engine `file.print` command returns the PDF without spooling.
