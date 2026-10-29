@@ -110,6 +110,7 @@ pub enum Icon {
     Paper,
     PrintArea,
     Script,
+    Scribe,
     Pen,
     Share,
     Search,
@@ -633,10 +634,26 @@ fn paint_with(p: &Painter, rect: Rect, icon: Icon, c: Color32, pal: &Palette) {
             g.rect(2.5, 2.5, 11.0, 11.0, None, Some(light));
             g.line(&[(4.0, 4.0), (11.0, 4.0), (11.0, 10.0), (4.0, 10.0), (4.0, 4.0)], blue, 1.4);
         }
+        Icon::Scribe => {
+            // Nisaba's speech bubble and four-pointed spark, scaled from its 20-unit grid.
+            for (points, color) in [
+                (&[(2.5, 4.5), (14.5, 4.5), (14.5, 14.0), (8.0, 14.0), (4.5, 17.0), (4.5, 14.0), (2.5, 14.0)][..], c),
+                (&[(15.0, 1.5), (16.0, 4.0), (18.5, 5.0), (16.0, 6.0), (15.0, 8.5), (14.0, 6.0), (11.5, 5.0), (14.0, 4.0)][..], blue),
+            ] {
+                let mut points: Vec<(f32, f32)> = points.iter().map(|(x, y)| (x * 0.8, y * 0.8)).collect();
+                if let Some(first) = points.first().copied() {
+                    points.push(first);
+                }
+                g.stroke(&points, color);
+            }
+            g.stroke(&[(4.4, 6.4), (8.8, 6.4)], c);
+            g.stroke(&[(4.4, 8.8), (7.6, 8.8)], c);
+        }
         Icon::Script => {
             g.rect(2.0, 2.0, 12.0, 12.0, None, Some(c));
-            g.line(&[(4.5, 6.0), (7.0, 8.0), (4.5, 10.0)], green, 1.3);
-            g.stroke(&[(8.0, 10.5), (11.5, 10.5)], c);
+            g.line(&[(6.0, 5.5), (3.5, 8.0), (6.0, 10.5)], blue, 1.3);
+            g.line(&[(10.0, 5.5), (12.5, 8.0), (10.0, 10.5)], blue, 1.3);
+            g.stroke(&[(9.0, 4.5), (7.0, 11.5)], c);
         }
         Icon::Pen => {
             g.poly(&[(3.0, 13.0), (4.0, 10.0), (11.0, 3.0), (13.0, 5.0), (6.0, 12.0)], blue);

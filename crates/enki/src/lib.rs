@@ -11,6 +11,8 @@
 //! [`Error::Unsupported`].
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
+pub mod memory;
+
 use std::fmt;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -457,6 +459,25 @@ mod net {
             Some("registered") => Ok(()),
             Some("registry_error") => Err(Error::Registry(v.get("kind").and_then(Value::as_str).unwrap_or("unknown").into())),
             _ => Err(Error::Protocol(format!("register reply {v}"))),
+        }
+    }
+
+    pub(super) fn memory_request(endpoint: &Path, app: &str, value: Value) -> Result<super::memory::Memory, Error> {
+        let mut reader = connect(endpoint, app, 3)?;
+        reader.inner.write_all(&encode(&value, MAX_FRAME_V2)?)?;
+        let frame = reader.next_frame()?.ok_or_else(|| Error::Protocol("No shared memory reply".into()))?;
+        let value: Value = serde_json::from_slice(&frame).map_err(|e| Error::Protocol(e.to_string()))?;
+        match value.get("type").and_then(Value::as_str) {
+            Some("memory") => serde_json::from_value(value.get("memory").cloned().unwrap_or(Value::Null)).map_err(|e| Error::Protocol(e.to_string())),
+            Some("memory_error") => Err(Error::Invalid(
+                match value.get("kind").and_then(Value::as_str) {
+                    Some("conflict") => "Memory changed in another app; refresh it before saving",
+                    Some("capacity") => "Shared conversation is full; compact or clear it",
+                    _ => "Shared memory could not be saved",
+                }
+                .into(),
+            )),
+            _ => Err(Error::Protocol("Invalid shared memory reply".into())),
         }
     }
 

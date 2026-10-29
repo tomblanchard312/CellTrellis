@@ -67,6 +67,7 @@ pub fn validate(s: &Session, command: &str, p: &Json) -> Result<()> {
         "range.setValues" => &["sheet", "range", "values", "parse"],
         "edit.clearContents" => &["sheet", "range"],
         "home.bold" | "home.italic" => &["sheet", "range", "on"],
+        "home.fillColor" | "home.fontColor" => &["sheet", "range", "color"],
         "home.fontSize" => &["sheet", "range", "size"],
         "home.fontName" => &["sheet", "range", "name"],
         "home.numberFormat" => &["sheet", "range", "code"],

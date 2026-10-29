@@ -3,6 +3,9 @@
   <?ifndef HasCraftFontLicences ?>
   <?define HasCraftFontLicences=0 ?>
   <?endif?>
+  <?ifndef HasVbaRuntime ?>
+  <?define HasVbaRuntime=0 ?>
+  <?endif?>
   <Package Name="Nanshe" Manufacturer="Tom Blanchard" Version="$(var.Version)" UpgradeCode="DDB2D04D-57BC-4BE1-AB53-01CD68EC147A" Scope="perUserOrMachine" Compressed="yes" Language="1033">
     <SummaryInformation Description="Nanshe spreadsheet" Manufacturer="Tom Blanchard" />
     <?include $(sys.SOURCEFILEDIR)install-policy.wxi?>
@@ -129,7 +132,11 @@
 
     <StandardDirectory Id="ProgramFiles6432Folder">
       <Directory Id="CraftSuiteFolder" Name="ArtCraft">
-        <Directory Id="INSTALLFOLDER" Name="Nanshe" />
+        <Directory Id="INSTALLFOLDER" Name="Nanshe">
+          <?if $(var.HasVbaRuntime) = 1 ?>
+          <Directory Id="NansheRuntimes" Name="runtimes"><Directory Id="NansheVbaRuntime" Name="vba" /></Directory>
+          <?endif?>
+        </Directory>
       </Directory>
     </StandardDirectory>
     <StandardDirectory Id="ProgramMenuFolder" />
@@ -140,12 +147,20 @@
       <ComponentGroupRef Id="CraftFontLicences" />
       <?endif?>
       <ComponentGroupRef Id="NansheFiles" />
+      <?if $(var.HasVbaRuntime) = 1 ?>
+      <ComponentGroupRef Id="NansheVbaFiles" />
+      <?endif?>
     </Feature>
   <Property Id="CRAFT_OPTION_1_M" Secure="yes"><RegistrySearch Id="CRAFT_OPTION_1_MSearch" Root="HKLM" Key="Software\Nanshe\Installer" Name="DesktopShortcut" Type="raw" />
     </Property><SetProperty Id="SAVEDDESKTOPSHORTCUT" Action="CraftLoadOption1M" Value="[CRAFT_OPTION_1_M]" After="LaunchConditions" Sequence="both" Condition="ALLUSERS = 1" /><Property Id="CRAFT_OPTION_1_U" Secure="yes"><RegistrySearch Id="CRAFT_OPTION_1_USearch" Root="HKCU" Key="Software\Nanshe\Installer" Name="DesktopShortcut" Type="raw" />
     </Property><SetProperty Id="SAVEDDESKTOPSHORTCUT" Action="CraftLoadOption1U" Value="[CRAFT_OPTION_1_U]" After="CraftLoadOption1M" Sequence="both" Condition="ALLUSERS &lt;&gt; 1" /></Package>
 
   <Fragment>
+    <?if $(var.HasVbaRuntime) = 1 ?>
+    <ComponentGroup Id="NansheVbaFiles" Directory="NansheVbaRuntime">
+      <Files Include="$(var.BinDir)\runtimes\vba\**" />
+    </ComponentGroup>
+    <?endif?>
     <?if $(var.HasCraftFontLicences) = 1 ?>
     <ComponentGroup Id="CraftFontLicences" Directory="INSTALLFOLDER">
       <Files Include="$(var.DocsDir)\**" />

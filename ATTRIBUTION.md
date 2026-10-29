@@ -46,3 +46,8 @@ Generated-in-code art is original and has no file to list: the UI icon set (`cra
 | `docs/images/pivot.png` | GridCraft contributors | upstream screenshot, predating the Nanshe fork, rendered offscreen (`crates/ui-egui/examples/snapshot.rs`) showing an original sample workbook | MIT OR Apache-2.0 | README screenshot; no third-party content |
 | `docs/images/format-chart.png` | GridCraft contributors | upstream screenshot, predating the Nanshe fork, rendered offscreen (`crates/ui-egui/examples/snapshot.rs`) showing an original sample workbook | MIT OR Apache-2.0 | README screenshot; no third-party content |
 | `docs/images/page-break.png` | GridCraft contributors | upstream screenshot, predating the Nanshe fork, rendered offscreen (`crates/ui-egui/examples/snapshot.rs`) showing an original sample workbook | MIT OR Apache-2.0 | README screenshot; no third-party content |
+
+The Scribe speech-bubble/spark drawing in `crates/ui-egui/src/icons.rs` is adapted from Nisaba `a4298e6f`, `crates/ui-egui/src/icons.rs` (original Nisaba contributors artwork, MIT OR Apache-2.0), scaled to Nanshe’s design grid.
+
+| `crates/engine/assets/english-words.txt` | SCOWL contributors, Kevin Atkinson et al. | Debian wamerican `/usr/share/dict/american-english`, unmodified | SCOWL composite licence | Full notices in `crates/engine/assets/english-words.LICENSE`; unmodified word list |
+| `crates/engine/assets/english-words.LICENSE` | SCOWL contributors | Debian wamerican copyright file | SCOWL composite notices | Reproduced verbatim |

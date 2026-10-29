@@ -2913,6 +2913,7 @@ name = "nanshe-enki"
 version = "0.13.0"
 dependencies = [
  "interprocess",
+ "serde",
  "serde_json",
  "sha2 0.11.1",
  "winsafe",
