@@ -97,14 +97,14 @@ fn cf_style_json(st: &Json) -> Result<Json> {
 fn check_cf_formula(cmd: &str, what: &str, formula: &str) -> Result<()> {
     // Strip exactly one leading '=', the way the XLSX writer does: a value like '===A1'
     // only parses after several strips and would still be saved unparseable. (#1999 review)
-    if gridcraft_formula::parse(formula.strip_prefix('=').unwrap_or(formula)).is_err() {
+    if nanshe_formula::parse(formula.strip_prefix('=').unwrap_or(formula)).is_err() {
         return Err(bad(cmd, format!("invalid {what} formula `{formula}` — it does not parse; Excel would reject the saved file")));
     }
     Ok(())
 }
 
-fn check_cf_value(what: &str, v: &gridcraft_model::features::CfValueKind) -> Result<()> {
-    if let gridcraft_model::features::CfValueKind::Formula(f) = v {
+fn check_cf_value(what: &str, v: &nanshe_model::features::CfValueKind) -> Result<()> {
+    if let nanshe_model::features::CfValueKind::Formula(f) = v {
         check_cf_formula("home.conditionalFormat", what, f)?;
     }
     Ok(())
@@ -187,7 +187,7 @@ pub(super) fn add_cf(s: &mut Session, p: &Json) -> Result<Json> {
             let quote = |v: String| {
                 // A number, a formula, or text already written as a string literal (`"Closed"`, as
                 // in the file and in openpyxl's `CellIsRule`) is kept; other text is quoted.
-                if gridcraft_core::parse::parse_number_text(&v).is_some() || v.starts_with('=') {
+                if nanshe_core::parse::parse_number_text(&v).is_some() || v.starts_with('=') {
                     v.trim_start_matches('=').to_string()
                 } else if is_string_literal(&v) {
                     v

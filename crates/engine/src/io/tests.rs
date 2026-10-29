@@ -1,8 +1,8 @@
 use super::*;
 
-fn book(rtl: bool, cells: &[(&str, gridcraft_core::Value, gridcraft_model::HAlign)]) -> Workbook {
+fn book(rtl: bool, cells: &[(&str, nanshe_core::Value, nanshe_model::HAlign)]) -> Workbook {
     let mut wb = Workbook::new();
-    let ids: Vec<_> = cells.iter().map(|(_, _, h)| wb.styles.derive(gridcraft_model::StyleId::DEFAULT, |st| st.align.h = *h)).collect();
+    let ids: Vec<_> = cells.iter().map(|(_, _, h)| wb.styles.derive(nanshe_model::StyleId::DEFAULT, |st| st.align.h = *h)).collect();
     let sh = wb.sheet_mut(0).unwrap();
     sh.right_to_left = rtl;
     for ((at, value, _), id) in cells.iter().zip(ids) {
@@ -23,7 +23,7 @@ fn copied(wb: &Workbook, range: &str) -> String {
 fn save_fails_upfront_when_the_temp_name_is_taken() {
     // Another local user who can write the directory must not be able to point the
     // save's predictable temporary name at their own file: creation is exclusive.
-    let dir = std::env::temp_dir().join(format!("gridcraft-fs-safety-temp-name-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-fs-safety-temp-name-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let victim = dir.join("victim.txt");
@@ -41,7 +41,7 @@ fn save_fails_upfront_when_the_temp_name_is_taken() {
 #[test]
 fn save_keeps_the_destination_access_restrictions() {
     use std::os::unix::fs::PermissionsExt;
-    let dir = std::env::temp_dir().join(format!("gridcraft-fs-safety-permissions-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-fs-safety-permissions-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let dest = dir.join("private.xlsx");
@@ -61,7 +61,7 @@ fn save_keeps_the_destination_access_restrictions() {
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn open_refuses_directories_and_unknowable_lengths() {
-    let dir = std::env::temp_dir().join(format!("gridcraft-fs-safety-open-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-fs-safety-open-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     assert!(read_file(dir.to_str().unwrap()).is_err(), "a directory is not a regular file");
@@ -76,22 +76,22 @@ fn html_export_refuses_an_outsized_grid_instead_of_growing_forever() {
     // 300 rows down is 4.9M cells → refused before a byte of `<td>` is written.
     let mut wb = Workbook::new();
     let sh = wb.sheet_mut(0).unwrap();
-    sh.set_value(CellRef::new(0, 0), gridcraft_core::Value::Text("start".into()));
-    sh.set_value(CellRef::new(300, 16383), gridcraft_core::Value::Text("corner".into()));
+    sh.set_value(CellRef::new(0, 0), nanshe_core::Value::Text("start".into()));
+    sh.set_value(CellRef::new(300, 16383), nanshe_core::Value::Text("corner".into()));
     let err = to_html(&wb, 0).unwrap_err();
     assert!(err.to_string().contains("too tall × wide"), "{err}");
     // A normal sheet is fine.
     let mut ok = Workbook::new();
-    ok.sheet_mut(0).unwrap().set_value(CellRef::new(5, 2), gridcraft_core::Value::Text("t".into()));
+    ok.sheet_mut(0).unwrap().set_value(CellRef::new(5, 2), nanshe_core::Value::Text("t".into()));
     assert!(to_html(&ok, 0).is_ok());
 }
 
 #[test]
 fn html_export_embeds_images_as_data_uris() {
     let mut wb = Workbook::new();
-    wb.sheet_mut(0).unwrap().images.push(gridcraft_model::Image {
+    wb.sheet_mut(0).unwrap().images.push(nanshe_model::Image {
         id: 1,
-        anchor: gridcraft_model::Anchor { cell: CellRef::new(0, 0), dx: 0.0, dy: 0.0, width: 72.0, height: 36.0, mode: Default::default() },
+        anchor: nanshe_model::Anchor { cell: CellRef::new(0, 0), dx: 0.0, dy: 0.0, width: 72.0, height: 36.0, mode: Default::default() },
         data: vec![1, 2, 3].into(),
         mime: "image/png".into(),
         alt: "a \"logo\"".into(),
@@ -109,16 +109,16 @@ fn html_export_embeds_images_as_data_uris() {
 fn html_export_places_images_at_their_anchor_using_sheet_geometry() {
     let mut wb = Workbook::new();
     let sh = wb.sheet_mut(0).unwrap();
-    sh.cols.insert(1, gridcraft_model::LineInfo { size: Some(100.0), ..Default::default() });
-    sh.rows.insert(1, gridcraft_model::LineInfo { size: Some(30.0), ..Default::default() });
-    sh.images.push(gridcraft_model::Image {
+    sh.cols.insert(1, nanshe_model::LineInfo { size: Some(100.0), ..Default::default() });
+    sh.rows.insert(1, nanshe_model::LineInfo { size: Some(30.0), ..Default::default() });
+    sh.images.push(nanshe_model::Image {
         id: 1,
-        anchor: gridcraft_model::Anchor { cell: CellRef::new(3, 2), dx: 5.0, dy: 7.0, width: 10.0, height: 20.0, mode: Default::default() },
+        anchor: nanshe_model::Anchor { cell: CellRef::new(3, 2), dx: 5.0, dy: 7.0, width: 10.0, height: 20.0, mode: Default::default() },
         data: vec![1].into(),
         mime: "image/png".into(),
         alt: String::new(),
     });
-    sh.set_value(CellRef::new(1, 1), gridcraft_core::Value::Number(1.0));
+    sh.set_value(CellRef::new(1, 1), nanshe_core::Value::Number(1.0));
     let html = to_html(&wb, 0).unwrap();
     // The table starts at B2; the picture is at C4: one 100 px column and two rows (30 + 20) further on.
     assert!(html.contains("<col style=\"width:100px\">"), "{html}");
@@ -129,17 +129,10 @@ fn html_export_places_images_at_their_anchor_using_sheet_geometry() {
 fn book_with_picture(anchor: &str, cell_at: (u32, u32)) -> Workbook {
     let mut wb = Workbook::new();
     let sh = wb.sheet_mut(0).unwrap();
-    sh.set_value(CellRef::new(cell_at.0, cell_at.1), gridcraft_core::Value::Number(1.0));
-    sh.images.push(gridcraft_model::Image {
+    sh.set_value(CellRef::new(cell_at.0, cell_at.1), nanshe_core::Value::Number(1.0));
+    sh.images.push(nanshe_model::Image {
         id: 1,
-        anchor: gridcraft_model::Anchor {
-            cell: CellRef::parse(anchor).unwrap(),
-            dx: 0.0,
-            dy: 0.0,
-            width: 10.0,
-            height: 10.0,
-            mode: Default::default(),
-        },
+        anchor: nanshe_model::Anchor { cell: CellRef::parse(anchor).unwrap(), dx: 0.0, dy: 0.0, width: 10.0, height: 10.0, mode: Default::default() },
         data: vec![1].into(),
         mime: "image/png".into(),
         alt: String::new(),
@@ -151,9 +144,9 @@ fn book_with_picture(anchor: &str, cell_at: (u32, u32)) -> Workbook {
 fn html_export_places_images_past_hidden_columns_and_rows() {
     let mut wb = book_with_picture("C3", (0, 0));
     let sh = wb.sheet_mut(0).unwrap();
-    sh.set_value(CellRef::new(2, 2), gridcraft_core::Value::Number(2.0));
-    sh.cols.insert(1, gridcraft_model::LineInfo { hidden: true, ..Default::default() });
-    sh.rows.insert(1, gridcraft_model::LineInfo { hidden: true, ..Default::default() });
+    sh.set_value(CellRef::new(2, 2), nanshe_core::Value::Number(2.0));
+    sh.cols.insert(1, nanshe_model::LineInfo { hidden: true, ..Default::default() });
+    sh.rows.insert(1, nanshe_model::LineInfo { hidden: true, ..Default::default() });
     let html = to_html(&wb, 0).unwrap();
     // Column B and row 2 take no room: C3 is one default column and row from A1.
     assert_eq!(html.matches("<col ").count(), 2, "{html}");
@@ -170,8 +163,8 @@ fn html_export_places_images_above_and_left_of_the_table() {
 
 #[test]
 fn html_export_marks_right_to_left_sheets() {
-    use gridcraft_core::Value;
-    use gridcraft_model::HAlign;
+    use nanshe_core::Value;
+    use nanshe_model::HAlign;
     let wb = book(true, &[("A1", Value::text("Hello!"), HAlign::General), ("B1", Value::Number(-5.0), HAlign::General)]);
     let html = to_html(&wb, 0).unwrap();
     assert!(html.contains("<body><table dir=\"rtl\">"), "{html}");
@@ -189,8 +182,8 @@ fn html_export_marks_right_to_left_sheets() {
 
 #[test]
 fn html_export_lets_arabic_general_text_align_by_direction() {
-    use gridcraft_core::Value;
-    use gridcraft_model::HAlign;
+    use nanshe_core::Value;
+    use nanshe_model::HAlign;
     let wb = book(
         false,
         &[
@@ -217,8 +210,8 @@ fn html_export_lets_arabic_general_text_align_by_direction() {
 
 #[test]
 fn html_export_of_latin_ltr_sheet_is_unchanged() {
-    use gridcraft_core::Value;
-    use gridcraft_model::HAlign;
+    use nanshe_core::Value;
+    use nanshe_model::HAlign;
     let mut wb = book(
         false,
         &[
@@ -253,12 +246,12 @@ fn html_export_of_latin_ltr_sheet_is_unchanged() {
 fn html_export_fails_instead_of_dropping_cells_past_the_row_limit() {
     let mut wb = Workbook::new();
     let sh = wb.sheet_mut(0).unwrap();
-    sh.set_value(CellRef::new(0, 0), gridcraft_core::Value::text("near"));
-    sh.set_value(CellRef::new(149_999, 0), gridcraft_core::Value::text("far"));
+    sh.set_value(CellRef::new(0, 0), nanshe_core::Value::text("near"));
+    sh.set_value(CellRef::new(149_999, 0), nanshe_core::Value::text("far"));
     assert!(save_bytes(&wb, "book.html").is_err());
     let sh = wb.sheet_mut(0).unwrap();
     sh.remove_cell(CellRef::new(149_999, 0));
-    sh.set_value(CellRef::new(100_000, 0), gridcraft_core::Value::text("far"));
+    sh.set_value(CellRef::new(100_000, 0), nanshe_core::Value::text("far"));
     let html = String::from_utf8(save_bytes(&wb, "book.html").unwrap()).unwrap();
     assert!(html.contains(">near</td>") && html.contains(">far</td>"));
 }
@@ -269,7 +262,7 @@ fn macros_are_saved_only_into_xlsm() {
     wb.vba_project = Some(b"vba".to_vec().into());
     let has_macros = |path: &str| {
         let bytes = save_bytes(&wb, path).unwrap();
-        gridcraft_xlsx::read_xlsx(&bytes).unwrap().0.vba_project.is_some()
+        nanshe_xlsx::read_xlsx(&bytes).unwrap().0.vba_project.is_some()
     };
     assert!(has_macros("book.xlsm"));
     assert!(has_macros("BOOK.XLSM"));
@@ -295,7 +288,7 @@ fn csv_named_history_does_not_get_the_reserved_sheet_name() {
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn failed_save_leaves_no_temporary_file() {
-    let dir = std::env::temp_dir().join(format!("gridcraft-write-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-write-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let blocked = dir.join("Book1.xlsx");
@@ -315,7 +308,7 @@ fn failed_save_leaves_no_temporary_file() {
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn script_sandbox_refuses_file_access_until_dropped() {
-    let dir = std::env::temp_dir().join(format!("gridcraft-sandbox-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-sandbox-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let existing = dir.join("in.csv");
@@ -385,8 +378,8 @@ fn csv_save_keeps_the_separator_it_was_opened_with() {
 fn csv_save_of_a_workbook_not_read_from_csv_uses_commas() {
     let mut wb = Workbook::new();
     if let Some(sh) = wb.sheet_mut(0) {
-        sh.set_value(CellRef::new(0, 0), gridcraft_core::Value::text("a"));
-        sh.set_value(CellRef::new(0, 1), gridcraft_core::Value::Number(1.0));
+        sh.set_value(CellRef::new(0, 0), nanshe_core::Value::text("a"));
+        sh.set_value(CellRef::new(0, 1), nanshe_core::Value::Number(1.0));
     }
     assert_eq!(save_bytes(&wb, "new.csv").unwrap(), b"a,1\r\n");
     // Through .xlsx the CSV origin is gone, as in Excel.
@@ -402,7 +395,7 @@ fn csv_save_of_a_workbook_not_read_from_csv_uses_commas() {
 
 #[test]
 fn encrypted_workbook_is_reported_not_misread() {
-    let file = gridcraft_xlsx::testing::encrypt_workbook(b"package", "pw");
+    let file = nanshe_xlsx::testing::encrypt_workbook(b"package", "pw");
     let msg = open_bytes("secret.xlsx", &file).unwrap_err().to_string();
     assert!(msg.contains(PASSWORD_REQUIRED), "got: {msg}");
     assert!(!msg.contains("zip"), "must not surface the zip error: {msg}");
@@ -418,10 +411,10 @@ fn encrypted_workbook_is_reported_not_misread() {
 #[test]
 fn encryption_no_password_opens_is_reported_without_asking_for_one() {
     let info: &[u8] = &[3, 0, 2, 0, 4, 0, 0, 0]; // Standard header flags: RC4, not AES
-    let file = gridcraft_xlsx::testing::compound_file(&[("EncryptionInfo", info), ("EncryptedPackage", &[0; 8])]);
+    let file = nanshe_xlsx::testing::compound_file(&[("EncryptionInfo", info), ("EncryptedPackage", &[0; 8])]);
     let msg = open_bytes("rc4.xlsx", &file).unwrap_err().to_string();
     assert!(msg.contains("RC4") && !msg.contains(PASSWORD_REQUIRED), "got: {msg}");
-    let irm = gridcraft_xlsx::testing::compound_file(&[("EncryptedPackage", &[0; 8])]);
+    let irm = nanshe_xlsx::testing::compound_file(&[("EncryptedPackage", &[0; 8])]);
     let msg = open_bytes("irm.xlsx", &irm).unwrap_err().to_string();
     assert!(msg.contains("rights-management") && !msg.contains("damaged"), "got: {msg}");
 }
@@ -438,8 +431,8 @@ fn other_compound_files_are_not_called_encrypted() {
 /// whole values in narrow columns (never `#####`), quoting unchanged.
 #[test]
 fn csv_writes_displayed_text() {
-    use gridcraft_core::{CellError, Value};
-    use gridcraft_model::{Cell, Formula, LineInfo, NumFmt, StyleId};
+    use nanshe_core::{CellError, Value};
+    use nanshe_model::{Cell, Formula, LineInfo, NumFmt, StyleId};
     let mut wb = Workbook::new();
     let mut styled = |code: &str| wb.styles.derive(StyleId::DEFAULT, |s| s.num_fmt = NumFmt::new(code));
     let (date, money, pct, frac, text, fixed, thousands) =
@@ -472,8 +465,8 @@ fn csv_writes_displayed_text() {
 
 #[test]
 fn delimited_exports_preserve_general_precision_and_explicit_number_formats() {
-    use gridcraft_core::Value;
-    use gridcraft_model::{Cell, NumFmt, StyleId};
+    use nanshe_core::Value;
+    use nanshe_model::{Cell, NumFmt, StyleId};
     let mut workbook = Workbook::new();
     let scientific = workbook.styles.derive(StyleId::DEFAULT, |style| style.num_fmt = NumFmt::new("0.00E+00"));
     let sheet = workbook.sheet_mut(0).unwrap();
@@ -523,9 +516,9 @@ fn declaring(mut package: Vec<u8>, part: &str, size: u32) -> Vec<u8> {
 #[test]
 fn a_part_over_the_size_limit_says_how_to_get_the_data_in() {
     let mut wb = Workbook::new();
-    wb.sheet_mut(0).unwrap().set_value(CellRef::new(0, 0), gridcraft_core::Value::text("big"));
+    wb.sheet_mut(0).unwrap().set_value(CellRef::new(0, 0), nanshe_core::Value::text("big"));
     let package = save_bytes(&wb, "big.xlsx").unwrap();
-    // The size reported in storytold/gridcraft#1242.
+    // The size reported in storytold/nanshe#1242.
     let msg = open_bytes("big.xlsx", &declaring(package.clone(), "xl/worksheets/sheet1.xml", 540_278_731)).unwrap_err().to_string();
     assert!(msg.starts_with("We can't open 'big.xlsx': "), "{msg}");
     assert!(msg.contains("xl/worksheets/sheet1.xml") && msg.contains("515 MB") && msg.contains("512 MB"), "{msg}");
@@ -549,14 +542,14 @@ fn a_part_over_the_size_limit_says_how_to_get_the_data_in() {
 #[test]
 fn content_wins_over_a_mismatched_extension() {
     let mut wb = Workbook::new();
-    wb.sheet_mut(0).unwrap().set_value(CellRef::new(0, 0), gridcraft_core::Value::Number(7.0));
+    wb.sheet_mut(0).unwrap().set_value(CellRef::new(0, 0), nanshe_core::Value::Number(7.0));
     let package = save_bytes(&wb, "book.xlsx").unwrap();
     for name in ["book.xlsx", "book.ods", "book.xlsb", "book.csv"] {
         let (opened, _) = open_bytes(name, &package).unwrap_or_else(|e| panic!("{name}: {e}"));
-        assert_eq!(opened.sheet(0).unwrap().value(CellRef::new(0, 0)), gridcraft_core::Value::Number(7.0), "{name}");
+        assert_eq!(opened.sheet(0).unwrap().value(CellRef::new(0, 0)), nanshe_core::Value::Number(7.0), "{name}");
     }
     for name in ["data.xlsx", "data.csv"] {
         let (opened, _) = open_bytes(name, b"a,b\n1,2\n").unwrap_or_else(|e| panic!("{name}: {e}"));
-        assert_eq!(opened.sheet(0).unwrap().value(CellRef::new(0, 1)), gridcraft_core::Value::text("b"), "{name}");
+        assert_eq!(opened.sheet(0).unwrap().value(CellRef::new(0, 1)), nanshe_core::Value::text("b"), "{name}");
     }
 }

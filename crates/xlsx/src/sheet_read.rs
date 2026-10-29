@@ -3,10 +3,10 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use gridcraft_core::date::{serial_from_ymd, time_fraction};
-use gridcraft_core::{CellError, CellRef, DateSystem, MAX_COLS, MAX_ROWS, RangeRef, Value};
-use gridcraft_formula::Expr;
-use gridcraft_model::{
+use nanshe_core::date::{serial_from_ymd, time_fraction};
+use nanshe_core::{CellError, CellRef, DateSystem, MAX_COLS, MAX_ROWS, RangeRef, Value};
+use nanshe_formula::Expr;
+use nanshe_model::{
     AutoFilter, Cell, CfOperator, CfRule, CfValueKind, Comment, CondFormat, EditRange, ErrorStyle, FilterCriterion, Formula, Hyperlink, LineInfo,
     NoteBox, NoteCorner, Orientation, PasswordHash, Sheet, SheetProtection, Sparkline, SparklineKind, Table, TableColumn, TotalsFn, Validation,
     ValidationKind, XmlColumnPr,
@@ -339,7 +339,7 @@ fn read_views(e: &El, sheet: &mut Sheet) {
     sheet.show_zeros = v.flag("showZeros", true);
     sheet.show_outline_symbols = v.flag("showOutlineSymbols", true);
     sheet.right_to_left = v.flag("rightToLeft", false);
-    sheet.view = v.attr("view").and_then(gridcraft_model::SheetViewMode::parse).unwrap_or_default();
+    sheet.view = v.attr("view").and_then(nanshe_model::SheetViewMode::parse).unwrap_or_default();
     if let Some(z) = v.attr_u32("zoomScale") {
         sheet.zoom = z.clamp(10, 400) as u16;
     }
@@ -387,7 +387,7 @@ fn read_cols(cx: &Ctx<'_>, e: &El, sheet: &mut Sheet, remaining: &mut u64) -> Re
         info.collapsed = c.flag("collapsed", false);
         if let Some(s) = c.attr_u32("style") {
             let id = cx.style(Some(s));
-            if id != gridcraft_model::StyleId::DEFAULT {
+            if id != nanshe_model::StyleId::DEFAULT {
                 info.style = Some(id);
             }
         }
@@ -540,7 +540,7 @@ fn read_formula_text(cx: &mut Ctx<'_>, st: &mut RowState, f: &El, pos: CellRef, 
         "shared" => {
             let si = f.attr_u32("si")?;
             if !text.is_empty() {
-                let expr = gridcraft_formula::parse(text).ok();
+                let expr = nanshe_formula::parse(text).ok();
                 st.shared.insert(si, Shared { anchor: pos, expr, text: text.to_string() });
                 Some(Formula::new(text))
             } else {
@@ -552,7 +552,7 @@ fn read_formula_text(cx: &mut Ctx<'_>, st: &mut RowState, f: &El, pos: CellRef, 
                     Some(e) => {
                         let dr = pos.row as i64 - sh.anchor.row as i64;
                         let dc = pos.col as i64 - sh.anchor.col as i64;
-                        Formula::from_expr(gridcraft_formula::adjust::shift_relative(e.clone(), dr, dc))
+                        Formula::from_expr(nanshe_formula::adjust::shift_relative(e.clone(), dr, dc))
                     }
                     None => Formula::new(&sh.text),
                 })

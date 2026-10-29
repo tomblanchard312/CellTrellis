@@ -9,9 +9,9 @@
 //! (`data.hideDetail`, `data.showDetail`, `data.showLevels`), so they undo like any edit.
 
 use egui::{Align2, Painter, Pos2, Rect, Stroke, StrokeKind, pos2, vec2};
-use gridcraft_engine::core::col_to_letters;
-use gridcraft_engine::model::{LineInfo, Sheet};
-use gridcraft_engine::outline::{self, OutlineGroup};
+use nanshe_engine::core::col_to_letters;
+use nanshe_engine::model::{LineInfo, Sheet};
+use nanshe_engine::outline::{self, OutlineGroup};
 use serde_json::{Value as Json, json};
 use std::collections::BTreeMap;
 
@@ -308,7 +308,7 @@ pub fn paint(p: &Painter, geo: &Geo, sh: &Sheet, t: &Tokens) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use gridcraft_engine::core::CellRef;
+    use nanshe_engine::core::CellRef;
 
     /// Rows 5:8 grouped with 6:7 inside, columns C:E grouped.
     fn sheet() -> Sheet {

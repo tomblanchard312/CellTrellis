@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use egui::{Align2, Rect, Sense, Stroke, StrokeKind, Ui, pos2, vec2};
-use gridcraft_engine::model::{Sheet, Visibility};
+use nanshe_engine::model::{Sheet, Visibility};
 use serde_json::json;
 
 use crate::SheetApp;
@@ -327,17 +327,17 @@ pub fn status_bar(app: &mut SheetApp, ui: &mut Ui) {
         |ui| {
             // A right-click anywhere on the status bar opens the statistics menu, the text included, so its labels are not
             // selectable. The zoom and view controls sense clicks and handle their own.
-            let background = ui.interact(ui.max_rect(), egui::Id::unique("gridcraft.status_bar"), Sense::click());
+            let background = ui.interact(ui.max_rect(), egui::Id::unique("nanshe.status_bar"), Sense::click());
             background.context_menu(|ui| status_bar_menu(app, ui));
             let text = |ui: &mut Ui, rich: egui::RichText| {
                 ui.add(egui::Label::new(rich).selectable(false));
             };
             ui.horizontal_centered(|ui| {
                 let mode = match app.session.mode {
-                    gridcraft_engine::Mode::Ready => "Ready",
-                    gridcraft_engine::Mode::Enter => "Enter",
-                    gridcraft_engine::Mode::Edit => "Edit",
-                    gridcraft_engine::Mode::Point => "Point",
+                    nanshe_engine::Mode::Ready => "Ready",
+                    nanshe_engine::Mode::Enter => "Enter",
+                    nanshe_engine::Mode::Edit => "Edit",
+                    nanshe_engine::Mode::Point => "Point",
                 };
                 text(ui, egui::RichText::new(app.ui.language.tr(mode)).font(theme::ui_font(12.5)).color(t.text_dim));
                 if let Some(d) = app.session.active() {
@@ -345,7 +345,7 @@ pub fn status_bar(app: &mut SheetApp, ui: &mut Ui) {
                         ui.add_space(12.0);
                         text(ui, egui::RichText::new("Macros preserved (not executed)").font(theme::ui_font(12.5)).color(t.danger));
                     }
-                    if d.wb.calc.mode == gridcraft_engine::model::CalcMode::Manual {
+                    if d.wb.calc.mode == nanshe_engine::model::CalcMode::Manual {
                         ui.add_space(12.0);
                         text(ui, egui::RichText::new(app.ui.language.tr("Calculate")).font(theme::ui_font(12.5)).color(t.text_dim));
                     }
@@ -432,11 +432,11 @@ pub(crate) fn selection_statistics(app: &SheetApp) -> Vec<String> {
         return vec![];
     }
     let on = app.session.prefs.status_bar;
-    let st = gridcraft_engine::display::stats(sh, &d.selection.ranges);
+    let st = nanshe_engine::display::stats(sh, &d.selection.ranges);
     let fmt = |v: f64| {
         let code = d.wb.styles.get(sh.style_id(d.selection.active)).num_fmt.as_str().to_string();
         let code = if code == "General" { "#,##0.##########".to_string() } else { code };
-        gridcraft_engine::display::format(&gridcraft_engine::core::Value::Number(v), &code, &d.wb).text.trim_end_matches('.').to_string()
+        nanshe_engine::display::format(&nanshe_engine::core::Value::Number(v), &code, &d.wb).text.trim_end_matches('.').to_string()
     };
     let mut parts = Vec::new();
     if on.average
@@ -487,12 +487,12 @@ mod tests {
     };
     use crate::SheetApp;
     use egui::Modifiers;
-    use gridcraft_engine::model::{Sheet, Visibility};
+    use nanshe_engine::model::{Sheet, Visibility};
     use serde_json::json;
     use std::sync::Arc;
 
     fn workbook_abc() -> SheetApp {
-        let mut session = gridcraft_engine::Session::default();
+        let mut session = nanshe_engine::Session::default();
         session.new_workbook();
         let mut app = SheetApp::new(session, Default::default());
         app.run("home.insertSheet", json!({})).unwrap();
@@ -509,7 +509,7 @@ mod tests {
 
     #[test]
     fn status_bar_shows_the_statistics_that_are_turned_on_in_order() {
-        let mut session = gridcraft_engine::Session::default();
+        let mut session = nanshe_engine::Session::default();
         session.new_workbook();
         let mut app = SheetApp::new(session, Default::default());
         for (cell, input) in [("A1", "4"), ("A2", "-1"), ("A3", "x"), ("A4", "9")] {
@@ -577,7 +577,7 @@ mod tests {
 
     #[test]
     fn a_rejected_commit_keeps_the_sheet_and_the_edit() {
-        let mut session = gridcraft_engine::Session::new();
+        let mut session = nanshe_engine::Session::new();
         session.new_workbook();
         session.execute("home.insertSheet", json!({})).unwrap();
         session.execute("sheet.activate", json!({"sheet": 0})).unwrap();
@@ -591,7 +591,7 @@ mod tests {
         app.editor.as_mut().unwrap().text = "7".into();
         activate_sheet(&mut app, 1);
         assert_eq!(app.session.active().unwrap().wb.active_sheet(), 1, "the corrected value commits and the sheet changes");
-        let a1 = gridcraft_engine::core::CellRef::parse("A1").unwrap();
+        let a1 = nanshe_engine::core::CellRef::parse("A1").unwrap();
         assert!(app.session.active().unwrap().wb.sheet(0).unwrap().cell(a1).is_some(), "the value lands on the first sheet");
     }
 

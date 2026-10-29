@@ -28,7 +28,7 @@ pub(super) fn insert_link(s: &mut Session, p: &Json) -> Result<Json> {
         });
         let sh = cx.sheet_mut(sheet)?;
         if let Some(t) = text.clone().or_else(|| sh.value(at).is_empty().then(|| target.clone())) {
-            sh.set_cell(at, Cell { value: gridcraft_core::Value::text(t.as_str()), formula: None, style: link_style });
+            sh.set_cell(at, Cell { value: nanshe_core::Value::text(t.as_str()), formula: None, style: link_style });
         } else {
             sh.set_style(at, link_style);
         }

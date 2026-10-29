@@ -1,8 +1,8 @@
 # egui 0.37 local port — follow-ups and gates
 
-Status: local implementation on GridCraft `b8771d51fb4da60bd48c13cf313d6d6014dc5e66` with canonical
+Status: local implementation on Nanshe `b8771d51fb4da60bd48c13cf313d6d6014dc5e66` with canonical
 immutable dependency pins. Final managed full CI
-`egui037-gridcraft-candidate-20261024-full-ci-queue-07` succeeded at 2026-10-24 05:21 UTC after both
+`egui037-nanshe-candidate-20261024-full-ci-queue-07` succeeded at 2026-10-24 05:21 UTC after both
 accessibility repairs: all ten stages passed, with 2,249 tests passed, none failed and one existing
 release timing experiment ignored. The representative explicit accessibility/capture checks
 passed. The required local precommit CI gate is complete for the formatted runtime source;
@@ -21,16 +21,16 @@ push or PR publication is authorized; each requires fresh human approval of cont
 - CI, release and FreeBSD select craft-fonts `b076417b5880bd4154bd22f00695b1d28c6bea83`.
   Local validation uses command-scoped private Git mirrors for unpublished immutable inputs;
   clean remote fetching after approved publication remains a separate gate.
-- The shared capture contract fits GridCraft's requirements without changes: one slot per request,
+- The shared capture contract fits Nanshe's requirements without changes: one slot per request,
   `take()` at most once, `cancel()`/drop makes late callbacks inert, a per-image byte bound, and a
-  viewport waker that runs after the slot lock is released. GridCraft adds only its admission
+  viewport waker that runs after the slot lock is released. Nanshe adds only its admission
   budget, request records, geometry epoch and output routing around it.
 - The `CaptureSlot` callback holds only a weak reference and never encodes, writes a file or sends
-  a control reply; GridCraft drains the slot from `logic` and writes outside the slot.
+  a control reply; Nanshe drains the slot from `logic` and writes outside the slot.
 
 ## Capture lifecycle repair (2026-10-23)
 
-The previous managed run of this checkout (`egui037-gridcraft-candidate-20261023-tests-01`)
+The previous managed run of this checkout (`egui037-nanshe-candidate-20261023-tests-01`)
 finished with 154 passed and 8 failed: five screenshot/lifecycle tests dropped an unapplied
 `TexturesDelta`, two more lifecycle tests failed on the same atlas delta, and
 `formula_bar::spill_tests::formula_bar_click_and_theme_presentation` reported the Name Box
@@ -73,8 +73,8 @@ command — including `RequestPaintWhileHidden` — falls into its unhandled-com
 `ui.screenshot` or a queued `ui.key`/`ui.text` step in a hidden browser tab therefore cannot reach
 its `ui` pass until the tab is visible; the screenshot request reports its timeout instead. The
 fix belongs in the shared eframe web runner (paint a hidden tab on request, with the same
-queued-work trigger GridCraft sends from `logic` on native), not in a GridCraft-local channel.
-GridCraft therefore sends `RequestPaintWhileHidden` only off wasm (a visible web tab still gets
+queued-work trigger Nanshe sends from `logic` on native), not in a Nanshe-local channel.
+Nanshe therefore sends `RequestPaintWhileHidden` only off wasm (a visible web tab still gets
 `request_repaint`). The control protocol documents this web limitation instead of claiming hidden
 web screenshots work.
 
@@ -82,7 +82,7 @@ web screenshots work.
 
 The final canonical egui fork includes `IMEOutput::surrounding_text`, owner/context generation
 and the Wayland outgoing adapter; the earlier statement that no shared producer/adapter exists is
-superseded. GridCraft must qualify its actual formula-bar, in-cell and text-box editing paths,
+superseded. Nanshe must qualify its actual formula-bar, in-cell and text-box editing paths,
 including available-empty versus unavailable, stale epoch/serial deletion and commit, deletion-only
 batches, composition ownership and two-surface isolation. Full CI07 is not a native IME or complete
 E21b/W27 acceptance result. No application-local API stub is introduced.
@@ -134,7 +134,7 @@ checks above are needed to execute that policy on `run_steps` fixtures. No test 
 or disables the accessibility check, and production still renders Tofu for a character no face
 has.
 
-- `gridcraft-ui-egui` enables `egui/default_fonts` and `egui/monochrome_emoji_fonts`. egui 0.37
+- `nanshe-ui-egui` enables `egui/default_fonts` and `egui/monochrome_emoji_fonts`. egui 0.37
   moved Noto Emoji and emoji-icon-font behind the monochrome feature, and with `default_fonts`
   alone no installed face has `✕` or `📋` (Hack, which the theme adds as a fallback, has the
   arrows and triangles but neither of those).
@@ -220,7 +220,7 @@ platform/performance acceptance remain open. Full CI07 uses the canonical lock, 
 input, command-scoped exact-source mirrors and the private Vulkan loader; it is not host-loader or
 clean public-fetch qualification. Exact job/log hashes, review union, complete final source inventory
 and documentation-only delta are preserved in local task evidence under
-`egui037-migration-20261022/final-landing/gridcraft-final-qualification`.
+`egui037-migration-20261022/final-landing/nanshe-final-qualification`.
 
 Revision: 2026-10-24 — replaced pending accessibility/CI statements with actual full CI07 results,
 corrected the shared outgoing IME inventory, and retained native/performance/publication gates.

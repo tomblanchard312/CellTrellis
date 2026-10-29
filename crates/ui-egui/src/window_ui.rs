@@ -6,7 +6,7 @@
 //! window's selection and sheet into its workbook. So a draft, a dialog or a message stays in the
 //! window it belongs to.
 
-use gridcraft_engine::core::CellRef;
+use nanshe_engine::core::CellRef;
 
 use crate::{Notice, SheetApp, backstage, dialogs, editor, grid, keytips, text_box};
 
@@ -27,7 +27,7 @@ pub struct WindowUi {
     tab_run: Option<(u64, usize, u32, CellRef)>,
     open_switch_windows: bool,
     /// The status bar's Ready/Enter/Edit, which follows the window's cell draft.
-    mode: gridcraft_engine::Mode,
+    mode: nanshe_engine::Mode,
 }
 
 impl WindowUi {

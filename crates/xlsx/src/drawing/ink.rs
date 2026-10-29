@@ -3,7 +3,7 @@
 
 use std::fmt::Write as _;
 
-use gridcraft_model::{Anchor, Color, Shape, ShapeKind, Theme};
+use nanshe_model::{Anchor, Color, Shape, ShapeKind, Theme};
 
 use super::xfrm;
 use crate::tables::EMU_PER_PX;

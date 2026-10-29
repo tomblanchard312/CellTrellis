@@ -27,9 +27,9 @@ pub(super) fn table_gallery(app: &mut SheetApp, ui: &mut Ui, cmd: &str) {
     }
 }
 
-pub(super) fn paint_table_swatch(ui: &Ui, r: Rect, wb: &gridcraft_engine::model::Workbook, style: &str) {
-    let lk = gridcraft_engine::tables::look(style);
-    let res = |c: Option<gridcraft_engine::model::Color>| c.and_then(|c| c.resolve(&wb.theme)).map(theme::color32);
+pub(super) fn paint_table_swatch(ui: &Ui, r: Rect, wb: &nanshe_engine::model::Workbook, style: &str) {
+    let lk = nanshe_engine::tables::look(style);
+    let res = |c: Option<nanshe_engine::model::Color>| c.and_then(|c| c.resolve(&wb.theme)).map(theme::color32);
     let p = ui.painter();
     let t = Tokens::get(ui.ctx());
     p.rect_filled(r, 0.0, t.grid_bg);
@@ -102,13 +102,13 @@ pub(super) fn cell_style_gallery(app: &mut SheetApp, ui: &mut Ui) {
         ui.label(egui::RichText::new(*g).strong());
         egui::Grid::new(("csg", *g)).spacing(vec2(4.0, 4.0)).show(ui, |ui| {
             for (i, n) in names.iter().enumerate() {
-                let st = gridcraft_engine::cmd::format::builtin_cell_style(n, &wb.theme).unwrap_or_default();
+                let st = nanshe_engine::cmd::format::builtin_cell_style(n, &wb.theme).unwrap_or_default();
                 let (r, resp) = ui.allocate_exact_size(vec2(82.0, 24.0), Sense::click());
                 let fill = st
                     .fill
                     .fg
                     .resolve(&wb.theme)
-                    .filter(|_| st.fill.pattern != gridcraft_engine::model::PatternType::None)
+                    .filter(|_| st.fill.pattern != nanshe_engine::model::PatternType::None)
                     .map(theme::color32)
                     .unwrap_or(t.grid_bg);
                 ui.painter().rect_filled(r, 0.0, fill);

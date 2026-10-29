@@ -16,8 +16,8 @@
 //!   test fails; it never skips a loaded or required face set.
 
 use egui::{FontFamily, FontId};
-use gridcraft_ui_egui::icons::{self, Icon};
-use gridcraft_ui_egui::theme;
+use nanshe_ui_egui::icons::{self, Icon};
+use nanshe_ui_egui::theme;
 
 /// Symbols the bundled faces provide on a host with no symbol, CJK or Latin-Extended face:
 /// Hack supplies `↘ ◀ ↑`; Noto Emoji and emoji-icon-font supply `📋`.

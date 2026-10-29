@@ -1,8 +1,8 @@
 //! The in-cell editor of a Wrap Text cell keeps the column's width and wraps, growing down, as
 //! Excel's does; it used to widen to one long line.
 use egui::{Context, Id, RawInput, Rect, pos2, vec2};
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::SheetApp;
+use nanshe_engine::Session;
+use nanshe_ui_egui::SheetApp;
 use serde_json::json;
 
 const TEXT: &str = "Since the 1960s, NASA has left hardware across the solar system, on the Moon, on Mars, and in deep space.";
@@ -31,7 +31,7 @@ fn editor_rect(wrap: bool) -> Rect {
     frames(&ctx, &mut app);
     app.begin_edit(Some(TEXT.into()), false);
     frames(&ctx, &mut app);
-    ctx.read_response(Id::unique("gridcraft.cell_editor")).expect("the in-cell editor is shown").rect
+    ctx.read_response(Id::unique("nanshe.cell_editor")).expect("the in-cell editor is shown").rect
 }
 
 #[test]
@@ -54,7 +54,7 @@ fn a_short_wrap_text_edit_stays_one_line_tall() {
     frames(&ctx, &mut app);
     app.begin_edit(Some("short".into()), false);
     frames(&ctx, &mut app);
-    let field = ctx.read_response(Id::unique("gridcraft.cell_editor")).expect("the in-cell editor is shown").rect;
+    let field = ctx.read_response(Id::unique("nanshe.cell_editor")).expect("the in-cell editor is shown").rect;
     assert!(field.height() < 30.0, "a one-line edit doesn't reach over the rows below: {field:?}");
 }
 
@@ -72,12 +72,12 @@ fn the_editor_measures_the_text_at_the_fields_wrap_width() {
     frames(&ctx, &mut app);
     app.begin_edit(Some(TEXT.into()), false);
     frames(&ctx, &mut app);
-    let field = ctx.read_response(Id::unique("gridcraft.cell_editor")).expect("the in-cell editor is shown").rect;
+    let field = ctx.read_response(Id::unique("nanshe.cell_editor")).expect("the in-cell editor is shown").rect;
     let sheet = app.session.active().unwrap().wb.active().unwrap().clone();
-    let st = app.session.active().unwrap().wb.styles.get(sheet.style_id(gridcraft_engine::cell(0, 0))).clone();
+    let st = app.session.active().unwrap().wb.styles.get(sheet.style_id(nanshe_engine::cell(0, 0))).clone();
     // The grid draws at its zoom: the cell is the field plus the 2 px inset a side, the font scales.
     let z = (field.width() + 4.0) / sheet.col_width(0);
-    let font = egui::FontId::new(st.font.size * 96.0 / 72.0 * z, gridcraft_ui_egui::theme::cell_family(&st.font.name, st.font.bold, st.font.italic));
+    let font = egui::FontId::new(st.font.size * 96.0 / 72.0 * z, nanshe_ui_egui::theme::cell_family(&st.font.name, st.font.bold, st.font.italic));
     let at =
         |w: f32| ctx.fonts_mut(|f| f.layout_job(egui::text::LayoutJob::simple(TEXT.into(), font.clone(), egui::Color32::PLACEHOLDER, w)).size().y);
     let (own, with_margin) = (at(field.width()), at(field.width() - 8.0));
@@ -97,7 +97,7 @@ fn an_unwrapped_multiline_edit_shows_every_line() {
         frames(&ctx, &mut app);
         app.begin_edit(Some(text.into()), false);
         frames(&ctx, &mut app);
-        ctx.read_response(Id::unique("gridcraft.cell_editor")).expect("the in-cell editor is shown").rect
+        ctx.read_response(Id::unique("nanshe.cell_editor")).expect("the in-cell editor is shown").rect
     };
     let one = field("one").height();
     let two = field("one\ntwo").height();

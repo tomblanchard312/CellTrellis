@@ -2,11 +2,11 @@
 
 use std::io::Read;
 
-use gridcraft_engine::Session;
+use nanshe_engine::Session;
 use serde_json::json;
 
 fn styles_xml(session: &Session) -> String {
-    let bytes = gridcraft_xlsx::write_xlsx(&session.doc().unwrap().wb).unwrap();
+    let bytes = nanshe_xlsx::write_xlsx(&session.doc().unwrap().wb).unwrap();
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
     let mut xml = String::new();
     zip.by_name("xl/styles.xml").unwrap().read_to_string(&mut xml).unwrap();

@@ -1,7 +1,7 @@
 //! Sheet features beyond cells: tables, conditional formatting, data validation, comments,
 //! hyperlinks, charts, images, autofilter, print settings.
 
-use gridcraft_core::{CellRef, RangeRef};
+use nanshe_core::{CellRef, RangeRef};
 use serde::{Deserialize, Serialize};
 
 use crate::style::{Color, Style};
@@ -584,7 +584,7 @@ pub enum ShapeKind {
     Line,
     Arrow,
     TextBox,
-    /// An icon from GridCraft's own icon set; `Shape::text` holds the icon name.
+    /// An icon from Nanshe's own icon set; `Shape::text` holds the icon name.
     Icon,
     /// A freehand ink stroke; `Shape::text` holds the points as `x,y;x,y;…` relative to the
     /// anchor (sheet points), `Shape::line` the ink colour and `fill` unused.

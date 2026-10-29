@@ -8,9 +8,9 @@
 
 use std::collections::{HashMap, HashSet};
 
-use gridcraft_calc::Calc;
-use gridcraft_core::{CellRef, RangeRef, Value};
-use gridcraft_model::{CalcMode, Cell, DefinedName, Sheet, StyleId, Workbook};
+use nanshe_calc::Calc;
+use nanshe_core::{CellRef, RangeRef, Value};
+use nanshe_model::{CalcMode, Cell, DefinedName, Sheet, StyleId, Workbook};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value as Json, json};
 
@@ -174,7 +174,7 @@ fn json_value(v: &Json, wb: &Workbook) -> Value {
         Json::Bool(b) => Value::Bool(*b),
         Json::Number(n) => n.as_f64().map(Value::number).unwrap_or_default(),
         Json::String(s) if s.is_empty() => Value::Empty,
-        Json::String(s) => gridcraft_core::parse::parse_input(s, wb.date_system).value,
+        Json::String(s) => nanshe_core::parse::parse_input(s, wb.date_system).value,
         other => Value::text(other.to_string()),
     }
 }
@@ -321,7 +321,7 @@ fn goal_seek(s: &mut Session, p: &Json) -> Result<Json> {
     let (ssi, set) = cell_arg(s, p, "set", CMD)?;
     let (csi, chg) = cell_arg(s, p, "changing", CMD)?;
     let target = f64_param(p, "to")
-        .or_else(|| str_param(p, "to").and_then(gridcraft_core::parse::parse_number_text))
+        .or_else(|| str_param(p, "to").and_then(nanshe_core::parse::parse_number_text))
         .filter(|v| v.is_finite())
         .ok_or_else(|| bad(CMD, "`to` must be a number"))?;
     let d = s.doc()?;

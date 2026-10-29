@@ -103,7 +103,7 @@ pub(super) fn go_to_entries(app: &SheetApp) -> Vec<String> {
     app.session
         .active()
         .map(|doc| {
-            let mut v = gridcraft_engine::cmd::edit::go_to_names(&doc.wb, doc.wb.active_sheet());
+            let mut v = nanshe_engine::cmd::edit::go_to_names(&doc.wb, doc.wb.active_sheet());
             v.extend(doc.go_to_recent.iter().cloned());
             v
         })

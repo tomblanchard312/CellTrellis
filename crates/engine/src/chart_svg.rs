@@ -2,8 +2,8 @@
 
 use std::fmt::Write as _;
 
-use gridcraft_chart::{HAlign, Prim, Rgba, VAlign};
-use gridcraft_model::{Chart, Workbook};
+use nanshe_chart::{HAlign, Prim, Rgba, VAlign};
+use nanshe_model::{Chart, Workbook};
 
 use crate::io::esc;
 
@@ -12,9 +12,9 @@ const MAX_SIDE: f32 = 16_384.0;
 
 struct HelveticaMeasure;
 
-impl gridcraft_chart::Measure for HelveticaMeasure {
+impl nanshe_chart::Measure for HelveticaMeasure {
     fn text_width(&self, text: &str, size: f32, bold: bool) -> f32 {
-        gridcraft_pdf::text_width(if bold { gridcraft_pdf::Font::HelveticaBold } else { gridcraft_pdf::Font::Helvetica }, size, text)
+        nanshe_pdf::text_width(if bold { nanshe_pdf::Font::HelveticaBold } else { nanshe_pdf::Font::Helvetica }, size, text)
     }
 }
 
@@ -24,8 +24,8 @@ pub(crate) fn chart_svg(wb: &Workbook, sheet: usize, chart: &Chart, style: &str)
     if !(w >= 1.0 && h >= 1.0) {
         return None;
     }
-    let data = gridcraft_chart::resolve(wb, sheet, chart);
-    let prims = gridcraft_chart::render(chart, &data, w, h, &HelveticaMeasure);
+    let data = nanshe_chart::resolve(wb, sheet, chart);
+    let prims = nanshe_chart::render(chart, &data, w, h, &HelveticaMeasure);
     Some(prims_svg(&prims, w, h, style))
 }
 

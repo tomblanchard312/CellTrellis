@@ -3,8 +3,8 @@
 use std::io::Read;
 use std::sync::Arc;
 
-use gridcraft_core::{CellRef, Value};
-use gridcraft_model::{Anchor, Chart, ChartKind, Color, LegendPos, LineDash, Series, Sheet, Trendline, TrendlineKind, Workbook};
+use nanshe_core::{CellRef, Value};
+use nanshe_model::{Anchor, Chart, ChartKind, Color, LegendPos, LineDash, Series, Sheet, Trendline, TrendlineKind, Workbook};
 
 use crate::{read_xlsx, write_xlsx};
 

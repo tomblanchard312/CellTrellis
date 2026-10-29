@@ -26,7 +26,7 @@ pub struct TableHeading {
 
 /// The Table whose header names replace the column letters: the one holding the active cell,
 /// with its header row scrolled out of view and some of its rows still in view (Excel, #1423).
-pub fn heading_table<'a>(geo: &Geo, sh: &'a Sheet, active: CellRef) -> Option<&'a gridcraft_engine::model::Table> {
+pub fn heading_table<'a>(geo: &Geo, sh: &'a Sheet, active: CellRef) -> Option<&'a nanshe_engine::model::Table> {
     // Page Layout view keeps the letters.
     if geo.paper.is_some() || geo.header_h <= 0.0 {
         return None;

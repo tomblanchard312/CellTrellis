@@ -1,4 +1,4 @@
-use gridcraft_core::{CellRef, Value};
+use nanshe_core::{CellRef, Value};
 use serde_json::json;
 
 use crate::Session;
@@ -24,13 +24,13 @@ fn entering_empty_cells_preserves_whole_sheet_formatting() {
     s.execute("cell.set", json!({"cell": "A1", "input": "existing"})).unwrap();
     s.execute("selection.set", json!({"range": "A1:XFD1048576"})).unwrap();
     s.execute("home.alignCenter", json!({})).unwrap();
-    let border = gridcraft_model::BorderLine { style: gridcraft_model::BorderStyle::Thin, color: gridcraft_model::Color::Auto };
+    let border = nanshe_model::BorderLine { style: nanshe_model::BorderStyle::Thin, color: nanshe_model::Color::Auto };
     s.execute("home.formatCells", json!({"style": {"borders": {"top": border, "bottom": border, "left": border, "right": border}}})).unwrap();
     let expected = {
         let d = s.doc().unwrap();
         d.wb.styles.get(d.wb.active().unwrap().style_id(CellRef::parse("B1").unwrap())).clone()
     };
-    assert_eq!(expected.align.h, gridcraft_model::HAlign::Center);
+    assert_eq!(expected.align.h, nanshe_model::HAlign::Center);
     for (cell, input) in [("A1", "edited"), ("B1", "new"), ("C1", "=1+2"), ("XFD1048576", "edge")] {
         s.execute("cell.set", json!({"cell": cell, "input": input})).unwrap();
         let d = s.doc().unwrap();
@@ -47,7 +47,7 @@ fn entering_empty_cells_preserves_whole_sheet_formatting() {
     let d = s.doc().unwrap();
     assert_eq!(d.wb.styles.get(d.wb.active().unwrap().style_id(CellRef::parse("D1").unwrap())), &expected);
     assert_eq!(d.wb.active().unwrap().cells.len(), 7);
-    let (reopened, _) = gridcraft_xlsx::read_xlsx(&gridcraft_xlsx::write_xlsx(&d.wb).unwrap()).unwrap();
+    let (reopened, _) = nanshe_xlsx::read_xlsx(&nanshe_xlsx::write_xlsx(&d.wb).unwrap()).unwrap();
     for cell in ["A1", "B1", "C1", "D1", "E1", "F1", "G1", "XFD1048576"] {
         assert_eq!(
             reopened.styles.get(reopened.active().unwrap().style_id(CellRef::parse(cell).unwrap())),
@@ -140,7 +140,7 @@ fn chart_recommendations_follow_the_data_shape() {
     s.execute("insert.recommendedCharts", json!({"range": "A1:B4", "type": "pie"})).unwrap();
     let d = s.doc().unwrap();
     let kinds: Vec<_> = d.wb.active().unwrap().charts.iter().map(|c| c.kind).collect();
-    assert_eq!(kinds, [gridcraft_model::ChartKind::Scatter, gridcraft_model::ChartKind::Pie]);
+    assert_eq!(kinds, [nanshe_model::ChartKind::Scatter, nanshe_model::ChartKind::Pie]);
     assert!(s.ui_requests.is_empty(), "programmatic calls never open the dialog");
 }
 
@@ -193,7 +193,7 @@ fn chart_category_axis_from_blank_corner_and_select_data() {
     assert_eq!(series(&s), [(Some("Sheet1!$D$2:$D$4".to_string()), "Sheet1!$E$2:$E$4".to_string())]);
     let d = s.doc().unwrap();
     let sh = d.wb.active().unwrap();
-    let data = gridcraft_chart::resolve(&d.wb, d.wb.active_sheet(), sh.charts.last().unwrap());
+    let data = nanshe_chart::resolve(&d.wb, d.wb.active_sheet(), sh.charts.last().unwrap());
     assert_eq!(data.categories, ["2020", "2021", "2022"]);
     // The last series can't be removed; "" clears the labels.
     s.execute("chart.selectData", json!({"categories": "", "removeSeries": [0]})).unwrap();
@@ -350,7 +350,7 @@ fn redo_selects_the_redone_cell() {
 fn bulk_formula_history_is_bounded_and_latest_edit_still_undoes() {
     use std::sync::Arc;
 
-    use gridcraft_model::{Cell, Formula, Workbook};
+    use nanshe_model::{Cell, Formula, Workbook};
 
     let mut current = Arc::new(Workbook::new());
     let mut history = Vec::new();
@@ -490,14 +490,14 @@ fn shape_text_edit_survives_xlsx_roundtrip() {
     let saved = s.execute("file.saveBytes", json!({"format": "xlsx"})).unwrap();
     s.execute("file.open", json!({"name": "edited.xlsx", "base64": saved["base64"]})).unwrap();
     let shape = &s.doc().unwrap().wb.active().unwrap().shapes[0];
-    assert_eq!(shape.kind, gridcraft_model::ShapeKind::TextBox);
+    assert_eq!(shape.kind, nanshe_model::ShapeKind::TextBox);
     assert_eq!(shape.text, text);
 }
 
 #[test]
 fn no_border_clears_only_shared_edges_and_undo_restores_them() {
-    use gridcraft_core::RangeRef;
-    use gridcraft_model::{BorderLine, Borders};
+    use nanshe_core::RangeRef;
+    use nanshe_model::{BorderLine, Borders};
 
     for (range, neighbors) in [
         ("B2", &[("B1", "bottom"), ("B3", "top"), ("A2", "right"), ("C2", "left")][..]),
@@ -704,7 +704,7 @@ fn deleting_a_multi_area_row_selection_removes_every_area_and_undoes_once() {
     s.execute("cell.set", json!({"cell": "B1", "input": "=A6"})).unwrap();
     // Ctrl-select rows 2, 4 and 5:6 (A1 refs are 1-based).
     let sel = &mut s.doc_mut().unwrap().selection;
-    sel.ranges = vec![gridcraft_core::RangeRef::rows(1, 1), gridcraft_core::RangeRef::rows(3, 3), gridcraft_core::RangeRef::rows(4, 5)];
+    sel.ranges = vec![nanshe_core::RangeRef::rows(1, 1), nanshe_core::RangeRef::rows(3, 3), nanshe_core::RangeRef::rows(4, 5)];
     sel.active = CellRef::new(4, 0);
     s.doc_mut().unwrap().undo.clear();
     s.execute("home.deleteRows", json!({})).unwrap();
@@ -784,7 +784,7 @@ fn insert_copied_cells_inserts_rows_columns_and_blocks() {
     assert_eq!(v(&s, "B4"), Value::Number(20.0), "the formula follows its new row");
     assert_eq!(v(&s, "A5"), Value::Number(4.0));
     assert_eq!(v(&s, "A6"), Value::Number(5.0));
-    assert_eq!(s.doc().unwrap().selection.current(), gridcraft_core::RangeRef::rows(3, 3));
+    assert_eq!(s.doc().unwrap().selection.current(), nanshe_core::RangeRef::rows(3, 3));
     // One undo step puts everything back.
     s.execute("edit.undo", json!({})).unwrap();
     assert_eq!(v(&s, "A4"), Value::Number(4.0));
@@ -824,7 +824,7 @@ fn insert_cut_cells_moves_whole_rows() {
     s.execute("home.insertCopiedCells", json!({"at": "A4"})).unwrap();
     let col: Vec<Value> = (1..=5).map(|r| v(&s, &format!("A{r}"))).collect();
     assert_eq!(col, [5.0, 2.0, 1.0, 3.0, 4.0].map(Value::Number).to_vec());
-    assert_eq!(s.doc().unwrap().selection.current(), gridcraft_core::RangeRef::rows(2, 2));
+    assert_eq!(s.doc().unwrap().selection.current(), nanshe_core::RangeRef::rows(2, 2));
     s.execute("edit.undo", json!({})).unwrap();
     assert_eq!(v(&s, "A1"), Value::Number(1.0));
     // Inside itself, and a cut block, are refused without changing anything.
@@ -1006,7 +1006,7 @@ fn fill_days_weekdays_months_and_years_step_a_date_by_that_unit() {
 #[test]
 fn only_a_number_in_a_date_format_offers_the_date_fills() {
     let mut s = s();
-    let dates = |s: &Session, a: &str| crate::fill::starts_with_date(&s.doc().unwrap().wb, 0, gridcraft_core::RangeRef::parse(a).unwrap());
+    let dates = |s: &Session, a: &str| crate::fill::starts_with_date(&s.doc().unwrap().wb, 0, nanshe_core::RangeRef::parse(a).unwrap());
     s.execute("cell.set", json!({"cell": "A1", "input": "1/31/2026"})).unwrap();
     s.execute("cell.set", json!({"cell": "A2", "input": "7"})).unwrap();
     s.execute("home.numberFormat", json!({"range": "A2", "code": "0 \"days\""})).unwrap();
@@ -1103,7 +1103,7 @@ fn filter_top10_items_and_percent() {
 /// cutoff: Top 3 and Bottom 4 of 1..5 keep 3 and 4.
 #[test]
 fn filter_top10_two_criteria_on_one_column() {
-    use gridcraft_model::FilterCriterion;
+    use nanshe_model::FilterCriterion;
     let mut s = s();
     s.execute("range.setValues", json!({"range": "A1", "values": [["N"], [1], [2], [3], [4], [5]]})).unwrap();
     s.execute("selection.set", json!({"cell": "A1"})).unwrap();
@@ -1254,7 +1254,7 @@ fn trust_scripts_only_defaults_to_trusted_when_the_flag_is_missing() {
 #[test]
 fn scripts_leave_file_access_working_after_they_run() {
     // The sandbox a script runs in is lifted afterwards, also when a step fails.
-    let dir = std::env::temp_dir().join(format!("gridcraft-script-sandbox-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-script-sandbox-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let csv = dir.join("in.csv");
@@ -1272,7 +1272,7 @@ fn scripts_leave_file_access_working_after_they_run() {
 
 #[test]
 fn scripts_cannot_reach_outside_the_workbook_even_when_trusted() {
-    let dir = std::env::temp_dir().join(format!("gridcraft-script-deny-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-script-deny-{}", std::process::id()));
     let leak = dir.join("leak.xlsx");
     let leak = leak.to_string_lossy().to_string();
     let mut s = opened_with_script();
@@ -1468,7 +1468,7 @@ fn remove_duplicates_with_a_sheet_prefix_works_on_the_named_sheet() {
 
 #[test]
 fn filter_with_a_sheet_prefix_toggles_the_named_sheet() {
-    let sheet = |s: &Session, name: &str| -> gridcraft_model::Sheet {
+    let sheet = |s: &Session, name: &str| -> nanshe_model::Sheet {
         let wb = &s.doc().unwrap().wb;
         wb.sheet(wb.sheet_index(name).unwrap()).unwrap().clone()
     };
@@ -1518,7 +1518,7 @@ fn subtotal_with_a_sheet_prefix_works_on_the_named_sheet() {
     assert_eq!(r["groups"], 2);
     let wb = &s.doc().unwrap().wb;
     let prices = wb.sheet(wb.sheet_index("Prices").unwrap()).unwrap();
-    let col = |sh: &gridcraft_model::Sheet, c: u32| -> Vec<Value> { (0..7).map(|r| sh.value(CellRef::new(r, c))).collect() };
+    let col = |sh: &nanshe_model::Sheet, c: u32| -> Vec<Value> { (0..7).map(|r| sh.value(CellRef::new(r, c))).collect() };
     assert_eq!(col(prices, 0), ["Item", "a", "a", "a Total", "b", "b Total", "Grand Total"].map(Value::from));
     assert_eq!(col(prices, 1)[1..], [1.0, 2.0, 3.0, 4.0, 4.0, 7.0].map(Value::from));
     assert!(wb.styles.get(prices.style_id(CellRef::new(3, 0))).font.bold);
@@ -1567,8 +1567,8 @@ fn spill_references_roundtrip_through_xlsx() {
 /// commands would auto-fit the rows — and exported with `write_xlsx`, which omits `ht` for
 /// rows without a size: exactly the bug's input.
 fn big_font_workbook(row_info: Option<(f32, bool, bool)>, big_font: bool) -> Vec<u8> {
-    let mut wb = gridcraft_model::Workbook::new();
-    let big = wb.styles.derive(gridcraft_model::StyleId::DEFAULT, |s| s.font.size = 20.0);
+    let mut wb = nanshe_model::Workbook::new();
+    let big = wb.styles.derive(nanshe_model::StyleId::DEFAULT, |s| s.font.size = 20.0);
     let sh = wb.sheet_mut(0).unwrap();
     sh.set_value(CellRef::new(0, 0), Value::text("small"));
     sh.set_value(CellRef::new(4, 0), Value::text("plain big bold"));
@@ -1581,12 +1581,12 @@ fn big_font_workbook(row_info: Option<(f32, bool, bool)>, big_font: bool) -> Vec
         e.custom = custom;
         e.hidden = hidden;
     }
-    gridcraft_xlsx::write_xlsx(&wb).unwrap()
+    nanshe_xlsx::write_xlsx(&wb).unwrap()
 }
 
 #[test] // A — the issue's repro
 fn open_grows_default_height_rows_to_their_font() {
-    let default_h = gridcraft_model::Workbook::new().active().unwrap().row_height(0);
+    let default_h = nanshe_model::Workbook::new().active().unwrap().row_height(0);
     let mut s = Session::new();
     s.execute("file.open", json!({"name": "bigfont.xlsx", "base64": crate::io::base64_encode(&big_font_workbook(None, true))})).unwrap();
     let h = s.doc().unwrap().wb.active().unwrap().row_height(4);
@@ -1602,12 +1602,12 @@ fn line_breaks_grow_a_row_only_when_the_cell_wraps() {
     // file, built with the model API and exported without row heights.
     let text = "first line\n\n\nfourth line";
     let bytes = {
-        let mut wb = gridcraft_model::Workbook::new();
+        let mut wb = nanshe_model::Workbook::new();
         let sh = wb.sheet_mut(0).unwrap();
         sh.set_value(CellRef::new(1, 1), Value::text(text));
-        gridcraft_xlsx::write_xlsx(&wb).unwrap()
+        nanshe_xlsx::write_xlsx(&wb).unwrap()
     };
-    let default_h = gridcraft_model::Workbook::new().active().unwrap().row_height(1);
+    let default_h = nanshe_model::Workbook::new().active().unwrap().row_height(1);
     let mut s = Session::new();
     s.execute("file.open", json!({"name": "notes.xlsx", "base64": crate::io::base64_encode(&bytes)})).unwrap();
     assert_eq!(s.doc().unwrap().wb.active().unwrap().row_height(1), default_h, "an unwrapped multi-line cell keeps the default row height on open");
@@ -1702,13 +1702,13 @@ fn open_fits_big_font_rows_from_the_font_not_the_sheet_default() {
     // Excel saves a sheet whose rows hold 16pt text with a 21pt (28px) default row height and no
     // `ht` on rows of that height. Those rows already fit their font: they open at about 28px,
     // not scaled up again by 16/11 to 41px.
-    let mut wb = gridcraft_model::Workbook::new();
-    let big = wb.styles.derive(gridcraft_model::StyleId::DEFAULT, |s| s.font.size = 16.0);
+    let mut wb = nanshe_model::Workbook::new();
+    let big = wb.styles.derive(nanshe_model::StyleId::DEFAULT, |s| s.font.size = 16.0);
     let sh = wb.sheet_mut(0).unwrap();
     sh.default_row_height = 28.0;
     sh.set_value(CellRef::new(4, 0), Value::text("SANTANDER"));
     sh.set_style(CellRef::new(4, 0), big);
-    let bytes = gridcraft_xlsx::write_xlsx(&wb).unwrap();
+    let bytes = nanshe_xlsx::write_xlsx(&wb).unwrap();
     let mut s = Session::new();
     s.execute("file.open", json!({"name": "tall-default.xlsx", "base64": crate::io::base64_encode(&bytes)})).unwrap();
     let sh = s.doc().unwrap().wb.active().unwrap();
@@ -1747,7 +1747,7 @@ fn structured_refs_to_columns_with_edge_spaces() {
     }
     let n = Value::Number;
     assert_eq!([v(&s, "F1"), v(&s, "F2"), v(&s, "F3"), v(&s, "F4")], [n(5.0), n(5.0), n(5.0), n(5.0)]);
-    assert_eq!(v(&s, "F5"), Value::Error(gridcraft_core::CellError::Ref));
+    assert_eq!(v(&s, "F5"), Value::Error(nanshe_core::CellError::Ref));
     assert_eq!(v(&s, "C2"), n(20.0));
     assert_eq!(s.execute("cell.get", json!({"cell": "F3"})).unwrap()["formula"], "=SUBTOTAL(109,Table1[[Qty ]])");
 
@@ -1763,7 +1763,7 @@ fn changing_the_font_name_drops_the_old_fonts_charset_and_family() {
     let mut s = s();
     {
         let wb = std::sync::Arc::make_mut(&mut s.doc_mut().unwrap().wb);
-        let arabic = wb.styles.derive(gridcraft_model::StyleId::DEFAULT, |st| {
+        let arabic = wb.styles.derive(nanshe_model::StyleId::DEFAULT, |st| {
             st.font.name = "Traditional Arabic".into();
             st.font.charset = Some(178);
             st.font.family = Some(1);
@@ -2013,7 +2013,7 @@ fn autosum_over_a_row_totals_it_to_the_right() {
     s.execute("formulas.autoSum", json!({"range": "B2:E2"})).unwrap();
     assert_eq!(formula_at(&s, "F2").as_deref(), Some("SUM(B2:E2)"));
     assert_eq!(v(&s, "F2"), Value::Number(10.0));
-    assert!(gridcraft_core::RangeRef::parse("B3:F3").unwrap().iter().all(|c| v(&s, &c.a1()) == Value::Empty), "nothing under the row");
+    assert!(nanshe_core::RangeRef::parse("B3:F3").unwrap().iter().all(|c| v(&s, &c.a1()) == Value::Empty), "nothing under the row");
     assert_eq!(s.doc().unwrap().undo.len(), 2, "one undo step");
     // A row whose last cell is empty takes its total there.
     s.execute("range.setValues", json!({"range": "B4", "values": [[5, 6, 7]]})).unwrap();
@@ -2043,7 +2043,7 @@ fn autosum_fills_a_selections_empty_last_column_and_row() {
     s.execute("formulas.autoSum", json!({"range": "A1:C2"})).unwrap();
     assert_eq!((formula_at(&s, "C1").as_deref(), formula_at(&s, "C2").as_deref()), (Some("SUM(A1:B1)"), Some("SUM(A2:B2)")));
     assert_eq!((v(&s, "C1"), v(&s, "C2")), (Value::Number(3.0), Value::Number(7.0)));
-    assert!(gridcraft_core::RangeRef::parse("A3:C3").unwrap().iter().all(|c| v(&s, &c.a1()) == Value::Empty), "no totals under the rows");
+    assert!(nanshe_core::RangeRef::parse("A3:C3").unwrap().iter().all(|c| v(&s, &c.a1()) == Value::Empty), "no totals under the rows");
 
     s.execute("range.setValues", json!({"range": "E1", "values": [[1, 2], [3, 4]]})).unwrap();
     let steps = s.doc().unwrap().undo.len();
@@ -2135,7 +2135,7 @@ fn merging_over_a_spill_blocks_it_and_unmerging_unblocks_it() {
     let mut s = s();
     s.execute("cell.set", json!({"cell": "A1", "input": "=SEQUENCE(3)"})).unwrap();
     s.execute("home.mergeCenter", json!({"range": "A2:B3"})).unwrap();
-    assert_eq!(v(&s, "A1"), Value::Error(gridcraft_core::CellError::Spill));
+    assert_eq!(v(&s, "A1"), Value::Error(nanshe_core::CellError::Spill));
     s.execute("home.mergeCenter", json!({"range": "A2:B3"})).unwrap();
     assert_eq!(v(&s, "A1"), Value::Number(1.0));
     assert_eq!(v(&s, "A3"), Value::Number(3.0));
@@ -2187,7 +2187,7 @@ fn row_and_column_inserts_move_legacy_array_ranges() {
     s.execute("home.insertRows", json!({"rows": "1:1"})).unwrap();
     let d = s.doc().unwrap();
     let f = d.wb.sheet(0).unwrap().cell(CellRef::new(3, 3)).and_then(|x| x.formula.clone()).unwrap();
-    assert_eq!(f.array, Some(gridcraft_core::RangeRef::parse("D4:E4").unwrap()));
+    assert_eq!(f.array, Some(nanshe_core::RangeRef::parse("D4:E4").unwrap()));
     assert_eq!(v(&s, "E4"), Value::Number(14.0));
     reopen(&mut s);
     assert_eq!(v(&s, "E4"), Value::Number(14.0));
@@ -2341,7 +2341,7 @@ fn deleting_a_3d_span_end_sheet_keeps_the_rest() {
         s.execute("cell.set", json!({"cell": "B1", "input": "=Sheet1!A1"})).unwrap();
         s
     };
-    let gone = Value::Error(gridcraft_core::CellError::Ref);
+    let gone = Value::Error(nanshe_core::CellError::Ref);
     for (deleted, total, direct) in [("Sheet1", 12.0, gone), ("Sheet3", 8.0, Value::Number(3.0)), ("Sheet2", 10.0, Value::Number(3.0))] {
         let mut s = book();
         s.execute("home.deleteSheet", json!({"sheet": deleted})).unwrap();
@@ -2386,7 +2386,7 @@ fn ods_fixture() -> Vec<u8> {
 #[test]
 fn ods_import_keeps_cached_values_and_reports_limits() {
     let bytes = ods_fixture();
-    assert_eq!(gridcraft_xlsx::sniff(&bytes), gridcraft_xlsx::Format::Ods);
+    assert_eq!(nanshe_xlsx::sniff(&bytes), nanshe_xlsx::Format::Ods);
     for name in ["source.ods", "source.xlsx"] {
         let mut s = s();
         let r = s.execute("file.open", json!({"name": name, "base64": crate::io::base64_encode(&bytes)})).unwrap();
@@ -2407,7 +2407,7 @@ fn ods_import_keeps_cached_values_and_reports_limits() {
 #[cfg(not(target_arch = "wasm32"))]
 fn ods_import_never_reuses_source_as_save_target() {
     let nonce = unique_nonce();
-    let dir = std::env::temp_dir().join(format!("gridcraft-ods-{}-{nonce}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-ods-{}-{nonce}", std::process::id()));
     std::fs::create_dir(&dir).unwrap();
     let bytes = ods_fixture();
     for name in ["source.ods", "disguised.xlsx"] {
@@ -2437,7 +2437,7 @@ fn ods_import_never_reuses_source_as_save_target() {
 #[cfg(not(target_arch = "wasm32"))]
 fn saving_an_opened_semicolon_csv_keeps_semicolons() {
     let nonce = unique_nonce();
-    let dir = std::env::temp_dir().join(format!("gridcraft-csv-{}-{nonce}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-csv-{}-{nonce}", std::process::id()));
     std::fs::create_dir(&dir).unwrap();
     let path = dir.join("cut list.csv");
     std::fs::write(&path, "1;511;184;P3_L1_led;2162PE;16;;1244121406FB\r\n1;562;510;P3_pod;2162PE;19;;124412140710\r\n").unwrap();
@@ -2511,7 +2511,7 @@ fn link_target(path: &std::path::Path) -> String {
 #[cfg(not(target_arch = "wasm32"))]
 fn save_as_into_another_folder_keeps_linked_workbooks_on_the_same_file() {
     let nonce = unique_nonce();
-    let a = std::env::temp_dir().join(format!("gridcraft-links-{}-{nonce}", std::process::id()));
+    let a = std::env::temp_dir().join(format!("nanshe-links-{}-{nonce}", std::process::id()));
     let b = a.join("b");
     std::fs::create_dir_all(&b).unwrap();
     let dest = a.join("Dest.xlsx");
@@ -2539,7 +2539,7 @@ fn save_as_into_another_folder_keeps_linked_workbooks_on_the_same_file() {
 #[cfg(not(target_arch = "wasm32"))]
 fn saving_to_an_unknown_extension_is_refused() {
     let nonce = unique_nonce();
-    let dir = std::env::temp_dir().join(format!("gridcraft-unknown-ext-{}-{nonce}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-unknown-ext-{}-{nonce}", std::process::id()));
     std::fs::create_dir(&dir).unwrap();
     let mut s = s();
     s.execute("cell.set", json!({"cell": "A1", "input": "1"})).unwrap();
@@ -2563,7 +2563,7 @@ fn saving_to_an_unknown_extension_is_refused() {
 #[cfg(not(target_arch = "wasm32"))]
 fn an_xlsx_opened_under_an_unknown_extension_saves_back_as_xlsx() {
     let nonce = unique_nonce();
-    let dir = std::env::temp_dir().join(format!("gridcraft-dat-{}-{nonce}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-dat-{}-{nonce}", std::process::id()));
     std::fs::create_dir(&dir).unwrap();
     let path = dir.join("budget.dat");
     let mut src = s();
@@ -2575,7 +2575,7 @@ fn an_xlsx_opened_under_an_unknown_extension_saves_back_as_xlsx() {
     s.execute("file.save", json!({})).unwrap();
     assert!(!s.doc().unwrap().is_dirty());
     let bytes = std::fs::read(&path).unwrap();
-    assert_eq!(gridcraft_xlsx::sniff(&bytes), gridcraft_xlsx::Format::Xlsx);
+    assert_eq!(nanshe_xlsx::sniff(&bytes), nanshe_xlsx::Format::Xlsx);
     let (wb, _) = crate::io::open_bytes("book.xlsx", &bytes).unwrap();
     assert_eq!(wb.active().unwrap().value(CellRef::parse("A1").unwrap()), Value::Number(2.0));
     assert!(s.execute("file.saveAs", json!({"path": dir.join("copy.foo")})).is_err());
@@ -2723,7 +2723,7 @@ fn clearing_a_distant_blocker_unblocks_the_spill() {
     let mut s = s();
     s.execute("cell.set", json!({"cell": "A1", "input": "=SEQUENCE(100)"})).unwrap();
     s.execute("cell.set", json!({"cell": "A90", "input": "x"})).unwrap();
-    assert_eq!(v(&s, "A1"), Value::Error(gridcraft_core::CellError::Spill));
+    assert_eq!(v(&s, "A1"), Value::Error(nanshe_core::CellError::Spill));
     s.execute("edit.clearContents", json!({"range": "A90"})).unwrap();
     assert_eq!((v(&s, "A1"), v(&s, "A100")), (Value::Number(1.0), Value::Number(100.0)));
 }
@@ -2733,10 +2733,10 @@ fn a_spill_that_goes_away_unblocks_another() {
     let mut s = s();
     s.execute("cell.set", json!({"cell": "F8", "input": "=SEQUENCE(5)"})).unwrap();
     s.execute("cell.set", json!({"cell": "E10", "input": "=SEQUENCE(1,3)"})).unwrap();
-    assert_eq!(v(&s, "E10"), Value::Error(gridcraft_core::CellError::Spill));
+    assert_eq!(v(&s, "E10"), Value::Error(nanshe_core::CellError::Spill));
     // Blocking F8's array frees F10 for E10's.
     s.execute("cell.set", json!({"cell": "F9", "input": "0"})).unwrap();
-    assert_eq!(v(&s, "F8"), Value::Error(gridcraft_core::CellError::Spill));
+    assert_eq!(v(&s, "F8"), Value::Error(nanshe_core::CellError::Spill));
     assert_eq!((v(&s, "E10"), v(&s, "G10")), (Value::Number(1.0), Value::Number(3.0)));
 }
 
@@ -2896,7 +2896,7 @@ fn calculation_options_enable_iterative_calculation() {
     };
     s.execute("cell.set", json!({"cell": "A1", "input": "=(A2+10)/2"})).unwrap();
     s.execute("cell.set", json!({"cell": "A2", "input": "=A1"})).unwrap();
-    assert_eq!(v(&s, "A1"), Value::Error(gridcraft_core::CellError::Circ));
+    assert_eq!(v(&s, "A1"), Value::Error(nanshe_core::CellError::Circ));
     assert!(!s.doc().unwrap().calc.circular.is_empty());
     // Switching it on recalculates the loop.
     let r = s.execute("formulas.calculationOptions", json!({"iterative": true})).unwrap();
@@ -2919,7 +2919,7 @@ fn calculation_options_enable_iterative_calculation() {
     near(&s, "A1", 10.0);
     // Undo brings the previous settings back.
     s.execute("formulas.calculationOptions", json!({"iterative": false})).unwrap();
-    assert_eq!(v(&s, "A1"), Value::Error(gridcraft_core::CellError::Circ));
+    assert_eq!(v(&s, "A1"), Value::Error(nanshe_core::CellError::Circ));
     s.execute("edit.undo", json!({})).unwrap();
     assert!(s.doc().unwrap().wb.calc.iterative);
     near(&s, "A1", 10.0);
@@ -2971,7 +2971,7 @@ fn chart_data(s: &mut Session) {
 
 #[test]
 fn every_chart_kind_survives_xlsx() {
-    use gridcraft_model::ChartKind;
+    use nanshe_model::ChartKind;
     let kinds = [
         ("combo", ChartKind::Combo),
         ("stock", ChartKind::Stock),
@@ -3103,7 +3103,7 @@ fn switch_row_column_on_a_chart_read_from_a_file() {
 
 #[test]
 fn chart_trendlines_are_added_saved_and_removed() {
-    use gridcraft_model::TrendlineKind;
+    use nanshe_model::TrendlineKind;
     let mut s = s();
     chart_data(&mut s);
     s.execute("insert.chart", json!({"type": "line", "range": "A1:E7"})).unwrap();
@@ -3201,7 +3201,7 @@ fn ink_strokes_and_ink_to_shape() {
     s.execute("draw.stroke", json!({"points": pts})).unwrap();
     let sh = s.doc().unwrap().wb.active().unwrap().clone();
     assert_eq!(sh.shapes.len(), 1);
-    assert_eq!(sh.shapes[0].kind, gridcraft_model::ShapeKind::Ink);
+    assert_eq!(sh.shapes[0].kind, nanshe_model::ShapeKind::Ink);
     let r = s.execute("draw.inkToShape", json!({})).unwrap();
     assert_eq!(r["kind"], "Rectangle");
     // An open stroke becomes a line.
@@ -3213,7 +3213,7 @@ fn ink_strokes_and_ink_to_shape() {
 #[test]
 fn xlsb_import_keeps_cached_values_and_reports_limits() {
     let bytes = xlsb_fixture();
-    assert_eq!(gridcraft_xlsx::sniff(&bytes), gridcraft_xlsx::Format::Xlsb);
+    assert_eq!(nanshe_xlsx::sniff(&bytes), nanshe_xlsx::Format::Xlsb);
     for name in ["source.xlsb", "source.xlsx"] {
         let mut s = s();
         let r = s.execute("file.open", json!({"name": name, "base64": crate::io::base64_encode(&bytes)})).unwrap();
@@ -3236,7 +3236,7 @@ fn xlsb_import_keeps_cached_values_and_reports_limits() {
 #[cfg(not(target_arch = "wasm32"))]
 fn xlsb_import_never_reuses_source_as_save_target() {
     let nonce = unique_nonce();
-    let dir = std::env::temp_dir().join(format!("gridcraft-xlsb-{}-{nonce}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-xlsb-{}-{nonce}", std::process::id()));
     std::fs::create_dir(&dir).unwrap();
     let bytes = xlsb_fixture();
     for name in ["source.xlsb", "disguised.xlsx"] {
@@ -3330,7 +3330,7 @@ fn xls_fixture() -> Vec<u8> {
 #[test]
 fn xls_import_keeps_formulas_and_never_saves_back_to_xls() {
     let bytes = xls_fixture();
-    assert_eq!(gridcraft_xlsx::sniff(&bytes), gridcraft_xlsx::Format::Xls);
+    assert_eq!(nanshe_xlsx::sniff(&bytes), nanshe_xlsx::Format::Xls);
     let mut s = s();
     let r = s.execute("file.open", json!({"name": "legacy.xls", "base64": crate::io::base64_encode(&bytes)})).unwrap();
     assert!(r["warnings"][0].as_str().unwrap().contains("97-2003"));
@@ -3364,13 +3364,13 @@ fn tiny_png() -> Vec<u8> {
     png
 }
 
-fn add_image(s: &mut Session, cell: &str, mode: gridcraft_model::AnchorMode) -> u32 {
+fn add_image(s: &mut Session, cell: &str, mode: nanshe_model::AnchorMode) -> u32 {
     let d = s.doc_mut().unwrap();
     let wb = std::sync::Arc::make_mut(&mut d.wb);
     let id = wb.next_object_id();
-    wb.sheet_mut(0).unwrap().images.push(gridcraft_model::Image {
+    wb.sheet_mut(0).unwrap().images.push(nanshe_model::Image {
         id,
-        anchor: gridcraft_model::Anchor { cell: CellRef::parse(cell).unwrap(), dx: 0.0, dy: 0.0, width: 40.0, height: 40.0, mode },
+        anchor: nanshe_model::Anchor { cell: CellRef::parse(cell).unwrap(), dx: 0.0, dy: 0.0, width: 40.0, height: 40.0, mode },
         data: tiny_png().into(),
         mime: "image/png".into(),
         alt: String::new(),
@@ -3414,7 +3414,7 @@ fn undo_steps_share_picture_and_macro_bytes() {
 /// Issue #5: images anchored in cells follow their row when the sheet is sorted.
 #[test]
 fn sort_moves_anchored_images_with_their_rows() {
-    use gridcraft_model::AnchorMode;
+    use nanshe_model::AnchorMode;
     let mut s = s();
     s.execute("range.setValues", json!({"range": "A1", "values": [["Name", "Score"], ["b", 2], ["c", 3], ["a", 1]]})).unwrap();
     // One picture per data row, in its own row.
@@ -3432,7 +3432,7 @@ fn sort_moves_anchored_images_with_their_rows() {
 /// An `absolute`-pinned object stays exactly where it was drawn across a sort and a row delete.
 #[test]
 fn absolute_objects_ignore_sort_and_structural_edits() {
-    use gridcraft_model::AnchorMode;
+    use nanshe_model::AnchorMode;
     let mut s = s();
     s.execute("range.setValues", json!({"range": "A1", "values": [["Name", "Score"], ["b", 2], ["c", 3], ["a", 1]]})).unwrap();
     let pinned = add_image(&mut s, "A3", AnchorMode::Absolute);
@@ -3459,7 +3459,7 @@ fn deleting_a_row_removes_its_sparklines() {
 /// A "move but don't size" object follows its row across a sort but keeps its size.
 #[test]
 fn move_only_objects_follow_but_do_not_resize() {
-    use gridcraft_model::AnchorMode;
+    use nanshe_model::AnchorMode;
     let mut s = s();
     s.execute("range.setValues", json!({"range": "A1", "values": [["Name", "N"], ["b", 2], ["a", 1]]})).unwrap();
     let id = add_image(&mut s, "A2", AnchorMode::MoveOnly);
@@ -3474,7 +3474,7 @@ fn move_only_objects_follow_but_do_not_resize() {
 /// `object.setAnchorMode` changes how an object follows its cells.
 #[test]
 fn set_anchor_mode_changes_following() {
-    use gridcraft_model::AnchorMode;
+    use nanshe_model::AnchorMode;
     let mut s = s();
     s.execute("range.setValues", json!({"range": "A1", "values": [["Name", "N"], ["b", 2], ["a", 1]]})).unwrap();
     let id = add_image(&mut s, "A2", AnchorMode::MoveAndSize);
@@ -3492,7 +3492,7 @@ fn set_anchor_mode_changes_following() {
 /// the block (same rows, other columns) stays where it is.
 #[test]
 fn sort_leaves_objects_outside_the_block_alone() {
-    use gridcraft_model::AnchorMode;
+    use nanshe_model::AnchorMode;
     let mut s = s();
     s.execute("range.setValues", json!({"range": "A1", "values": [["Name", "Score"], ["b", 2], ["c", 3], ["a", 1]]})).unwrap();
     let beside = add_image(&mut s, "Z3", AnchorMode::MoveAndSize);
@@ -3511,17 +3511,17 @@ fn inserted_pictures_move_but_do_not_size() {
     let b64 = crate::io::base64_encode(&tiny_png());
     let id = s.execute("insert.picture", json!({"base64": b64, "at": "C3"})).unwrap()["image"].as_u64().unwrap() as u32;
     let mode = |s: &Session| s.doc().unwrap().wb.active().unwrap().images.iter().find(|i| i.id == id).unwrap().anchor.mode;
-    assert_eq!(mode(&s), gridcraft_model::AnchorMode::MoveOnly);
+    assert_eq!(mode(&s), nanshe_model::AnchorMode::MoveOnly);
     let b64 = crate::io::base64_encode(&tiny_png());
     let id2 = s.execute("insert.picture", json!({"base64": b64, "mode": "absolute"})).unwrap()["image"].as_u64().unwrap() as u32;
     let m2 = s.doc().unwrap().wb.active().unwrap().images.iter().find(|i| i.id == id2).unwrap().anchor.mode;
-    assert_eq!(m2, gridcraft_model::AnchorMode::Absolute);
+    assert_eq!(m2, nanshe_model::AnchorMode::Absolute);
 }
 
 /// `object.setAnchorMode` needs a real object kind.
 #[test]
 fn set_anchor_mode_rejects_unknown_kind() {
-    use gridcraft_model::AnchorMode;
+    use nanshe_model::AnchorMode;
     let mut s = s();
     let id = add_image(&mut s, "A2", AnchorMode::MoveAndSize);
     for kind in [json!(""), json!("widget"), serde_json::Value::Null] {
@@ -3545,7 +3545,7 @@ fn insert_cell_picture(s: &mut Session, at: &str, alt: &str) {
         .unwrap();
 }
 
-fn cell_picture(s: &Session, at: &str) -> Option<std::sync::Arc<gridcraft_model::CellPicture>> {
+fn cell_picture(s: &Session, at: &str) -> Option<std::sync::Arc<nanshe_model::CellPicture>> {
     s.doc().unwrap().wb.active().unwrap().cell_pictures.get(&CellRef::parse(at).unwrap()).cloned()
 }
 
@@ -3559,7 +3559,7 @@ fn cell_picture_insert_validates_content_preserves_style_and_replaces_with_undo(
         assert_eq!(v(&s, "B2"), Value::from("old"));
     }
     insert_cell_picture(&mut s, "B2", "Original picture");
-    assert_eq!(v(&s, "B2"), Value::Error(gridcraft_core::CellError::Value));
+    assert_eq!(v(&s, "B2"), Value::Error(nanshe_core::CellError::Value));
     let state = s.execute("cell.get", json!({"cell": "B2"})).unwrap();
     assert_eq!(state["type"], "picture");
     assert_eq!(state["text"], "#VALUE!");
@@ -3604,7 +3604,7 @@ fn cell_picture_clipboard_clear_and_structural_edits_keep_complete_payload() {
     s.execute("edit.copy", json!({"range": "B2"})).unwrap();
     s.execute("edit.pasteSpecial", json!({"what": "values", "at": "C1", "operation": "add"})).unwrap();
     assert!(cell_picture(&s, "C1").is_none());
-    assert_eq!(v(&s, "C1"), Value::Error(gridcraft_core::CellError::Value));
+    assert_eq!(v(&s, "C1"), Value::Error(nanshe_core::CellError::Value));
     s.execute("home.insertRows", json!({"rows": "2:2"})).unwrap();
     s.execute("home.insertColumns", json!({"cols": "B:B"})).unwrap();
     assert_eq!(cell_picture(&s, "C3").unwrap().alt, original.alt);
@@ -3635,7 +3635,7 @@ fn cell_picture_follows_sort_filter_and_blocks_formula_spills() {
     assert!(cell_picture(&s, "B3").is_some());
     insert_cell_picture(&mut s, "D2", "spill obstruction");
     s.execute("cell.set", json!({"cell": "D1", "input": "=SEQUENCE(2)"})).unwrap();
-    assert_eq!(v(&s, "D1"), Value::Error(gridcraft_core::CellError::Spill));
+    assert_eq!(v(&s, "D1"), Value::Error(nanshe_core::CellError::Spill));
     s.execute("edit.clearContents", json!({"range": "D2"})).unwrap();
     assert_eq!(v(&s, "D1"), Value::Number(1.0));
     assert_eq!(v(&s, "D2"), Value::Number(2.0));
@@ -3708,13 +3708,13 @@ fn cell_picture_cut_uses_live_source_after_edit() {
             assert_eq!(v(&s, "D2"), Value::Empty);
         } else {
             assert_eq!(cell_picture(&s, "D2").unwrap().alt, "replacement");
-            assert_eq!(v(&s, "D2"), Value::Error(gridcraft_core::CellError::Value));
+            assert_eq!(v(&s, "D2"), Value::Error(nanshe_core::CellError::Value));
         }
     }
 }
 
 fn ymd(y: i64, m: i64, d: i64) -> Value {
-    Value::Number(gridcraft_core::date::serial_from_ymd(gridcraft_core::DateSystem::D1900, y, m, d).unwrap())
+    Value::Number(nanshe_core::date::serial_from_ymd(nanshe_core::DateSystem::D1900, y, m, d).unwrap())
 }
 
 fn series_date(seed: &str, range: &str, unit: &str) -> Session {
@@ -3765,8 +3765,8 @@ fn fill_series_year_clamps_leap_day() {
 fn autofill_month_pattern_uses_workbook_date_system() {
     use std::sync::Arc;
 
-    use gridcraft_core::date::serial_from_ymd;
-    use gridcraft_core::{DateSystem, RangeRef};
+    use nanshe_core::date::serial_from_ymd;
+    use nanshe_core::{DateSystem, RangeRef};
 
     for sys in [DateSystem::D1900, DateSystem::D1904] {
         for (source, target, seeds, expected) in [
@@ -3896,7 +3896,7 @@ fn a_cut_moves_the_sources_notes_hyperlinks_and_merges() {
     let d = s.doc().unwrap();
     let sh = d.wb.active().unwrap();
     let (a1, d1) = (CellRef::parse("A1").unwrap(), CellRef::parse("D1").unwrap());
-    assert_eq!(sh.merges, vec![gridcraft_core::RangeRef::parse("D1:E1").unwrap()], "the old merge must not stay behind");
+    assert_eq!(sh.merges, vec![nanshe_core::RangeRef::parse("D1:E1").unwrap()], "the old merge must not stay behind");
     assert!(!sh.comments.contains_key(&a1), "the note moved");
     assert!(sh.comments.contains_key(&d1), "the note is at the new cell");
     assert!(!sh.hyperlinks.contains_key(&a1), "the hyperlink moved");
@@ -4002,7 +4002,7 @@ fn links_to_files_are_saved_as_external_relationships() {
     for (cell, target, _) in links {
         s.execute("insert.link", json!({"cell": cell, "target": target})).unwrap();
     }
-    let bytes = gridcraft_xlsx::write_xlsx(&s.doc().unwrap().wb).unwrap();
+    let bytes = nanshe_xlsx::write_xlsx(&s.doc().unwrap().wb).unwrap();
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes.clone())).unwrap();
     let mut part = |name: &str| {
         let mut text = String::new();
@@ -4018,7 +4018,7 @@ fn links_to_files_are_saved_as_external_relationships() {
         assert_eq!(sheet.contains(&as_location), !external, "{cell} {target}: {sheet}");
     }
     assert!(sheet.contains("location=\"Sheet1!A2\""), "{sheet}");
-    let (back, _) = gridcraft_xlsx::read_xlsx(&bytes).unwrap();
+    let (back, _) = nanshe_xlsx::read_xlsx(&bytes).unwrap();
     for (cell, target, external) in links {
         let h = &back.sheet(0).unwrap().hyperlinks[&CellRef::parse(cell).unwrap()];
         assert_eq!((h.target.as_str(), h.external), (target.trim_start_matches('#'), external), "{cell}");
@@ -4046,24 +4046,24 @@ fn vertical_alignment_commands_and_roundtrip() {
         d.wb.styles.get(d.wb.active().unwrap().style_id(CellRef::parse(cell).unwrap())).clone()
     };
 
-    assert_eq!(style_of(&s, "A1").align.v, gridcraft_model::VAlign::Top);
-    assert_eq!(style_of(&s, "A2").align.v, gridcraft_model::VAlign::Center);
-    assert_eq!(style_of(&s, "A3").align.v, gridcraft_model::VAlign::Bottom);
+    assert_eq!(style_of(&s, "A1").align.v, nanshe_model::VAlign::Top);
+    assert_eq!(style_of(&s, "A2").align.v, nanshe_model::VAlign::Center);
+    assert_eq!(style_of(&s, "A3").align.v, nanshe_model::VAlign::Bottom);
 
     let d = s.doc().unwrap();
-    let bytes = gridcraft_xlsx::write_xlsx(&d.wb).unwrap();
-    let (reopened, _) = gridcraft_xlsx::read_xlsx(&bytes).unwrap();
+    let bytes = nanshe_xlsx::write_xlsx(&d.wb).unwrap();
+    let (reopened, _) = nanshe_xlsx::read_xlsx(&bytes).unwrap();
     let reopen_style = |cell: &str| reopened.styles.get(reopened.active().unwrap().style_id(CellRef::parse(cell).unwrap())).clone();
-    assert_eq!(reopen_style("A1").align.v, gridcraft_model::VAlign::Top);
-    assert_eq!(reopen_style("A2").align.v, gridcraft_model::VAlign::Center);
-    assert_eq!(reopen_style("A3").align.v, gridcraft_model::VAlign::Bottom);
+    assert_eq!(reopen_style("A1").align.v, nanshe_model::VAlign::Top);
+    assert_eq!(reopen_style("A2").align.v, nanshe_model::VAlign::Center);
+    assert_eq!(reopen_style("A3").align.v, nanshe_model::VAlign::Bottom);
 }
 
 /// Icon-set thresholds as read from a file (one per icon, the first the lower bound) decide the
 /// icon; a rule without thresholds uses Excel's defaults (percent 33 and 67) (#235).
 #[test]
 fn icon_set_thresholds_from_files_pick_the_icon() {
-    use gridcraft_model::{CfRule, CfValueKind, CondFormat};
+    use nanshe_model::{CfRule, CfValueKind, CondFormat};
     let mut s = s();
     s.execute("range.setValues", json!({"range": "A1", "values": [[0], [10], [20], [30], [100]]})).unwrap();
     s.execute("home.conditionalFormat", json!({"range": "A1:A5", "rule": {"type": "iconSet", "set": "3Arrows"}})).unwrap();
@@ -4075,7 +4075,7 @@ fn icon_set_thresholds_from_files_pick_the_icon() {
     assert_eq!([icon(&s, "A1"), icon(&s, "A4"), icon(&s, "A5")], [Some(0), Some(0), Some(2)]);
     let sh = std::sync::Arc::make_mut(&mut s.doc_mut().unwrap().wb).sheet_mut(0).unwrap();
     sh.cond_formats = vec![CondFormat {
-        ranges: vec![gridcraft_core::RangeRef::parse("A1:A5").unwrap()],
+        ranges: vec![nanshe_core::RangeRef::parse("A1:A5").unwrap()],
         rule: CfRule::IconSet {
             set: "3Arrows".into(),
             thresholds: vec![CfValueKind::Percent(0.0), CfValueKind::Number(10.0), CfValueKind::Number(25.0)],
@@ -4092,7 +4092,7 @@ fn icon_set_thresholds_from_files_pick_the_icon() {
 /// keys they would drop, and keep a text criterion already written as a string literal.
 #[test]
 fn conditional_format_styles_take_hex_colours_and_quoted_values() {
-    use gridcraft_model::{CfRule, Color, Fill, PatternType};
+    use nanshe_model::{CfRule, Color, Fill, PatternType};
     let mut s = s();
     s.execute("range.setValues", json!({"range": "A1", "values": [["Open"], ["Closed"], ["Blocked"]]})).unwrap();
     let rule = |s: &Session, i: usize| s.doc().unwrap().wb.active().unwrap().cond_formats[i].rule.clone();
@@ -4234,7 +4234,7 @@ fn row_height_and_column_width_take_pixels_or_excel_units() {
     let sheet = s.doc().unwrap().wb.active().unwrap();
     assert_eq!([sheet.row_height(0), sheet.row_height(1), sheet.row_height(2)], [40.0, 30.0, 546.0]);
     assert_eq!([sheet.col_width(0), sheet.col_width(1)], [64.0, 100.0]);
-    let bytes = gridcraft_xlsx::write_xlsx(&s.doc().unwrap().wb).unwrap();
+    let bytes = nanshe_xlsx::write_xlsx(&s.doc().unwrap().wb).unwrap();
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
     let mut xml = String::new();
     std::io::Read::read_to_string(&mut zip.by_name("xl/worksheets/sheet1.xml").unwrap(), &mut xml).unwrap();
@@ -4357,7 +4357,7 @@ fn encrypted_book(password: &str) -> Vec<u8> {
     let mut src = s();
     src.execute("cell.set", json!({"cell": "A1", "input": "42"})).unwrap();
     let xlsx = crate::io::save_bytes(&src.doc().unwrap().wb, "book.xlsx").unwrap();
-    gridcraft_xlsx::testing::encrypt_workbook(&xlsx, password)
+    nanshe_xlsx::testing::encrypt_workbook(&xlsx, password)
 }
 
 #[test]
@@ -4405,7 +4405,7 @@ fn encrypted_workbooks_open_with_their_password() {
 fn a_decrypted_workbook_never_overwrites_its_encrypted_original() {
     const PW: &str = "synthetic-pw-5522";
     let nonce = unique_nonce();
-    let dir = std::env::temp_dir().join(format!("gridcraft-encrypted-{}-{nonce}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-encrypted-{}-{nonce}", std::process::id()));
     std::fs::create_dir(&dir).unwrap();
     let path = dir.join("Secret.xlsx");
     let bytes = encrypted_book(PW);
@@ -4538,7 +4538,7 @@ fn csv_as_text_keeps_identifier_columns_as_written() {
 #[cfg(not(target_arch = "wasm32"))]
 fn cell_filename_follows_the_file_the_workbook_lives_in() {
     let nonce = unique_nonce();
-    let dir = std::env::temp_dir().join(format!("gridcraft-cellname-{}-{nonce}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-cellname-{}-{nonce}", std::process::id()));
     std::fs::create_dir(&dir).unwrap();
     let name = "=CELL(\"filename\",A1)";
     let sheet_of = "=MID(CELL(\"filename\",A1),FIND(\"]\",CELL(\"filename\",A1))+1,31)";
@@ -4548,7 +4548,7 @@ fn cell_filename_follows_the_file_the_workbook_lives_in() {
     fresh.execute("cell.set", json!({"cell": "A1", "input": name})).unwrap();
     fresh.execute("cell.set", json!({"cell": "A2", "input": sheet_of})).unwrap();
     assert_eq!(v(&fresh, "A1"), Value::from(""));
-    assert_eq!(v(&fresh, "A2"), Value::Error(gridcraft_core::CellError::Value));
+    assert_eq!(v(&fresh, "A2"), Value::Error(nanshe_core::CellError::Value));
 
     // Saved: it names the file. `CELL` is volatile, so the cells holding it answer from the next
     // recalculation (F9), the same as every other volatile function; the save itself is not one.
@@ -4595,7 +4595,7 @@ fn cell_filename_follows_the_file_the_workbook_lives_in() {
 /// the box is the only thing that decides.
 #[test]
 fn a_protected_sheet_allows_sorting_and_filtering_only_when_it_says_so() {
-    let allow = |s: &mut Session, f: fn(&mut gridcraft_model::SheetProtection)| {
+    let allow = |s: &mut Session, f: fn(&mut nanshe_model::SheetProtection)| {
         let d = s.doc_mut().unwrap();
         let mut wb = (*d.wb).clone();
         if let Some(p) = wb.sheet_mut(0).and_then(|sh| sh.protection.as_mut()) {
@@ -4702,7 +4702,7 @@ fn convert_to_number_turns_numbers_stored_as_text_into_numbers() {
 
 #[test]
 fn saving_csv_keeps_leading_empty_columns_and_rows() {
-    let wb = gridcraft_xlsx::read_csv(b",x\r\n\r\n,,y\r\n", &gridcraft_xlsx::CsvOptions::default()).unwrap();
+    let wb = nanshe_xlsx::read_csv(b",x\r\n\r\n,,y\r\n", &nanshe_xlsx::CsvOptions::default()).unwrap();
     let out = crate::io::save_bytes(&wb, "a.csv").unwrap();
     assert_eq!(String::from_utf8(out).unwrap(), ",x,\r\n,,\r\n,,y\r\n");
 }
@@ -4730,7 +4730,7 @@ fn rotate_rejects_flip_param_instead_of_swapping_size() {
 
 #[test]
 fn box_whisker_quartile_methods_survive_xlsx() {
-    use gridcraft_model::QuartileMethod;
+    use nanshe_model::QuartileMethod;
     let mut s = s();
     chart_data(&mut s);
     s.execute("insert.chart", json!({"range": "A1:C5", "type": "boxWhisker"})).unwrap();
@@ -4746,8 +4746,8 @@ fn box_whisker_quartile_methods_survive_xlsx() {
     let sh = wb.sheet_mut(0).unwrap();
     assert!(sh.charts[0].series.len() > 1);
     sh.charts[0].series[1].quartiles = QuartileMethod::Exclusive;
-    let bytes = gridcraft_xlsx::write_xlsx(&wb).unwrap();
-    let (back, _) = gridcraft_xlsx::read_xlsx(&bytes).unwrap();
+    let bytes = nanshe_xlsx::write_xlsx(&wb).unwrap();
+    let (back, _) = nanshe_xlsx::read_xlsx(&bytes).unwrap();
     let series = &back.active().unwrap().charts[0].series;
     assert_eq!(series[0].quartiles, QuartileMethod::Inclusive);
     assert_eq!(series[1].quartiles, QuartileMethod::Exclusive);
@@ -4843,9 +4843,9 @@ fn switch_windows_lists_workbooks_by_stable_id_and_switches_to_one() {
     assert_eq!(s.doc().unwrap().uid, book1);
     assert_eq!(v(&s, "A1"), Value::text("first"));
     assert_eq!(list[0]["active"].as_bool(), Some(true));
-    s.execute("file.save", json!({"path": std::env::temp_dir().join(format!("gridcraft-uid-{}.xlsx", std::process::id()))})).unwrap();
+    s.execute("file.save", json!({"path": std::env::temp_dir().join(format!("nanshe-uid-{}.xlsx", std::process::id()))})).unwrap();
     assert_eq!(s.doc().unwrap().uid, book1, "saving keeps the id");
-    let _ = std::fs::remove_file(std::env::temp_dir().join(format!("gridcraft-uid-{}.xlsx", std::process::id())));
+    let _ = std::fs::remove_file(std::env::temp_dir().join(format!("nanshe-uid-{}.xlsx", std::process::id())));
 
     assert!(s.execute("view.switchWindows", json!({"doc": book3 + 1000})).is_err());
     assert!(s.execute("view.switchWindows", json!({"doc": "Book1"})).is_err());
@@ -4870,7 +4870,7 @@ fn new_window_shares_the_workbook_and_closes_window_by_window() {
 
     // An edit in window 2 is in window 1's workbook, and saving from window 2 saves it.
     s.execute("cell.set", json!({"cell": "A1", "input": "shared"})).unwrap();
-    let path = std::env::temp_dir().join(format!("gridcraft-windows-{}.xlsx", std::process::id()));
+    let path = std::env::temp_dir().join(format!("nanshe-windows-{}.xlsx", std::process::id()));
     s.execute("file.save", json!({"path": path})).unwrap();
     s.execute("window.activate", json!({"window": first})).unwrap();
     assert_eq!((s.doc().unwrap().uid, v(&s, "A1")), (book, Value::text("shared")));
@@ -4895,7 +4895,7 @@ fn new_window_shares_the_workbook_and_closes_window_by_window() {
 fn switching_windows_swaps_their_views_without_dirtying_the_workbook() {
     let mut s = s();
     s.execute("home.insertSheet", json!({})).unwrap();
-    let path = std::env::temp_dir().join(format!("gridcraft-window-views-{}.xlsx", std::process::id()));
+    let path = std::env::temp_dir().join(format!("nanshe-window-views-{}.xlsx", std::process::id()));
     s.execute("file.save", json!({"path": path})).unwrap();
     let _ = std::fs::remove_file(&path);
     s.execute("sheet.activate", json!({"sheet": 0})).unwrap();
@@ -4926,7 +4926,7 @@ fn switching_windows_swaps_their_views_without_dirtying_the_workbook() {
 fn window_swaps_share_the_workbook_and_save_records_the_latest_window_sheet() {
     let mut s = s();
     s.execute("home.insertSheet", json!({})).unwrap();
-    let path = std::env::temp_dir().join(format!("gridcraft-window-arc-{}.xlsx", std::process::id()));
+    let path = std::env::temp_dir().join(format!("nanshe-window-arc-{}.xlsx", std::process::id()));
     s.execute("file.save", json!({"path": path})).unwrap();
     s.execute("sheet.activate", json!({"sheet": 0})).unwrap();
     s.execute("selection.set", json!({"range": "B2"})).unwrap();
@@ -5017,7 +5017,7 @@ fn hide_unhide_and_switch_by_window_id() {
 fn open_replaces_an_untouched_blank_workbook_and_its_windows() {
     let mut s = s();
     s.execute("view.newWindow", json!({})).unwrap();
-    let path = std::env::temp_dir().join(format!("gridcraft-open-blank-{}.csv", std::process::id()));
+    let path = std::env::temp_dir().join(format!("nanshe-open-blank-{}.csv", std::process::id()));
     std::fs::write(&path, "a,b\n1,2\n").unwrap();
     s.execute("file.open", json!({"path": path})).unwrap();
     let _ = std::fs::remove_file(&path);

@@ -3,9 +3,9 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use gridcraft_core::{CellRef, RangeRef, Value};
-use gridcraft_model::{Sheet, Workbook};
-use gridcraft_numfmt::{Formatted, NumberFormat, format_value};
+use nanshe_core::{CellRef, RangeRef, Value};
+use nanshe_model::{Sheet, Workbook};
+use nanshe_numfmt::{Formatted, NumberFormat, format_value};
 
 /// Parsed number formats are cached by code.
 fn parsed(code: &str) -> NumberFormat {
@@ -37,7 +37,7 @@ pub fn format(v: &Value, code: &str, wb: &Workbook) -> Formatted {
 /// as a number, boolean, error, date or formula, or lose a leading apostrophe). Such text is shown
 /// for editing with a leading `'`, as Excel does for text carrying a quote prefix, so that
 /// committing the editor unchanged keeps the cell as text.
-fn text_needs_quote_prefix(t: &str, sys: gridcraft_core::date::DateSystem) -> bool {
+fn text_needs_quote_prefix(t: &str, sys: nanshe_core::date::DateSystem) -> bool {
     if t.is_empty() {
         return false;
     }
@@ -49,7 +49,7 @@ fn text_needs_quote_prefix(t: &str, sys: gridcraft_core::date::DateSystem) -> bo
     if matches!(first, Some('+' | '-')) && second.is_some_and(|c| c.is_ascii_alphabetic() || c == '(') {
         return true;
     }
-    !matches!(gridcraft_core::parse::parse_input(t, sys).value, Value::Text(ref x) if x.as_ref() == t)
+    !matches!(nanshe_core::parse::parse_input(t, sys).value, Value::Text(ref x) if x.as_ref() == t)
 }
 
 /// What the cell editor and the formula bar start from. Same as `Cell::input_text`, except that a
@@ -72,12 +72,12 @@ pub fn edit_text(wb: &Workbook, sheet: &Sheet, c: CellRef) -> String {
     if cell.formula.is_some() || !parsed(code).is_date() {
         return raw;
     }
-    let reads_back = |s: &str| matches!(gridcraft_core::parse::parse_input(s, wb.date_system).value, Value::Number(m) if (m - n).abs() < 1e-9);
+    let reads_back = |s: &str| matches!(nanshe_core::parse::parse_input(s, wb.date_system).value, Value::Number(m) if (m - n).abs() < 1e-9);
     let shown = format(&cell.value, code, wb).text;
     if reads_back(&shown) {
         return shown;
     }
-    let Some(dt) = gridcraft_core::date::datetime_from_serial(wb.date_system, *n) else { return raw };
+    let Some(dt) = nanshe_core::date::datetime_from_serial(wb.date_system, *n) else { return raw };
     let time = format!("{:02}:{:02}:{:02}", dt.hour, dt.minute, dt.second);
     let date = format!("{:04}-{:02}-{:02}", dt.year, dt.month, dt.day);
     let iso = if *n < 1.0 {

@@ -1,9 +1,9 @@
 //! Ctrl+click on a hyperlink cell follows the link (#1198), like a plain click does.
 
 use egui::{Event, Modifiers, PointerButton, Pos2};
-use gridcraft_engine::Session;
-use gridcraft_engine::core::CellRef;
-use gridcraft_ui_egui::{SheetApp, grid::Geo};
+use nanshe_engine::Session;
+use nanshe_engine::core::CellRef;
+use nanshe_ui_egui::{SheetApp, grid::Geo};
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;

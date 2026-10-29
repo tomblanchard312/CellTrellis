@@ -1,7 +1,7 @@
 //! In-place editing of a text box. The draft becomes one undoable engine command.
 
 use egui::{Color32, FontId, Key, Modifiers, Rect, TextEdit};
-use gridcraft_engine::{Mode, model::ShapeKind};
+use nanshe_engine::{Mode, model::ShapeKind};
 use serde_json::json;
 
 use crate::{SheetApp, grid::Geo, theme};
@@ -19,7 +19,7 @@ pub struct EditState {
 
 /// Returns the stable id for the text-box editor.
 pub(crate) fn editor_id() -> egui::Id {
-    egui::Id::unique("gridcraft.text_box_editor")
+    egui::Id::unique("nanshe.text_box_editor")
 }
 
 impl SheetApp {
@@ -112,7 +112,7 @@ pub(crate) fn contains_pointer(app: &SheetApp, ctx: &egui::Context) -> bool {
 }
 
 /// Draws the text-box editor with focus/caret state, save shortcuts, scrolling/clipping, and clears editing mode when the shape is gone.
-pub(crate) fn show(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo, sh: &gridcraft_engine::model::Sheet) {
+pub(crate) fn show(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo, sh: &nanshe_engine::model::Sheet) {
     let Some(mut ed) = app.text_box_editor.take() else { return };
     if app.view_key() != Some((ed.uid, ed.sheet)) {
         app.text_box_editor = Some(ed);

@@ -1,8 +1,8 @@
 //! Advanced Filter's dialog must route both actions to the same engine command.
 
 use egui_kittest::kittest::Queryable;
-use gridcraft_ui_egui::SheetApp;
-use gridcraft_ui_egui::control::{Outcome, handle};
+use nanshe_ui_egui::SheetApp;
+use nanshe_ui_egui::control::{Outcome, handle};
 use serde_json::{Value as Json, json};
 
 fn harness() -> egui_kittest::Harness<'static, SheetApp> {
@@ -29,10 +29,7 @@ fn dialog_offers_copy_action_and_runs_unique_extract() {
     let rect = h.ctx.memory(|m| m.area_rect(egui::Id::unique("dialog").with("advancedFilter"))).unwrap();
     assert!(rect.width() < 500.0 && rect.height() < 400.0, "dialog must fit its controls: {rect:?}");
     assert!(
-        h.state()
-            .dialog
-            .as_ref()
-            .is_some_and(|d| d.fields.iter().any(|f| matches!(f, gridcraft_ui_egui::dialogs::Field::Text { key: "copyTo", .. })))
+        h.state().dialog.as_ref().is_some_and(|d| d.fields.iter().any(|f| matches!(f, nanshe_ui_egui::dialogs::Field::Text { key: "copyTo", .. })))
     );
     assert_eq!(h.state().dialog.as_ref().unwrap().values["range"], "A1:A4");
     control(&mut h, "ui.dialog.set", json!({"field": "copyTo", "value": "C1"}));
@@ -42,7 +39,7 @@ fn dialog_offers_copy_action_and_runs_unique_extract() {
     h.run_steps(6);
     assert!(h.state().dialog.is_none());
     assert!(h.state().message.is_none());
-    assert_eq!(h.state().session.active().unwrap().wb.active().unwrap().value(gridcraft_engine::core::CellRef::parse("C3").unwrap()).display(), "B");
+    assert_eq!(h.state().session.active().unwrap().wb.active().unwrap().value(nanshe_engine::core::CellRef::parse("C3").unwrap()).display(), "B");
 }
 
 #[test]
@@ -57,5 +54,5 @@ fn in_place_action_does_not_use_stale_copy_destination() {
     let r = control(&mut h, "ui.dialog.confirm", json!({}));
     assert_eq!(r["ok"], true, "{r}");
     assert!(h.state().session.active().unwrap().wb.active().unwrap().is_row_hidden(1));
-    assert!(h.state().session.active().unwrap().wb.active().unwrap().value(gridcraft_engine::core::CellRef::parse("K1").unwrap()).is_empty());
+    assert!(h.state().session.active().unwrap().wb.active().unwrap().value(nanshe_engine::core::CellRef::parse("K1").unwrap()).is_empty());
 }

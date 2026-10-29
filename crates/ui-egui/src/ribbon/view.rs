@@ -20,7 +20,7 @@ pub(super) fn view(app: &mut SheetApp, ui: &mut Ui) {
     let s = app.session.active().and_then(|d| d.wb.active().map(|s| (s.show_gridlines, s.show_headings))).unwrap_or((true, true));
     let lang = app.ui.language;
     let page_layout =
-        app.session.active().and_then(|d| d.wb.active().map(|s| s.view == gridcraft_engine::model::SheetViewMode::PageLayout)).unwrap_or(false);
+        app.session.active().and_then(|d| d.wb.active().map(|s| s.view == nanshe_engine::model::SheetViewMode::PageLayout)).unwrap_or(false);
     // Two columns of two, as in Excel's Show group: four stacked rows overflow the ribbon body.
     ui.vertical(|ui| {
         // Rulers exist only in Page Layout view.

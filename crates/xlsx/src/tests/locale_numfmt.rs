@@ -6,8 +6,8 @@
 use std::io::Read;
 use std::sync::Arc;
 
-use gridcraft_core::{CellRef, Value};
-use gridcraft_model::*;
+use nanshe_core::{CellRef, Value};
+use nanshe_model::*;
 
 use crate::tables::builtin_format;
 use crate::{read_xlsx, write_xlsx};

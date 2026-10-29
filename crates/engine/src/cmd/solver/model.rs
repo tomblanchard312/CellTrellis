@@ -156,7 +156,7 @@ fn cells_of(wb: &Workbook, t: &str, default_sheet: usize, cap: usize) -> Result<
 }
 
 fn num_text(t: &str) -> Option<f64> {
-    gridcraft_core::parse::parse_number_text(t.trim()).filter(|v| v.is_finite())
+    nanshe_core::parse::parse_number_text(t.trim()).filter(|v| v.is_finite())
 }
 
 /// Splits `"B5 <= 10"` / `"B2 int"` into (lhs, relation, rhs).
@@ -301,7 +301,7 @@ fn ref_text(sheet_name: &str, cells: &str) -> String {
         .filter(|x| !x.is_empty())
         .filter_map(|part| {
             let r = RangeRef::parse(split_sheet(part).1.trim())?;
-            let abs = |c: CellRef| format!("${}${}", gridcraft_core::col_to_letters(c.col), c.row as u64 + 1);
+            let abs = |c: CellRef| format!("${}${}", nanshe_core::col_to_letters(c.col), c.row as u64 + 1);
             Some(if r.is_single() { format!("{q}!{}", abs(r.start)) } else { format!("{q}!{}:{}", abs(r.start), abs(r.end)) })
         })
         .collect::<Vec<_>>()

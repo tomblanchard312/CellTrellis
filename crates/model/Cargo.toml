@@ -1,17 +1,17 @@
 [package]
-name = "gridcraft-model"
+name = "nanshe-model"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "GridCraft document model: workbooks, sheets, cells, styles, tables, charts"
+description = "Nanshe document model: workbooks, sheets, cells, styles, tables, charts"
 
 [lints]
 workspace = true
 
 [dependencies]
-gridcraft-core = { workspace = true }
+nanshe-core = { workspace = true }
 sha2 = { workspace = true }
-gridcraft-formula = { workspace = true }
+nanshe-formula = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
 

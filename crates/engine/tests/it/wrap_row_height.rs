@@ -2,7 +2,7 @@
 //! estimate (words can't split, so each drawn line ends early and narrow columns
 //! need more lines than width/estimate suggests).
 
-use gridcraft_engine::Session;
+use nanshe_engine::Session;
 use serde_json::json;
 
 fn session() -> Session {

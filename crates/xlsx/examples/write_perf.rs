@@ -1,5 +1,5 @@
 //! XLSX save timing on a generated workbook of realistic shape (release build):
-//! `cargo run --release -p gridcraft-xlsx --example write_perf -- [rows] [runs] [out.xlsx]`
+//! `cargo run --release -p nanshe-xlsx --example write_perf -- [rows] [runs] [out.xlsx]`
 //!
 //! The workbook mixes what a large business sheet holds: repeated and unique text, integers,
 //! decimals, dates, booleans, formulas with cached values, a few styles, a header row and a
@@ -8,8 +8,8 @@
 
 use std::time::Instant;
 
-use gridcraft_core::{CellRef, Value};
-use gridcraft_model::{Cell, Formula, NumFmt, Sheet, StyleId, Workbook};
+use nanshe_core::{CellRef, Value};
+use nanshe_model::{Cell, Formula, NumFmt, Sheet, StyleId, Workbook};
 
 fn build(rows: u32) -> Workbook {
     let mut wb = Workbook::new();
@@ -76,7 +76,7 @@ fn main() {
     let mut bytes = vec![];
     for i in 0..runs {
         let t = Instant::now();
-        bytes = gridcraft_xlsx::write_xlsx(&wb).expect("write");
+        bytes = nanshe_xlsx::write_xlsx(&wb).expect("write");
         let dt = t.elapsed().as_secs_f64() * 1000.0;
         println!("run {i}: {dt:.1} ms ({} bytes)", bytes.len());
         times.push(dt);

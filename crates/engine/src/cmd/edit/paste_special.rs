@@ -18,7 +18,7 @@ fn apply_operation(op: &str, old: &Cell, new: &mut Cell) {
             "add" => Value::number(x + y),
             "subtract" => Value::number(x - y),
             "multiply" => Value::number(x * y),
-            "divide" if y == 0.0 => Value::Error(gridcraft_core::CellError::Div0),
+            "divide" if y == 0.0 => Value::Error(nanshe_core::CellError::Div0),
             "divide" => Value::number(x / y),
             _ => operand.clone(),
         };
@@ -30,7 +30,7 @@ fn apply_operation(op: &str, old: &Cell, new: &mut Cell) {
         && (operand.is_number() || operand.is_empty())
         && let Some(symbol) = operation_symbol(op)
     {
-        let text = format!("=({}){symbol}{}", formula.text, gridcraft_core::number_to_text(y));
+        let text = format!("=({}){symbol}{}", formula.text, nanshe_core::number_to_text(y));
         new.formula = Some(std::sync::Arc::new(Formula::new(&text)));
         new.value = Value::Empty;
     }
@@ -49,7 +49,7 @@ fn operation_symbol(op: &str) -> Option<char> {
 fn copy_merges(
     cx: &mut crate::cmd::Ctx,
     dest_sheet: usize,
-    src_sheet: &gridcraft_model::Sheet,
+    src_sheet: &nanshe_model::Sheet,
     src: RangeRef,
     at: CellRef,
     what: What,
@@ -120,7 +120,7 @@ pub(super) fn paste_special(s: &mut Session, p: &Json) -> Result<Json> {
     edit(s, |cx| {
         // Styles from another workbook must be re-interned.
         let mut style_map = std::collections::HashMap::new();
-        let mut map_style = |id: StyleId, wb: &mut gridcraft_model::Workbook| -> StyleId {
+        let mut map_style = |id: StyleId, wb: &mut nanshe_model::Workbook| -> StyleId {
             if same_doc {
                 return id;
             }
@@ -167,9 +167,9 @@ pub(super) fn paste_special(s: &mut Session, p: &Json) -> Result<Json> {
                     // those references before the workbook-wide move adjustment below.
                     let e = if dest_sheet != clip.sheet {
                         e.map(&mut |x| match x {
-                            gridcraft_formula::Expr::Ref(mut r) if r.sheet == gridcraft_formula::SheetSel::Current => {
-                                r.sheet = gridcraft_formula::SheetSel::Named(src_sheet_name.clone());
-                                gridcraft_formula::Expr::Ref(r)
+                            nanshe_formula::Expr::Ref(mut r) if r.sheet == nanshe_formula::SheetSel::Current => {
+                                r.sheet = nanshe_formula::SheetSel::Named(src_sheet_name.clone());
+                                nanshe_formula::Expr::Ref(r)
                             }
                             other => other,
                         })
@@ -183,15 +183,12 @@ pub(super) fn paste_special(s: &mut Session, p: &Json) -> Result<Json> {
                     moved.dynamic = f.dynamic;
                     return Some(std::sync::Arc::new(moved));
                 }
-                let moved = gridcraft_formula::adjust::shift_relative(e, dest.row as i64 - sc.row as i64, dest.col as i64 - sc.col as i64);
+                let moved = nanshe_formula::adjust::shift_relative(e, dest.row as i64 - sc.row as i64, dest.col as i64 - sc.col as i64);
                 Some(std::sync::Arc::new(Formula { dynamic: f.dynamic, ..Formula::from_expr(moved) }))
             };
             if link {
-                let sheet_prefix = if dest_sheet == clip.sheet && same_doc {
-                    String::new()
-                } else {
-                    format!("{}!", gridcraft_formula::quote_sheet(&src_sheet_name))
-                };
+                let sheet_prefix =
+                    if dest_sheet == clip.sheet && same_doc { String::new() } else { format!("{}!", nanshe_formula::quote_sheet(&src_sheet_name)) };
                 new.formula = Some(std::sync::Arc::new(Formula::new(&format!("={sheet_prefix}{}", sc.a1()))));
                 new.value = Value::Empty;
                 new_picture = None;
@@ -235,7 +232,7 @@ pub(super) fn paste_special(s: &mut Session, p: &Json) -> Result<Json> {
                 if op != "none" && matches!(what, What::All | What::Values | What::ValuesAndNumberFormats | What::Formulas) && new.formula.is_none() {
                     if old_picture.is_some() || new_picture.is_some() {
                         new_picture = None;
-                        new.value = Value::Error(gridcraft_core::CellError::Value);
+                        new.value = Value::Error(nanshe_core::CellError::Value);
                     }
                     // Numbers stored as text participate; other text and errors stay as they are.
                     apply_operation(&op, &old, &mut new);
@@ -288,9 +285,9 @@ pub(super) fn paste_special(s: &mut Session, p: &Json) -> Result<Json> {
             // References elsewhere to the moved block now point to its new place.
             let dest_name = cx.wb.sheet(dest_sheet).map(|s| s.name.clone()).unwrap_or_default();
             let e = if dest_sheet == clip.sheet {
-                gridcraft_formula::adjust::Edit::Move { from: src, to_row: at.row, to_col: at.col }
+                nanshe_formula::adjust::Edit::Move { from: src, to_row: at.row, to_col: at.col }
             } else {
-                gridcraft_formula::adjust::Edit::MoveToSheet { from: src, to_sheet: dest_name, to_row: at.row, to_col: at.col }
+                nanshe_formula::adjust::Edit::MoveToSheet { from: src, to_sheet: dest_name, to_row: at.row, to_col: at.col }
             };
             rewrite_all_formulas(&mut cx.wb, &src_sheet_name, &e);
             cx.structural = true;
@@ -316,8 +313,8 @@ pub(super) fn paste_special(s: &mut Session, p: &Json) -> Result<Json> {
 }
 
 /// Applies a reference adjustment to every cell formula and defined name in the workbook.
-pub(crate) fn rewrite_all_formulas(wb: &mut gridcraft_model::Workbook, target: &str, e: &gridcraft_formula::adjust::Edit) {
-    use gridcraft_formula::adjust::Edit;
+pub(crate) fn rewrite_all_formulas(wb: &mut nanshe_model::Workbook, target: &str, e: &nanshe_formula::adjust::Edit) {
+    use nanshe_formula::adjust::Edit;
     // Rows and columns inserted or deleted on the target sheet move its legacy array ranges too
     // (a cut moves its arrays itself).
     let moves_arrays = matches!(e, Edit::Insert { .. } | Edit::Delete { .. } | Edit::InsertCells { .. } | Edit::DeleteCells { .. });
@@ -332,8 +329,8 @@ pub(crate) fn rewrite_all_formulas(wb: &mut gridcraft_model::Workbook, target: &
         let Some(sheet) = wb.sheet_mut(si) else { continue };
         for (c, f) in keys {
             let Some(expr) = f.expr() else { continue };
-            let new = gridcraft_formula::adjust::adjust(expr, &host, target, e);
-            let text = gridcraft_formula::print(&new);
+            let new = nanshe_formula::adjust::adjust(expr, &host, target, e);
+            let text = nanshe_formula::print(&new);
             let array = match f.array {
                 Some(a) if on_target => crate::cmd::sheet::map_range(a, e),
                 a => a,
@@ -349,10 +346,10 @@ pub(crate) fn rewrite_all_formulas(wb: &mut gridcraft_model::Workbook, target: &
         }
     }
     for n in wb.names.iter_mut() {
-        if let Ok(expr) = gridcraft_formula::parse_name(&n.formula) {
+        if let Ok(expr) = nanshe_formula::parse_name(&n.formula) {
             // Names are workbook-level: unqualified refs don't occur; qualified ones adjust.
-            let new = gridcraft_formula::adjust::adjust(expr, "\u{0}", target, e);
-            n.formula = gridcraft_formula::print(&new);
+            let new = nanshe_formula::adjust::adjust(expr, "\u{0}", target, e);
+            n.formula = nanshe_formula::print(&new);
         }
     }
 }

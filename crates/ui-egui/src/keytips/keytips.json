@@ -33,7 +33,7 @@
    "seq": "JI",
    "kind": "tab",
    "target": "Draw",
-   "note": "Two-letter unit. Deeper Draw letters differ between Excel and GridCraft; left blank for future contributors."
+   "note": "Two-letter unit. Deeper Draw letters differ between Excel and Nanshe; left blank for future contributors."
   },
   {
    "seq": "P",
@@ -246,7 +246,7 @@
    "target": "home.eraseBorder",
    "pending": true,
    "excel": "Erase Border",
-   "note": "pending: Excel arms an eraser pen; GridCraft has no border pen mode yet"
+   "note": "pending: Excel arms an eraser pen; Nanshe has no border pen mode yet"
   },
   {
    "seq": "HBG",

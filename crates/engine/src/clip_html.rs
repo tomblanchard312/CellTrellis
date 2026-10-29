@@ -10,9 +10,9 @@
 /// Largest clipboard HTML we look at; past this the paste uses the plain text alone.
 const MAX_HTML: usize = 16 * 1024 * 1024;
 /// Widest `colspan` honoured (the sheet's column count).
-const MAX_SPAN: usize = gridcraft_core::MAX_COLS as usize;
+const MAX_SPAN: usize = nanshe_core::MAX_COLS as usize;
 /// Tallest `rowspan` honoured (the sheet's row count).
-const MAX_ROW_SPAN: usize = gridcraft_core::MAX_ROWS as usize;
+const MAX_ROW_SPAN: usize = nanshe_core::MAX_ROWS as usize;
 /// Most cells, span placeholders included, one paste reads from the HTML. Past it the rest of the
 /// table is ignored: the HTML only refines cells of the tab-separated text, which stays the source.
 const MAX_HTML_CELLS: usize = 1_000_000;
@@ -361,7 +361,7 @@ pub(crate) fn format_for(shown: &str, n: f64) -> Option<String> {
         code.push_str(&"0".repeat(decimals.min(30)));
     }
     code.push_str(&quote(suffix));
-    let rendered = gridcraft_numfmt::text_function(&gridcraft_core::Value::number(n), &code, gridcraft_core::date::DateSystem::D1900).ok()?;
+    let rendered = nanshe_numfmt::text_function(&nanshe_core::Value::number(n), &code, nanshe_core::date::DateSystem::D1900).ok()?;
     (normalized(&rendered) == shown).then_some(code)
 }
 

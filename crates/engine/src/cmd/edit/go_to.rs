@@ -40,7 +40,7 @@ pub(in super::super) fn go_to(s: &mut Session, p: &Json) -> Result<Json> {
     let out = selection_set(s, &json!({"sheet": sheet, "range": range}))?;
     if bool_param(p, "record") == Some(true) && !named {
         let d = s.doc_mut()?;
-        let prefix = gridcraft_core::quote_sheet(&d.wb.sheet(sheet).map(|sh| sh.name.clone()).unwrap_or_default());
+        let prefix = nanshe_core::quote_sheet(&d.wb.sheet(sheet).map(|sh| sh.name.clone()).unwrap_or_default());
         let entry = areas.iter().map(|r| format!("{prefix}!{}", r.a1())).collect::<Vec<_>>().join(",");
         d.go_to_recent.retain(|r| !r.eq_ignore_ascii_case(&entry));
         d.go_to_recent.insert(0, entry);
@@ -80,7 +80,7 @@ pub(super) fn reference_parts(text: &str) -> impl Iterator<Item = &str> {
 /// Where one part of a Go To reference points, seen from sheet `sheet`: the sheet, its areas,
 /// and whether a defined name or a table gave them. `Sheet2!Name` is the name scoped to Sheet2.
 /// A name counts when what it refers to is a reference; a constant or a formula is not one.
-fn go_to_target(wb: &gridcraft_model::Workbook, sheet: usize, part: &str, depth: usize) -> Option<(usize, Vec<RangeRef>, bool)> {
+fn go_to_target(wb: &nanshe_model::Workbook, sheet: usize, part: &str, depth: usize) -> Option<(usize, Vec<RangeRef>, bool)> {
     if part.is_empty() || depth > GO_TO_NAME_DEPTH {
         return None;
     }
@@ -93,7 +93,7 @@ fn go_to_target(wb: &gridcraft_model::Workbook, sheet: usize, part: &str, depth:
         return Some((on, vec![r], false));
     }
     let name = match prefix {
-        Some(_) => wb.names.iter().find(|n| n.scope == Some(on) && gridcraft_formula::same_name(&n.name, body)),
+        Some(_) => wb.names.iter().find(|n| n.scope == Some(on) && nanshe_formula::same_name(&n.name, body)),
         None => wb.name(body, sheet),
     };
     if let Some(n) = name {
@@ -111,7 +111,7 @@ fn go_to_target(wb: &gridcraft_model::Workbook, sheet: usize, part: &str, depth:
 
 /// The sheet and areas defined name `n` refers to, seen from sheet `sheet`, when that is a
 /// reference.
-fn name_areas(wb: &gridcraft_model::Workbook, n: &gridcraft_model::DefinedName, sheet: usize, depth: usize) -> Option<(usize, Vec<RangeRef>)> {
+fn name_areas(wb: &nanshe_model::Workbook, n: &nanshe_model::DefinedName, sheet: usize, depth: usize) -> Option<(usize, Vec<RangeRef>)> {
     let from = n.scope.unwrap_or(sheet);
     let formula = n.formula.trim().trim_start_matches('=');
     let mut target: Option<usize> = None;
@@ -134,22 +134,22 @@ fn name_areas(wb: &gridcraft_model::Workbook, n: &gridcraft_model::DefinedName, 
 /// of every sheet, in alphabetical order. A name scoped to another sheet is written `Sheet2!Name`,
 /// and the active sheet's own name hides the workbook name it shares. Hidden names and names that
 /// do not refer to a range are left out.
-pub fn go_to_names(wb: &gridcraft_model::Workbook, sheet: usize) -> Vec<String> {
+pub fn go_to_names(wb: &nanshe_model::Workbook, sheet: usize) -> Vec<String> {
     let own: std::collections::HashSet<String> =
-        wb.names.iter().filter(|n| n.scope == Some(sheet)).map(|n| gridcraft_formula::fold_name(&n.name)).collect();
+        wb.names.iter().filter(|n| n.scope == Some(sheet)).map(|n| nanshe_formula::fold_name(&n.name)).collect();
     let mut out: Vec<String> = wb
         .names
         .iter()
         .filter(|n| !n.hidden && name_areas(wb, n, sheet, 0).is_some())
         .filter_map(|n| match n.scope {
-            None if own.contains(&gridcraft_formula::fold_name(&n.name)) => None,
+            None if own.contains(&nanshe_formula::fold_name(&n.name)) => None,
             None => Some(n.name.clone()),
             Some(s) if s == sheet => Some(n.name.clone()),
-            Some(s) => Some(format!("{}!{}", gridcraft_core::quote_sheet(&wb.sheet(s)?.name), n.name)),
+            Some(s) => Some(format!("{}!{}", nanshe_core::quote_sheet(&wb.sheet(s)?.name), n.name)),
         })
         .collect();
-    out.sort_by_cached_key(|n| gridcraft_formula::fold_name(n));
-    out.dedup_by(|a, b| gridcraft_formula::same_name(a, b));
+    out.sort_by_cached_key(|n| nanshe_formula::fold_name(n));
+    out.dedup_by(|a, b| nanshe_formula::same_name(a, b));
     out
 }
 

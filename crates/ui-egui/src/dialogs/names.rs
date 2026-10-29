@@ -60,10 +60,7 @@ pub(super) fn name_manager(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog
 
 /// The names Paste Names offers in the active workbook.
 pub(super) fn pasteable_names(app: &SheetApp) -> Vec<String> {
-    app.session
-        .active()
-        .map(|doc| gridcraft_engine::cmd::formulas::pasteable_names(&doc.wb).into_iter().map(|(n, _)| n).collect())
-        .unwrap_or_default()
+    app.session.active().map(|doc| nanshe_engine::cmd::formulas::pasteable_names(&doc.wb).into_iter().map(|(n, _)| n).collect()).unwrap_or_default()
 }
 
 /// Puts a defined name into the formula being edited, at the caret. Without an edit under way it

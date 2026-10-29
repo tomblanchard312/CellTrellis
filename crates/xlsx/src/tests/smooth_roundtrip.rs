@@ -1,6 +1,6 @@
 //! Test that XLSX smooth line settings round-trip correctly.
 
-use gridcraft_model::{Anchor, Chart, ChartKind, Color, LegendPos, Series, Sheet, Workbook};
+use nanshe_model::{Anchor, Chart, ChartKind, Color, LegendPos, Series, Sheet, Workbook};
 use std::sync::Arc;
 
 use crate::{read_xlsx, write_xlsx};
@@ -24,7 +24,7 @@ fn smooth_line_setting_round_trips() {
     s.charts.push(Chart {
         id: 1,
         kind: ChartKind::Line,
-        anchor: Anchor { cell: gridcraft_core::CellRef::new(0, 3), width: 480.0, height: 300.0, ..Anchor::default() },
+        anchor: Anchor { cell: nanshe_core::CellRef::new(0, 3), width: 480.0, height: 300.0, ..Anchor::default() },
         title: Some("Straight Line".into()),
         series: vec![base_series.clone()],
         legend: LegendPos::Bottom,
@@ -42,7 +42,7 @@ fn smooth_line_setting_round_trips() {
     s.charts.push(Chart {
         id: 2,
         kind: ChartKind::ScatterLines,
-        anchor: Anchor { cell: gridcraft_core::CellRef::new(15, 3), width: 480.0, height: 300.0, ..Anchor::default() },
+        anchor: Anchor { cell: nanshe_core::CellRef::new(15, 3), width: 480.0, height: 300.0, ..Anchor::default() },
         title: Some("Smooth Scatter".into()),
         series: vec![smooth_series],
         legend: LegendPos::Bottom,

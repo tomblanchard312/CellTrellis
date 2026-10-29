@@ -12,7 +12,7 @@ pub(super) fn insert_table(s: &mut Session, p: &Json) -> Result<Json> {
     if d.wb.sheet(sheet).is_some_and(|sh| sh.tables.iter().any(|t| t.range.intersects(&r))) {
         return Err(EngineError::Other("A table can't overlap another table.".into()));
     }
-    let arrays = |sh: &gridcraft_model::Sheet| {
+    let arrays = |sh: &nanshe_model::Sheet| {
         sh.cells.iter().any(|(_, x)| x.formula.as_ref().and_then(|f| f.array).is_some_and(|a| !a.is_single() && a.intersects(&r)))
     };
     if d.wb.sheet(sheet).is_some_and(arrays) {
@@ -35,7 +35,7 @@ pub(super) fn insert_table(s: &mut Session, p: &Json) -> Result<Json> {
         return Err(EngineError::Other("The name entered already exists. Enter a unique name.".into()));
     }
     // Without a header row, the data moves down a row to make room for one: never a table with it.
-    let moves_a_table = |sh: &gridcraft_model::Sheet| {
+    let moves_a_table = |sh: &nanshe_model::Sheet| {
         sh.tables.iter().any(|t| t.range.end.row >= r.start.row && t.range.start.col <= r.end.col && t.range.end.col >= r.start.col)
     };
     if !header && d.wb.sheet(sheet).is_some_and(moves_a_table) {
@@ -63,7 +63,7 @@ pub(super) fn insert_table(s: &mut Session, p: &Json) -> Result<Json> {
             rewrite(&mut cx.wb, &name, &e);
             let sh = cx.sheet_mut(sheet)?;
             for (i, c) in (r.start.col..=r.end.col).enumerate() {
-                sh.set_value(CellRef::new(r.start.row, c), gridcraft_core::Value::text(format!("Column{}", i + 1)));
+                sh.set_value(CellRef::new(r.start.row, c), nanshe_core::Value::text(format!("Column{}", i + 1)));
             }
             cx.structural = true;
             RangeRef::new(r.start, CellRef::new((r.end.row + 1).min(MAX_ROWS - 1), r.end.col))
@@ -89,7 +89,7 @@ pub(super) fn insert_table(s: &mut Session, p: &Json) -> Result<Json> {
             next_suffix.insert(key, k);
             taken.insert(n.to_ascii_lowercase());
             // Headers are text.
-            sh.set_value(CellRef::new(r.start.row, c), gridcraft_core::Value::text(n.as_str()));
+            sh.set_value(CellRef::new(r.start.row, c), nanshe_core::Value::text(n.as_str()));
             names.push(n);
         }
         sh.tables.push(Table {
@@ -211,9 +211,9 @@ fn write_totals(sh: &mut Sheet, ti: usize) {
         let c = CellRef::new(row, t.range.start.col + i as u32);
         if let Some(code) = col.totals.subtotal_code() {
             let f = format!("=SUBTOTAL({code},{}[{}])", t.name, col.name);
-            sh.set_cell(c, Cell { formula: Some(std::sync::Arc::new(Formula::new(&f))), value: gridcraft_core::Value::Empty, style: sh.style_id(c) });
+            sh.set_cell(c, Cell { formula: Some(std::sync::Arc::new(Formula::new(&f))), value: nanshe_core::Value::Empty, style: sh.style_id(c) });
         } else if let Some(l) = &col.totals_label {
-            sh.set_value(c, gridcraft_core::Value::text(l.as_str()));
+            sh.set_value(c, nanshe_core::Value::text(l.as_str()));
         } else {
             sh.remove_cell(c);
         }
@@ -295,11 +295,11 @@ pub(super) fn table_rename(s: &mut Session, p: &Json) -> Result<Json> {
             for (c, f) in keys {
                 let Some(e) = f.expr() else { continue };
                 let ne = e.map(&mut |x| match x {
-                    gridcraft_formula::Expr::Struct(mut st) if st.table.eq_ignore_ascii_case(&old) => {
+                    nanshe_formula::Expr::Struct(mut st) if st.table.eq_ignore_ascii_case(&old) => {
                         st.table = name.clone();
-                        gridcraft_formula::Expr::Struct(st)
+                        nanshe_formula::Expr::Struct(st)
                     }
-                    gridcraft_formula::Expr::Name(n) if !shadowed && n.eq_ignore_ascii_case(&old) => gridcraft_formula::Expr::Name(name.clone()),
+                    nanshe_formula::Expr::Name(n) if !shadowed && n.eq_ignore_ascii_case(&old) => nanshe_formula::Expr::Name(name.clone()),
                     o => o,
                 });
                 if let Some(cell) = sh.cells.get_mut(c) {

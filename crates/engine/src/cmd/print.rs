@@ -3,20 +3,20 @@
 //! Sheets are paginated like Excel's default "down, then over": the print area (or the used
 //! range plus drawing objects) is split into bands of rows and columns that fit the printable
 //! area at the page scale, honouring manual breaks, repeated title rows/columns, headings, Fit
-//! To and centring. Each page is drawn into a PDF with `gridcraft-pdf`: fills, gridlines,
+//! To and centring. Each page is drawn into a PDF with `nanshe-pdf`: fills, gridlines,
 //! borders, formatted text (fonts mapped to the standard 14 PDF fonts), merged cells, wrapping,
 //! overflow into empty neighbours, conditional formats, table styles, charts, images, shapes and
 //! sparklines. Headers and footers support `&L`/`&C`/`&R` sections and the `&P &N &D &T &A &F &Z`
 //! codes.
 
-use gridcraft_core::{CellRef, MAX_COLS, MAX_ROWS, RangeRef, Value};
+use nanshe_core::{CellRef, MAX_COLS, MAX_ROWS, RangeRef, Value};
 #[cfg(test)]
-use gridcraft_model::{Alignment, Image, SheetViewMode};
-use gridcraft_model::{
+use nanshe_model::{Alignment, Image, SheetViewMode};
+use nanshe_model::{
     Anchor, BorderLine, BorderStyle, Borders, Color, HAlign, Orientation, PatternType, PrintSettings, ShapeKind, Sheet, Style, StyleId, StyleTable,
     Underline, VAlign, Visibility, Workbook,
 };
-use gridcraft_pdf::{Font, Page, PdfDoc, Point, Rect, Rgb};
+use nanshe_pdf::{Font, Page, PdfDoc, Point, Rect, Rgb};
 use serde_json::{Value as Json, json};
 
 use super::{CommandSpec, Result, Session, bad, bool_param, cmd, edit, f64_param, has_doc, split_sheet, str_param, target_sheet, u32_param};
@@ -218,7 +218,7 @@ fn print_preview(s: &mut Session, p: &Json) -> Result<Json> {
                 "sheet": name,
                 "range": r.a1(),
                 "rows": format!("{}:{}", rb.0 + 1, rb.1 + 1),
-                "columns": format!("{}:{}", gridcraft_core::col_to_letters(cb.0), gridcraft_core::col_to_letters(cb.1)),
+                "columns": format!("{}:{}", nanshe_core::col_to_letters(cb.0), nanshe_core::col_to_letters(cb.1)),
                 "scale": (lay.scale * 1000.0).round() / 10.0,
                 "paper": lay.settings.paper,
                 "orientation": if lay.settings.orientation == Orientation::Landscape { "landscape" } else { "portrait" },
@@ -310,7 +310,7 @@ fn page_setup(s: &mut Session, p: &Json) -> Result<Json> {
         let mut v: Vec<u32> = a
             .iter()
             .filter_map(|x| match x {
-                Json::String(t) => gridcraft_core::letters_to_col(t.trim().trim_start_matches('$')),
+                Json::String(t) => nanshe_core::letters_to_col(t.trim().trim_start_matches('$')),
                 Json::Number(n) => n.as_u64().filter(|c| *c >= 2 && *c <= MAX_COLS as u64).map(|c| c as u32 - 1),
                 _ => None,
             })

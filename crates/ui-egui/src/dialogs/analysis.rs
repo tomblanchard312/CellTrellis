@@ -108,7 +108,7 @@ pub(super) fn toolpak_defaults(sel: &str, tool: &str) -> Map<String, Json> {
 /// Data › Data Analysis: pick a tool, then fill in its form. OK runs `data.analysisToolPak`
 /// (through the dialog's command); a report that would replace data asks first.
 pub(super) fn analysis_toolpak(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool) {
-    use gridcraft_engine::cmd::analysis::TOOLS;
+    use nanshe_engine::cmd::analysis::TOOLS;
     if d.values.get("askOverwrite").and_then(Json::as_bool) == Some(true) {
         ui.label("The output range already holds data. Replace it with the report?");
         ui.horizontal(|ui| {

@@ -2,7 +2,7 @@
 
 > **Last reviewed:** 2026-10-18 · **Last updated:** 2026-10-24 · **Change:** minor (100% stacked area charts) · **Target:** Microsoft Excel (Microsoft 365), Excel for Mac 16.113.4
 
-Excel's chart types and chart elements against GridCraft. Part of
+Excel's chart types and chart elements against Nanshe. Part of
 [target-app-parity.md](target-app-parity.md). **Breadth ~50%, ready ~30%, 40–60 h** (estimated).
 
 Sources: `crates/model/src/features.rs` (`ChartKind`, `Chart`, `Series`), `crates/chart/src`
@@ -11,7 +11,7 @@ Sources: `crates/model/src/features.rs` (`ChartKind`, `Chart`, `Series`), `crate
 
 ## Chart types
 
-| Excel type | Excel subtypes | GridCraft | Notes |
+| Excel type | Excel subtypes | Nanshe | Notes |
 |---|---|---|---|
 | Column | clustered, stacked, 100% stacked, 3-D clustered/stacked/100%, 3-D column | 3 of 7 | no 3-D |
 | Bar | clustered, stacked, 100%, 3-D ×3 | 3 of 6 | no 3-D |
@@ -35,7 +35,7 @@ Sources: `crates/model/src/features.rs` (`ChartKind`, `Chart`, `Series`), `crate
 
 ## Chart elements and formatting
 
-| Element | Excel | GridCraft |
+| Element | Excel | Nanshe |
 |---|---|---|
 | Move and resize the chart object | yes | yes (corner handle, Format Chart Area Size fields) |
 | Chart title, axis titles | text, linked to cells, full formatting | text only |
@@ -65,12 +65,12 @@ Sources: `crates/model/src/features.rs` (`ChartKind`, `Chart`, `Series`), `crate
 
 Charts are read from and written to DrawingML chart parts, but only the fields the model holds
 survive: anything else (axis scaling, label options, error bars, per-point formats, chartex
-extensions) is lost when GridCraft saves a workbook it opened. That is the main reason charts are
+extensions) is lost when Nanshe saves a workbook it opened. That is the main reason charts are
 **~30% ready**: a user who opens an Excel workbook with charts and saves it gets simpler charts
 back.
 
 Series data, categories and names may refer to defined names, as dynamic (OFFSET) ranges do:
-Excel writes a workbook-scoped name as `[0]!Name` in `<c:f>`. GridCraft reads it as the bare
+Excel writes a workbook-scoped name as `[0]!Name` in `<c:f>`. Nanshe reads it as the bare
 name and writes it back with `[0]!`; a sheet-scoped name is written `Sheet!Name`. Excel needs the
 qualifier: with a bare name in `<c:f>` it draws the whole chart blank, without a repair prompt
 (observed in Excel for Windows, Microsoft 365). External books (`[1]Sheet1!…`) are kept as they

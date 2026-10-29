@@ -1,7 +1,7 @@
 //! Hand-written packages exercising specific reader paths.
 
-use gridcraft_core::{CellError, CellRef, DateSystem, RangeRef, Value};
-use gridcraft_model::{CalcMode, CfRule, Color, HAlign, PatternType, StyleId, Underline, Visibility};
+use nanshe_core::{CellError, CellRef, DateSystem, RangeRef, Value};
+use nanshe_model::{CalcMode, CfRule, Color, HAlign, PatternType, StyleId, Underline, Visibility};
 
 use super::minimal;
 use crate::read_xlsx;
@@ -132,7 +132,7 @@ fn styles_theme_and_sizes() {
     assert_sheet_settings(s);
 }
 
-fn assert_style_definitions(wb: &gridcraft_model::Workbook, s: &gridcraft_model::Sheet) {
+fn assert_style_definitions(wb: &nanshe_model::Workbook, s: &nanshe_model::Sheet) {
     let st1 = wb.styles.get(s.cell(at("A1")).unwrap().style);
     assert_eq!(st1.num_fmt.as_str(), "0.000\"kg\"");
     assert!(st1.font.bold && st1.font.italic && st1.font.strike);
@@ -160,7 +160,7 @@ fn assert_style_definitions(wb: &gridcraft_model::Workbook, s: &gridcraft_model:
     assert_eq!(wb.styles.get(s.cell(at("D1")).unwrap().style).num_fmt.as_str(), "General");
 }
 
-fn assert_theme(wb: &gridcraft_model::Workbook) {
+fn assert_theme(wb: &nanshe_model::Workbook) {
     // Theme: file order dk1, lt1… maps to lt1, dk1… in the model.
     assert_eq!(wb.theme.colors[0], 0xFFFFFF);
     assert_eq!(wb.theme.colors[1], 0x000000);
@@ -170,7 +170,7 @@ fn assert_theme(wb: &gridcraft_model::Workbook) {
     assert_eq!(wb.theme.major_font, "Calibri Light");
 }
 
-fn assert_sheet_settings(s: &gridcraft_model::Sheet) {
+fn assert_sheet_settings(s: &nanshe_model::Sheet) {
     // Sheet settings.
     assert_eq!(s.tab_color, Some(Color::Rgb(0x00B050)));
     assert_eq!(s.freeze, Some((2, 1)));
@@ -323,7 +323,7 @@ Check this</t></r></text></comment></commentList></comments>"#;
     assert_eq!(t.name, "Sales");
     assert!(t.totals_row && t.header_row && t.filter_button && t.last_col && t.banded_rows);
     assert_eq!(t.columns[0].totals_label.as_deref(), Some("Total"));
-    assert_eq!(t.columns[1].totals, gridcraft_model::TotalsFn::Sum);
+    assert_eq!(t.columns[1].totals, nanshe_model::TotalsFn::Sum);
     assert_eq!(t.columns[2].totals_label.as_deref(), Some("SUBTOTAL(109,[Tax])"));
     assert!(t.columns[2].formula.is_some());
     assert_eq!(t.style, "TableStyleMedium9");
@@ -333,7 +333,7 @@ Check this</t></r></text></comment></commentList></comments>"#;
     let v2 = &s.validations[1];
     assert!(!v2.in_cell_dropdown);
     assert_eq!(v2.f2.as_deref(), Some("10"));
-    assert_eq!(v2.error_style, gridcraft_model::ErrorStyle::Warning);
+    assert_eq!(v2.error_style, nanshe_model::ErrorStyle::Warning);
     assert_eq!(s.validations[2].f1, "=Other!$A$1:$A$3");
     let af = s.autofilter.as_ref().unwrap();
     assert_eq!(af.criteria.len(), 2);
@@ -348,7 +348,7 @@ Check this</t></r></text></comment></commentList></comments>"#;
     assert!(pw.verify("test").unwrap() && !pw.verify("Test").unwrap());
     assert!(!rep.warnings.iter().any(|w| w.contains("password")), "{:?}", rep.warnings);
     assert_eq!(s.sparklines.len(), 1);
-    assert_eq!(s.sparklines[0].kind, gridcraft_model::SparklineKind::Column);
+    assert_eq!(s.sparklines[0].kind, nanshe_model::SparklineKind::Column);
 }
 
 /// The sheet's hyperlinks as written: cell, relationship target (external only), location.
@@ -462,27 +462,27 @@ fn drawing_with_picture_and_chart() {
     assert_eq!(img.anchor.width, 118.0);
     assert_eq!(img.anchor.height, 100.0);
     // A plain twoCellAnchor is "Move and size with cells".
-    assert_eq!(img.anchor.mode, gridcraft_model::AnchorMode::MoveAndSize);
+    assert_eq!(img.anchor.mode, nanshe_model::AnchorMode::MoveAndSize);
     let ch = &s.charts[0];
-    assert_eq!(ch.kind, gridcraft_model::ChartKind::Combo);
+    assert_eq!(ch.kind, nanshe_model::ChartKind::Combo);
     assert_eq!(ch.title.as_deref(), Some("Sales"));
     assert_eq!(ch.anchor.width, 480.0);
     // A oneCellAnchor is "Move but don't size with cells".
-    assert_eq!(ch.anchor.mode, gridcraft_model::AnchorMode::MoveOnly);
+    assert_eq!(ch.anchor.mode, nanshe_model::AnchorMode::MoveOnly);
     assert_eq!(ch.series.len(), 2);
     assert_eq!(ch.series[0].name.as_deref(), Some("Data!$B$1"));
     assert_eq!(ch.series[0].categories.as_deref(), Some("Data!$A$2:$A$5"));
     assert_eq!(ch.series[0].color, Some(Color::Rgb(0xFF0000)));
     assert_eq!(ch.series[1].name.as_deref(), Some("Lit"));
     assert!(ch.series[1].secondary);
-    assert_eq!(ch.series[1].kind, Some(gridcraft_model::ChartKind::LineMarkers));
+    assert_eq!(ch.series[1].kind, Some(nanshe_model::ChartKind::LineMarkers));
     assert!(ch.data_labels && ch.gridlines);
-    assert_eq!(ch.legend, gridcraft_model::LegendPos::Top);
+    assert_eq!(ch.legend, nanshe_model::LegendPos::Top);
     assert_eq!(ch.x_title.as_deref(), Some("Region"));
     // A twoCellAnchor with editAs="absolute" is "Don't move or size with cells".
     let sp = &s.shapes[0];
-    assert_eq!(sp.kind, gridcraft_model::ShapeKind::Ellipse);
-    assert_eq!(sp.anchor.mode, gridcraft_model::AnchorMode::Absolute);
+    assert_eq!(sp.kind, nanshe_model::ShapeKind::Ellipse);
+    assert_eq!(sp.anchor.mode, nanshe_model::AnchorMode::Absolute);
 }
 
 #[test]
@@ -519,7 +519,7 @@ fn drawing_with_chartex_in_alternate_content() {
     assert!(s.shapes.is_empty(), "the fallback isn't read as well");
     assert!(wb.names.is_empty(), "the chart's names aren't workbook names");
     let ch = &s.charts[0];
-    assert_eq!(ch.kind, gridcraft_model::ChartKind::Waterfall);
+    assert_eq!(ch.kind, nanshe_model::ChartKind::Waterfall);
     assert_eq!(ch.title.as_deref(), Some("Bridge"));
     assert_eq!(ch.anchor.cell, at("E2"));
     assert_eq!(ch.series.len(), 1);
@@ -527,14 +527,14 @@ fn drawing_with_chartex_in_alternate_content() {
     assert_eq!(ch.series[0].categories.as_deref(), Some("Data!$A$2:$A$5"));
     assert_eq!(ch.series[0].values, "Data!$B$2:$B$5");
     assert!(ch.data_labels && ch.gridlines);
-    assert_eq!(ch.legend, gridcraft_model::LegendPos::Top);
+    assert_eq!(ch.legend, nanshe_model::LegendPos::Top);
 }
 
 #[test]
 fn chartex_parts_as_excel_expects_them() {
-    use gridcraft_model::{Chart, ChartKind, LegendPos, Series};
-    let mut wb = gridcraft_model::Workbook::new();
-    let mut sheet = gridcraft_model::Sheet::new("Data");
+    use nanshe_model::{Chart, ChartKind, LegendPos, Series};
+    let mut wb = nanshe_model::Workbook::new();
+    let mut sheet = nanshe_model::Sheet::new("Data");
     sheet.charts.push(Chart {
         id: 1,
         kind: ChartKind::Waterfall,
@@ -604,7 +604,7 @@ fn text_box_formatting_is_read_and_written() {
     );
     let (wb, _) = read_xlsx(&bytes).unwrap();
     let sp = &wb.sheet(0).unwrap().shapes[0];
-    assert_eq!(sp.kind, gridcraft_model::ShapeKind::TextBox);
+    assert_eq!(sp.kind, nanshe_model::ShapeKind::TextBox);
     assert_eq!(sp.text, "DRAFT");
     let f = &sp.format;
     assert!(f.no_line, "a:ln/a:noFill: no border");
@@ -613,8 +613,8 @@ fn text_box_formatting_is_read_and_written() {
     assert_eq!(f.font.as_deref(), Some("Arial Black"));
     assert_eq!(f.text_color, Some(Color::Theme(0, 0)));
     assert_eq!(f.text_outline, Some((Color::Theme(1, 0), 1.5)));
-    assert_eq!(f.align, Some(gridcraft_model::ShapeTextAlign::Center));
-    assert_eq!(f.anchor, Some(gridcraft_model::ShapeTextAnchor::Middle));
+    assert_eq!(f.align, Some(nanshe_model::ShapeTextAlign::Center));
+    assert_eq!(f.anchor, Some(nanshe_model::ShapeTextAnchor::Middle));
 
     let (back, _) = read_xlsx(&crate::write_xlsx(&wb).unwrap()).unwrap();
     let g = &back.sheet(0).unwrap().shapes[0].format;
@@ -642,7 +642,7 @@ fn the_default_cell_format_keeps_every_property_of_xf_zero() {
     let body = r#"<sheetData><row r="1"><c r="A1"><v>5</v></c><c r="B1" s="0"><v>5</v></c></row></sheetData>"#;
     let (wb, _) = read_xlsx(&minimal(body, &[("xl/styles.xml", styles)], rels, "")).unwrap();
     let s = wb.sheet(0).unwrap();
-    let check = |st: &gridcraft_model::Style, when: &str| {
+    let check = |st: &nanshe_model::Style, when: &str| {
         assert_eq!(st.num_fmt.as_str(), "0.00", "number format {when}");
         assert_eq!(st.fill.pattern, PatternType::Solid, "fill {when}");
         assert_eq!(st.fill.fg, Color::Rgb(0x00B050), "fill colour {when}");

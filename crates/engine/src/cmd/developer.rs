@@ -188,7 +188,7 @@ mod tests {
         for (language, source) in [("vba", "Sub Main()\nEnd Sub"), ("python", "print('你好')"), ("r", "print(42)")] {
             s.execute("developer.saveSource", json!({"language":language,"source":source})).unwrap();
         }
-        let bytes = gridcraft_xlsx::write_xlsx(&s.doc().unwrap().wb).unwrap();
+        let bytes = nanshe_xlsx::write_xlsx(&s.doc().unwrap().wb).unwrap();
         let loaded = crate::io::open_bytes("scripts.xlsx", &bytes).unwrap().0;
         for (language, source) in [("vba", "Sub Main()\nEnd Sub"), ("python", "print('你好')"), ("r", "print(42)")] {
             assert_eq!(stash::get(&loaded, &format!("{language}_source")).unwrap(), source);

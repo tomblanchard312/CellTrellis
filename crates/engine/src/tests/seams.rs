@@ -180,7 +180,7 @@ fn a_grouped_action_that_closes_its_document_succeeds() {
     // Opening a file into an untouched new workbook takes its place the same way.
     s.new_workbook();
     let uid = s.doc().unwrap().uid;
-    let bytes = serde_json::to_vec(&gridcraft_model::Workbook::new()).unwrap();
+    let bytes = serde_json::to_vec(&nanshe_model::Workbook::new()).unwrap();
     s.grouped("Open", |s| s.execute("file.open", json!({"name": "theirs.json", "base64": crate::io::base64_encode(&bytes)}))).unwrap();
     assert!(s.docs.iter().all(|d| d.uid != uid) && !s.in_group(uid) && s.groups.is_empty());
     // A group ended by someone else while its document is still open is still an error.
@@ -251,8 +251,8 @@ fn register_group_commands() {
     register("test.groupThenEdit", |s, _| {
         s.grouped("Named Step", |s| put(s, "D1", "x"))?;
         crate::cmd::edit(s, |cx| {
-            let at = gridcraft_core::CellRef::parse("D2").ok_or_else(|| EngineError::Other("D2".into()))?;
-            cx.sheet_mut(0)?.set_value(at, gridcraft_core::Value::Text("y".into()));
+            let at = nanshe_core::CellRef::parse("D2").ok_or_else(|| EngineError::Other("D2".into()))?;
+            cx.sheet_mut(0)?.set_value(at, nanshe_core::Value::Text("y".into()));
             cx.touch(0, at);
             Ok(())
         })?;
@@ -463,7 +463,7 @@ fn a_group_rolled_back_inside_a_command_keeps_the_redo_history() {
 }
 
 /// Fills the undo history to the limit with edits of Z1 ("v0" to "v99"), and returns its snapshots.
-fn fill_history(s: &mut Session) -> Vec<std::sync::Arc<gridcraft_model::Workbook>> {
+fn fill_history(s: &mut Session) -> Vec<std::sync::Arc<nanshe_model::Workbook>> {
     for i in 0..crate::UNDO_LIMIT {
         set(s, "Z1", &format!("v{i}"));
     }
@@ -474,7 +474,7 @@ fn fill_history(s: &mut Session) -> Vec<std::sync::Arc<gridcraft_model::Workbook
 
 /// The history is still full, ends with one step labelled `label`, and kept every older step but
 /// the oldest.
-fn assert_one_step_replaced_the_oldest(s: &Session, before: &[std::sync::Arc<gridcraft_model::Workbook>], label: &str) {
+fn assert_one_step_replaced_the_oldest(s: &Session, before: &[std::sync::Arc<nanshe_model::Workbook>], label: &str) {
     let d = s.doc().unwrap();
     assert_eq!(d.undo.len(), crate::UNDO_LIMIT);
     assert_eq!(d.undo.last().map(|e| e.label.as_str()), Some(label));
@@ -732,7 +732,7 @@ fn stop_action_rolls_back_a_group_left_open() {
     assert!(s.in_group(other_uid));
 }
 
-fn history_of(s: &Session) -> Vec<(String, *const gridcraft_model::Workbook)> {
+fn history_of(s: &Session) -> Vec<(String, *const nanshe_model::Workbook)> {
     let d = s.doc().unwrap();
     d.undo.iter().chain(d.redo.iter()).map(|e| (e.label.clone(), std::sync::Arc::as_ptr(&e.wb))).collect()
 }
@@ -933,7 +933,7 @@ fn record_actions_is_unchanged_by_the_buffer() {
 
 // ---------------------------------------------------------------- trust
 
-fn open_json(s: &mut Session, wb: &gridcraft_model::Workbook) {
+fn open_json(s: &mut Session, wb: &nanshe_model::Workbook) {
     let bytes = serde_json::to_vec(wb).unwrap();
     s.execute("file.open", json!({"name": "theirs.json", "base64": crate::io::base64_encode(&bytes)})).unwrap();
 }
@@ -950,7 +950,7 @@ fn documents_know_where_they_came_from() {
     s.execute("file.new", json!({"sample": "sales"})).unwrap();
     assert_eq!(trust(&s), Trust::Local);
     assert_eq!(s.execute("document.inspect", json!({})).unwrap()["trust"], "local");
-    open_json(&mut s, &gridcraft_model::Workbook::new());
+    open_json(&mut s, &nanshe_model::Workbook::new());
     assert_eq!(trust(&s), Trust::FromFile);
     assert_eq!(s.execute("document.inspect", json!({})).unwrap()["trust"], "fromFile");
     // A second window on the same workbook is the same workbook.
@@ -966,12 +966,12 @@ fn whoever_makes_a_document_says_where_it_came_from() {
     // No default trust: a document built from bytes outside `file.open` (a recovery copy, a
     // template) is untrusted because its maker says so, not trusted because it forgot to.
     let mut s = Session::new();
-    let bytes = gridcraft_xlsx::write_xlsx(&gridcraft_model::Workbook::new()).unwrap();
+    let bytes = nanshe_xlsx::write_xlsx(&nanshe_model::Workbook::new()).unwrap();
     let (wb, _) = crate::io::open_bytes("recovered.xlsx", &bytes).unwrap();
     s.add_document(crate::DocState::new(wb, None, "Recovered".into(), Trust::FromFile));
     assert_eq!(trust(&s), Trust::FromFile);
     assert_eq!(s.execute("document.inspect", json!({})).unwrap()["trust"], "fromFile");
-    s.add_document(crate::DocState::new(gridcraft_model::Workbook::new(), None, "Made here".into(), Trust::Local));
+    s.add_document(crate::DocState::new(nanshe_model::Workbook::new(), None, "Made here".into(), Trust::Local));
     assert_eq!(trust(&s), Trust::Local);
     s.new_workbook();
     assert_eq!(trust(&s), Trust::Local);
@@ -980,7 +980,7 @@ fn whoever_makes_a_document_says_where_it_came_from() {
 #[test]
 fn pasting_from_a_file_carries_its_trust() {
     let mut s = s(); // document 0: Local
-    open_json(&mut s, &gridcraft_model::Workbook::new()); // document 1: FromFile
+    open_json(&mut s, &nanshe_model::Workbook::new()); // document 1: FromFile
     let theirs = s.active_index();
     set(&mut s, "A1", "=1+1");
     s.execute("edit.copy", json!({"range": "A1"})).unwrap();
@@ -1025,13 +1025,13 @@ fn a_linked_paste_carries_the_files_trust_whatever_it_pastes() {
     // formats from a file carries the file's trust like one of formulas. Column widths and notes
     // write no cells, linked or not.
     let mut s = s();
-    open_json(&mut s, &gridcraft_model::Workbook::new());
+    open_json(&mut s, &nanshe_model::Workbook::new());
     set(&mut s, "A1", "=1+1");
     s.execute("review.newComment", json!({"cell": "A1", "text": "theirs"})).unwrap();
-    let wide = gridcraft_model::LineInfo { size: Some(123.0), ..Default::default() };
+    let wide = nanshe_model::LineInfo { size: Some(123.0), ..Default::default() };
     std::sync::Arc::make_mut(&mut s.doc_mut().unwrap().wb).sheet_mut(0).unwrap().cols.insert(0, wide);
     s.execute("edit.copy", json!({"range": "A1"})).unwrap();
-    let b1 = gridcraft_core::CellRef::parse("B1").unwrap();
+    let b1 = nanshe_core::CellRef::parse("B1").unwrap();
     let sheet = |s: &Session| s.doc().unwrap().wb.sheet(0).unwrap().clone();
     for what in ["columnWidths", "comments"] {
         s.new_workbook();

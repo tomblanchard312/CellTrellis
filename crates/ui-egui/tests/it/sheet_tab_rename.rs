@@ -1,9 +1,9 @@
 //! Renaming a sheet tab: the name field must let go of the keyboard when the user is done (#145).
 
 use egui::{Event, Key, Modifiers, PointerButton};
-use gridcraft_engine::Session;
-use gridcraft_engine::core::CellRef;
-use gridcraft_ui_egui::{SheetApp, grid::Geo};
+use nanshe_engine::Session;
+use nanshe_engine::core::CellRef;
+use nanshe_ui_egui::{SheetApp, grid::Geo};
 
 fn harness() -> egui_kittest::Harness<'static, SheetApp> {
     let mut s = Session::new();

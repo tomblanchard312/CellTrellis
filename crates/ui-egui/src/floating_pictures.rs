@@ -8,7 +8,7 @@ use std::io::Cursor;
 use std::sync::{Arc, Mutex};
 
 use egui::TextureHandle;
-use gridcraft_engine::model::Image;
+use nanshe_engine::model::Image;
 
 /// Larger pictures are not decoded: the header is read first, so nothing is allocated for them.
 const MAX_SIDE: u32 = 16_384;
@@ -146,7 +146,7 @@ fn decode(data: &[u8], side: u32) -> Option<(egui::ColorImage, bool)> {
 fn cache(ctx: &egui::Context) -> Arc<Mutex<Cache>> {
     // Context-local, like cell pictures: texture handles never leak between offscreen, native
     // and browser contexts.
-    ctx.data_mut(|data| data.get_temp_mut_or_default::<Arc<Mutex<Cache>>>(egui::Id::unique("gridcraft.floating_pictures")).clone())
+    ctx.data_mut(|data| data.get_temp_mut_or_default::<Arc<Mutex<Cache>>>(egui::Id::unique("nanshe.floating_pictures")).clone())
 }
 
 /// Drops the textures of workbooks that are no longer open. Called every frame the grid paints.

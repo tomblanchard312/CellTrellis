@@ -3,16 +3,16 @@
 
 use std::sync::Arc;
 
-use gridcraft_engine::core::{CellRef, Value};
-use gridcraft_engine::model::{Cell, Formula, Workbook};
-use gridcraft_engine::{DocState, Session, io};
+use nanshe_engine::core::{CellRef, Value};
+use nanshe_engine::model::{Cell, Formula, Workbook};
+use nanshe_engine::{DocState, Session, io};
 use serde_json::json;
 
 fn at(s: &str) -> CellRef {
     CellRef::parse(s).unwrap()
 }
 
-/// A workbook saved by GridCraft whose D1 formula came from a file with `cm`.
+/// A workbook saved by Nanshe whose D1 formula came from a file with `cm`.
 fn opened() -> Session {
     let mut wb = Workbook::new();
     let sh = wb.sheet_mut(0).unwrap();
@@ -26,7 +26,7 @@ fn opened() -> Session {
     let bytes = io::save_bytes(&wb, "dynamic.xlsx").unwrap();
     let (back, _) = io::open_bytes("dynamic.xlsx", &bytes).unwrap();
     let mut s = Session::new();
-    s.add_document(DocState::new(back, None, "dynamic".into(), gridcraft_engine::Trust::FromFile));
+    s.add_document(DocState::new(back, None, "dynamic".into(), nanshe_engine::Trust::FromFile));
     s
 }
 

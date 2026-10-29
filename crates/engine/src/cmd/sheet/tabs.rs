@@ -51,14 +51,14 @@ pub(super) fn delete_sheet(s: &mut Session, p: &Json) -> Result<Json> {
     edit_doc(d, |cx| {
         cx.wb.sheets.remove(i);
         for si in 0..cx.wb.sheets.len() {
-            let keys: Vec<(CellRef, Arc<gridcraft_model::Formula>)> =
+            let keys: Vec<(CellRef, Arc<nanshe_model::Formula>)> =
                 cx.wb.sheets.get(si).map(|s| s.cells.iter().filter_map(|(c, x)| x.formula.clone().map(|f| (c, f))).collect()).unwrap_or_default();
             let Some(sh) = cx.wb.sheet_mut(si) else { continue };
             for (c, f) in keys {
                 if let Some(e) = f.expr() {
-                    let ne = gridcraft_formula::adjust::delete_sheet(e, &name, &order);
+                    let ne = nanshe_formula::adjust::delete_sheet(e, &name, &order);
                     if let Some(cell) = sh.cells.get_mut(c) {
-                        cell.formula = Some(Arc::new(gridcraft_model::Formula::from_expr(ne)));
+                        cell.formula = Some(Arc::new(nanshe_model::Formula::from_expr(ne)));
                     }
                 }
             }
@@ -71,10 +71,10 @@ pub(super) fn delete_sheet(s: &mut Session, p: &Json) -> Result<Json> {
                 *sc -= 1;
             }
             // Names referring to the sheet become #REF!.
-            if let Ok(e) = gridcraft_formula::parse_name(&n.formula) {
-                let ne = gridcraft_formula::adjust::delete_sheet(e.clone(), &name, &order);
+            if let Ok(e) = nanshe_formula::parse_name(&n.formula) {
+                let ne = nanshe_formula::adjust::delete_sheet(e.clone(), &name, &order);
                 if ne != e {
-                    n.formula = gridcraft_formula::print(&ne);
+                    n.formula = nanshe_formula::print(&ne);
                 }
             }
         }
@@ -102,23 +102,23 @@ pub(super) fn rename_sheet(s: &mut Session, p: &Json) -> Result<Json> {
         let old = cx.wb.sheet(i).map(|s| s.name.clone()).unwrap_or_default();
         cx.sheet_mut(i)?.name = name.clone();
         for si in 0..cx.wb.sheets.len() {
-            let keys: Vec<(CellRef, Arc<gridcraft_model::Formula>)> =
+            let keys: Vec<(CellRef, Arc<nanshe_model::Formula>)> =
                 cx.wb.sheets.get(si).map(|s| s.cells.iter().filter_map(|(c, x)| x.formula.clone().map(|f| (c, f))).collect()).unwrap_or_default();
             let Some(sh) = cx.wb.sheet_mut(si) else { continue };
             for (c, f) in keys {
                 if let Some(e) = f.expr() {
-                    let ne = gridcraft_formula::adjust::rename_sheet(e, &old, &name);
-                    let text = gridcraft_formula::print(&ne);
+                    let ne = nanshe_formula::adjust::rename_sheet(e, &old, &name);
+                    let text = nanshe_formula::print(&ne);
                     if text != f.text
                         && let Some(cell) = sh.cells.get_mut(c)
                     {
-                        cell.formula = Some(Arc::new(gridcraft_model::Formula::from_expr(ne)));
+                        cell.formula = Some(Arc::new(nanshe_model::Formula::from_expr(ne)));
                     }
                 }
             }
             let fix = |t: &str| {
-                gridcraft_formula::parse(t)
-                    .map(|e| gridcraft_formula::print(&gridcraft_formula::adjust::rename_sheet(e, &old, &name)))
+                nanshe_formula::parse(t)
+                    .map(|e| nanshe_formula::print(&nanshe_formula::adjust::rename_sheet(e, &old, &name)))
                     .unwrap_or_else(|_| t.to_string())
             };
             for ch in sh.charts.iter_mut() {
@@ -136,8 +136,8 @@ pub(super) fn rename_sheet(s: &mut Session, p: &Json) -> Result<Json> {
             }
         }
         for n in cx.wb.names.iter_mut() {
-            if let Ok(e) = gridcraft_formula::parse_name(&n.formula) {
-                n.formula = gridcraft_formula::print(&gridcraft_formula::adjust::rename_sheet(e, &old, &name));
+            if let Ok(e) = nanshe_formula::parse_name(&n.formula) {
+                n.formula = nanshe_formula::print(&nanshe_formula::adjust::rename_sheet(e, &old, &name));
             }
         }
         cx.structural = true;
@@ -172,16 +172,16 @@ pub(super) fn move_sheet(s: &mut Session, p: &Json) -> Result<Json> {
             sh.preserved = None; // kept file content (form controls, OLE objects…) stays with the original
             let at = to.min(n);
             // The copy gets its own copies of the sheet's names, referring to the copy.
-            let copies: Vec<gridcraft_model::DefinedName> = cx
+            let copies: Vec<nanshe_model::DefinedName> = cx
                 .wb
                 .names
                 .iter()
                 .filter(|nm| nm.scope == Some(i))
                 .map(|nm| {
-                    let formula = gridcraft_formula::parse_name(&nm.formula)
-                        .map(|e| gridcraft_formula::print(&gridcraft_formula::adjust::rename_sheet(e, &base, &sh.name)))
+                    let formula = nanshe_formula::parse_name(&nm.formula)
+                        .map(|e| nanshe_formula::print(&nanshe_formula::adjust::rename_sheet(e, &base, &sh.name)))
                         .unwrap_or_else(|_| nm.formula.clone());
-                    gridcraft_model::DefinedName { scope: Some(at), formula, ..nm.clone() }
+                    nanshe_model::DefinedName { scope: Some(at), formula, ..nm.clone() }
                 })
                 .collect();
             for nm in cx.wb.names.iter_mut() {
@@ -220,7 +220,7 @@ pub(super) fn tab_color(s: &mut Session, p: &Json) -> Result<Json> {
     let i = target_sheet(s, p)?;
     let c = crate::cmd::format::color_param(p.get("color"));
     edit(s, |cx| {
-        cx.sheet_mut(i)?.tab_color = c.filter(|c| *c != gridcraft_model::Color::Auto);
+        cx.sheet_mut(i)?.tab_color = c.filter(|c| *c != nanshe_model::Color::Auto);
         Ok(Json::Null)
     })
 }

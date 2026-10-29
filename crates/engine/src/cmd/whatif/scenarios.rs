@@ -70,7 +70,7 @@ fn store_scenarios(wb: &mut Workbook, list: &[Scenario]) {
             .map(|c| format!("\"{}\"", c.iter().collect::<String>().replace('"', "\"\"")))
             .collect::<Vec<_>>()
             .join("&"),
-        comment: "GridCraft Scenario Manager data".into(),
+        comment: "Nanshe Scenario Manager data".into(),
         hidden: true,
     });
 }
@@ -257,7 +257,7 @@ pub(super) fn scenario_summary(s: &mut Session, p: &Json) -> Result<Json> {
         for (i, c) in changing.iter().enumerate() {
             let fmt = changing_fmts.get(i).cloned().unwrap_or_default();
             let st = cx.wb.styles.derive(StyleId::DEFAULT, |st| st.num_fmt = fmt);
-            put(&mut sheet, row, 1, Value::text(format!("${}${}", gridcraft_core::col_to_letters(c.col), c.row + 1)), StyleId::DEFAULT);
+            put(&mut sheet, row, 1, Value::text(format!("${}${}", nanshe_core::col_to_letters(c.col), c.row + 1)), StyleId::DEFAULT);
             let cur = current.get(i).cloned().unwrap_or_default();
             put(&mut sheet, row, 2, cur.clone(), st);
             for (k, m) in per.iter().enumerate() {
@@ -271,7 +271,7 @@ pub(super) fn scenario_summary(s: &mut Session, p: &Json) -> Result<Json> {
             for (i, c) in results.iter().enumerate() {
                 let fmt = result_fmts.get(i).cloned().unwrap_or_default();
                 let st = cx.wb.styles.derive(StyleId::DEFAULT, |st| st.num_fmt = fmt);
-                put(&mut sheet, row, 1, Value::text(format!("${}${}", gridcraft_core::col_to_letters(c.col), c.row + 1)), StyleId::DEFAULT);
+                put(&mut sheet, row, 1, Value::text(format!("${}${}", nanshe_core::col_to_letters(c.col), c.row + 1)), StyleId::DEFAULT);
                 put(&mut sheet, row, 2, current_results.get(i).cloned().unwrap_or_default(), st);
                 for (k, r) in scenario_results.iter().enumerate() {
                     put(&mut sheet, row, 3 + k as u32, r.get(i).cloned().unwrap_or_default(), st);
@@ -286,8 +286,8 @@ pub(super) fn scenario_summary(s: &mut Session, p: &Json) -> Result<Json> {
             Value::text("Notes: Current Values column represents values of changing cells at time Scenario Summary Report was created."),
             StyleId::DEFAULT,
         );
-        sheet.cols.insert(1, gridcraft_model::LineInfo { size: Some(110.0), ..Default::default() });
-        sheet.cols.insert(2, gridcraft_model::LineInfo { size: Some(100.0), ..Default::default() });
+        sheet.cols.insert(1, nanshe_model::LineInfo { size: Some(110.0), ..Default::default() });
+        sheet.cols.insert(2, nanshe_model::LineInfo { size: Some(100.0), ..Default::default() });
         cx.wb.sheets.push(std::sync::Arc::new(sheet));
         cx.structural = true;
         Ok(cx.wb.sheets.len() - 1)

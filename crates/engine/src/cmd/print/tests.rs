@@ -67,7 +67,7 @@ fn header_sections_split_join_and_field_names() {
 fn header_footer_date_follows_the_workbook_date_system() {
     let mut wb = Workbook::new();
     let date_1900 = hf_date_time(&wb).0;
-    wb.date_system = gridcraft_core::DateSystem::D1904;
+    wb.date_system = nanshe_core::DateSystem::D1904;
     assert_eq!(hf_date_time(&wb).0, date_1900);
 }
 
@@ -282,7 +282,7 @@ fn pdf_uses_indexed_number_format_palette_color() {
 fn export_writes_file() {
     let mut s = s();
     s.execute("cell.set", json!({"cell": "B2", "input": "hello"})).unwrap();
-    let dir = std::env::temp_dir().join(format!("gridcraft-print-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-print-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let path = dir.join("out.pdf");
     let r = s.execute("file.exportPdf", json!({"path": path.to_str().unwrap()})).unwrap();
@@ -299,7 +299,7 @@ fn export_writes_file() {
 fn save_as_pdf_writes_a_pdf_and_keeps_the_workbook_file() {
     let mut s = s();
     s.execute("cell.set", json!({"cell": "B2", "input": "hello"})).unwrap();
-    let dir = std::env::temp_dir().join(format!("gridcraft-save-pdf-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("nanshe-save-pdf-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let path = dir.join("Out.PDF");
     let r = s.execute("file.saveAs", json!({"path": path.to_str().unwrap()})).unwrap();
@@ -345,7 +345,7 @@ fn charts_and_images_are_drawn() {
     let id = wb.next_object_id();
     wb.sheet_mut(0).unwrap().images.push(Image {
         id,
-        anchor: Anchor { cell: CellRef::new(5, 5), dx: 0.0, dy: 0.0, width: 40.0, height: 40.0, mode: gridcraft_model::AnchorMode::MoveAndSize },
+        anchor: Anchor { cell: CellRef::new(5, 5), dx: 0.0, dy: 0.0, width: 40.0, height: 40.0, mode: nanshe_model::AnchorMode::MoveAndSize },
         data: png.into(),
         mime: "image/png".into(),
         alt: String::new(),
@@ -522,7 +522,7 @@ fn bands_unit() {
     assert_eq!(bands(0, 1_000_000, |_| 10.0, |_| 5.0, &[], 3).len(), 3);
     let w = wrap_lines("the quick brown fox jumps", Font::Helvetica, 10.0, 50.0);
     assert!(w.len() >= 2);
-    assert!(w.iter().all(|l| gridcraft_pdf::text_width(Font::Helvetica, 10.0, l) <= 50.0 || !l.contains(' ')));
+    assert!(w.iter().all(|l| nanshe_pdf::text_width(Font::Helvetica, 10.0, l) <= 50.0 || !l.contains(' ')));
     let w = wrap_lines("Supercalifragilistic", Font::Helvetica, 10.0, 20.0);
     assert!(w.len() > 2);
 }

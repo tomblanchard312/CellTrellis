@@ -19,11 +19,11 @@ fi
 
 BASE="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
 # A private directory created exclusively, not predictable names in a possibly shared temp
-# root: another local user's symlink at `gridcraft-signing.p12` would otherwise select the
+# root: another local user's symlink at `nanshe-signing.p12` would otherwise select the
 # write target and capture the decoded certificate.
-WORK="$(mktemp -d "$BASE/gridcraft-signing.XXXXXXXX")"
-KEYCHAIN="$WORK/gridcraft-signing.keychain-db"
-CERT="$WORK/gridcraft-signing.p12"
+WORK="$(mktemp -d "$BASE/nanshe-signing.XXXXXXXX")"
+KEYCHAIN="$WORK/nanshe-signing.keychain-db"
+CERT="$WORK/nanshe-signing.p12"
 KC_PASS="${KEYCHAIN_PASSWORD:-$(openssl rand -hex 24)}"
 
 # Remove only the decoded certificate: the keychain lives in the same directory and codesign

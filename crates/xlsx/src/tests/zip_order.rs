@@ -1,6 +1,6 @@
 //! libmagic (PHP `finfo`, `file`) detects an OOXML package from the first zip entries (#1090).
 
-use gridcraft_model::Workbook;
+use nanshe_model::Workbook;
 
 use crate::write_xlsx;
 

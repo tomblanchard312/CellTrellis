@@ -122,12 +122,12 @@ pub(super) fn filter_by(s: &mut Session, p: &Json) -> Result<Json> {
 
 /// Does a value pass a custom comparison (`>`, `=*abc*`, `<>x`…)?
 fn custom_ok(v: &Value, text: &str, op: &str, crit: &str) -> bool {
-    let num = gridcraft_core::parse::parse_number_text(crit);
+    let num = nanshe_core::parse::parse_number_text(crit);
     let cmp = match (v.as_f64(), num) {
         (Some(a), Some(b)) => a.partial_cmp(&b),
         // A numeric ordering comparison only matches numbers; blanks and text never do.
         (None, Some(_)) if matches!(op, "<" | "<=" | ">" | ">=") => None,
-        _ => Some(gridcraft_core::compare_text(text, crit)),
+        _ => Some(nanshe_core::compare_text(text, crit)),
     };
     let wild = || crate::cmd::edit::wildcard(&text.to_lowercase(), &crit.to_lowercase());
     match op {

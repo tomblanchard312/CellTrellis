@@ -1,9 +1,9 @@
 [package]
-name = "gridcraft-ui-egui"
+name = "nanshe-ui-egui"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "GridCraft egui frontend (Excel-style UI); swappable — nothing below depends on it"
+description = "Nanshe egui frontend (Excel-style UI); swappable — nothing below depends on it"
 
 [lints]
 workspace = true
@@ -12,9 +12,9 @@ workspace = true
 # The shared capture slot (`craft_ui::capture`) comes from the one craft-libs revision every
 # craft-libs dependency uses (see the root Cargo.toml).
 craft-ui = { git = "https://github.com/storytold/craft-libs", rev = "92d392cff132eaf53e13afff77f38b5c11b73aa0" }
-gridcraft-engine = { workspace = true }
-gridcraft-enki = { workspace = true }
-gridcraft-chart = { workspace = true }
+nanshe-engine = { workspace = true }
+nanshe-enki = { workspace = true }
+nanshe-chart = { workspace = true }
 # `monochrome_emoji_fonts` restores the Noto Emoji and emoji-icon faces that 0.37 moved behind
 # this feature. The UI draws ✕, ◀, ↘ and 📋 as text; without these faces the strict kittest
 # harness (and a host with no symbol font) renders them as tofu.
@@ -35,7 +35,7 @@ zbus = "=5.19.0"
 [dev-dependencies]
 egui_kittest = { workspace = true, features = ["wgpu", "snapshot"] }
 epaint_default_fonts = { workspace = true }
-gridcraft-xlsx = { workspace = true, features = ["test-support"] }
+nanshe-xlsx = { workspace = true, features = ["test-support"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 craft-update = { workspace = true }

@@ -30,7 +30,7 @@ struct InteractionInput<'a> {
     in_column_header: bool,
     in_row_header: bool,
     in_corner: bool,
-    selection: gridcraft_engine::Selection,
+    selection: nanshe_engine::Selection,
     current_rect: Rect,
     handle: Rect,
     handle_panes: Vec<Rect>,
@@ -128,9 +128,7 @@ pub(super) fn interact(app: &mut SheetApp, ui: &mut egui::Ui, resp: &egui::Respo
             && let Some((kind, id, rect)) = crate::chartview::hit(app, geo, sh, p)
         {
             app.selected_chart = Some(id);
-            if kind == "shape"
-                && resp.double_clicked()
-                && sh.shapes.iter().any(|s| s.id == id && s.kind == gridcraft_engine::model::ShapeKind::TextBox)
+            if kind == "shape" && resp.double_clicked() && sh.shapes.iter().any(|s| s.id == id && s.kind == nanshe_engine::model::ShapeKind::TextBox)
             {
                 app.begin_text_box_edit(id);
                 return;
@@ -242,7 +240,7 @@ fn handle_draw_tool(app: &mut SheetApp, input: &InteractionInput<'_>) -> bool {
         if app.session.draw_tool == "eraser" && (primary_clicked || resp.dragged()) {
             if let Some(p) = pos
                 && let Some(("shape", id, _)) = crate::chartview::hit(app, geo, sh, p)
-                && sh.shapes.iter().any(|s| s.id == id && s.kind == gridcraft_engine::model::ShapeKind::Ink)
+                && sh.shapes.iter().any(|s| s.id == id && s.kind == nanshe_engine::model::ShapeKind::Ink)
             {
                 let _ = app.run("object.delete", json!({"kind": "shape", "id": id}));
             }
@@ -427,7 +425,7 @@ fn handle_press(app: &mut SheetApp, input: &InteractionInput<'_>) {
         let text = if range.is_single() { c.a1() } else { range.a1() };
         let sheet_name = (ed.sheet != wb.active_sheet()).then(|| sh.name.clone());
         let r = match sheet_name {
-            Some(n) => format!("{}!{text}", gridcraft_engine::formula::quote_sheet(&n)),
+            Some(n) => format!("{}!{text}", nanshe_engine::formula::quote_sheet(&n)),
             None => text,
         };
         if mods.command && !mods.shift {
@@ -517,12 +515,12 @@ fn handle_cell_double_click(app: &mut SheetApp, input: &InteractionInput<'_>, c:
         // Details); its labels and headers still edit.
         if sh.pivots.iter().any(|pt| pt.last_range.is_some_and(|r| r.contains(c))) {
             let not_a_value_cell =
-                gridcraft_engine::EngineError::Disabled("pivot.showDetails".into(), gridcraft_engine::pivot::NOT_A_VALUE_CELL.into()).to_string();
+                nanshe_engine::EngineError::Disabled("pivot.showDetails".into(), nanshe_engine::pivot::NOT_A_VALUE_CELL.into()).to_string();
             match app.run("pivot.showDetails", json!({"cell": c.a1()})) {
                 Ok(_) => return true,
                 Err(e) if e == not_a_value_cell => {}
                 Err(e) => {
-                    app.message = Some(("GridCraft".into(), crate::clean_error(&e)));
+                    app.message = Some(("Nanshe".into(), crate::clean_error(&e)));
                     return true;
                 }
             }
@@ -626,7 +624,7 @@ fn handle_dragging(app: &mut SheetApp, input: &InteractionInput<'_>) {
             Drag::ResizeCol { col, start, orig } => {
                 let w = (orig + (p.x - start) / geo.z).max(0.0);
                 app.toast =
-                    Some((format!("Width: {:.2} ({} pixels)", gridcraft_engine::cmd::format::points_to_chars(w as f64), w.round()), crate::now_ms()));
+                    Some((format!("Width: {:.2} ({} pixels)", nanshe_engine::cmd::format::points_to_chars(w as f64), w.round()), crate::now_ms()));
                 // Inside a selection of whole columns, every selected column takes the new width
                 // (Ctrl-selected areas included); otherwise only the dragged one.
                 let cols = if sel.ranges.iter().any(|r| r.is_full_cols() && col >= r.start.col && col <= r.end.col) {
@@ -722,7 +720,7 @@ fn handle_release(app: &mut SheetApp, input: &InteractionInput<'_>) {
                     let mode = if mods.command { "alternate" } else { "series" };
                     match app.run("edit.autoFill", json!({"source": src.a1(), "target": t.a1(), "mode": mode})) {
                         Ok(_) => set_fill_tag(app, src, t),
-                        Err(e) => app.message = Some(("GridCraft".into(), crate::clean_error(&e))),
+                        Err(e) => app.message = Some(("Nanshe".into(), crate::clean_error(&e))),
                     }
                 }
             }
@@ -743,7 +741,7 @@ fn handle_release(app: &mut SheetApp, input: &InteractionInput<'_>) {
             }
             Drag::MoveCols { source, before: Some(before) } => {
                 if let Err(e) = app.run("sheet.moveColumns", json!({"cols": source.a1(), "before": before})) {
-                    app.message = Some(("GridCraft".into(), crate::clean_error(&e)));
+                    app.message = Some(("Nanshe".into(), crate::clean_error(&e)));
                 }
             }
             _ => {}
@@ -763,7 +761,7 @@ fn format_painter_apply(app: &mut SheetApp) {
         if let Some(dest) = dest
             && let Err(e) = app.run("edit.formatPainter", json!({"apply": dest}))
         {
-            app.message = Some(("GridCraft".into(), crate::clean_error(&e)));
+            app.message = Some(("Nanshe".into(), crate::clean_error(&e)));
         }
     }
 }
@@ -794,8 +792,7 @@ fn point_header(app: &mut SheetApp, wb: &Workbook, sh: &Sheet, range: RangeRef, 
         range
     };
     let reference = range.a1();
-    let reference =
-        if ed.sheet != wb.active_sheet() { format!("{}!{reference}", gridcraft_engine::formula::quote_sheet(&sh.name)) } else { reference };
+    let reference = if ed.sheet != wb.active_sheet() { format!("{}!{reference}", nanshe_engine::formula::quote_sheet(&sh.name)) } else { reference };
     if add {
         ed.append_ref(&reference);
     } else {
@@ -820,7 +817,7 @@ fn select_to_pointer(app: &mut SheetApp, geo: &Geo, sh: &Sheet, wb: &Workbook, p
         if let Some(start) = ed.point_anchor.filter(|(sheet, _)| *sheet == wb.active_sheet()).map(|(_, cell)| cell).or(ed.point_cell) {
             let range = RangeRef::new(start, cell);
             let text = if range.is_single() { range.start.a1() } else { range.a1() };
-            let text = if ed.sheet != wb.active_sheet() { format!("{}!{text}", gridcraft_engine::formula::quote_sheet(&sh.name)) } else { text };
+            let text = if ed.sheet != wb.active_sheet() { format!("{}!{text}", nanshe_engine::formula::quote_sheet(&sh.name)) } else { text };
             ed.insert_ref(&text);
             ed.point_cell = Some(cell);
             ed.point_anchor = Some((wb.active_sheet(), start));
@@ -974,7 +971,7 @@ pub(super) fn hidden_row_edge(geo: &Geo, sh: &Sheet, y: f32) -> Option<u32> {
     row_edge(geo, sh, y).map(|(r, _)| r).filter(|&r| sh.row_height(r) <= 0.0)
 }
 
-fn object_anchor(sh: &Sheet, kind: &str, id: u32) -> Option<gridcraft_engine::model::Anchor> {
+fn object_anchor(sh: &Sheet, kind: &str, id: u32) -> Option<nanshe_engine::model::Anchor> {
     match kind {
         "chart" => sh.charts.iter().find(|c| c.id == id).map(|c| c.anchor),
         "image" => sh.images.iter().find(|c| c.id == id).map(|c| c.anchor),
@@ -1001,9 +998,9 @@ pub(super) fn delete_selected_object(app: &mut SheetApp, sh: &Sheet) -> bool {
 
 /// A click on a hyperlink. References select; web and e-mail addresses ask first (the dialog's
 /// OK runs `link.open`); every other kind is refused with a message. The decision is the
-/// engine's ([`gridcraft_engine::links::classify`]), the same one `link.open` applies.
+/// engine's ([`nanshe_engine::links::classify`]), the same one `link.open` applies.
 pub fn follow_link(app: &mut SheetApp, target: &str) {
-    use gridcraft_engine::links::{LinkKind, classify};
+    use nanshe_engine::links::{LinkKind, classify};
     match classify(target) {
         LinkKind::Internal(r) => {
             let _ = app.session.run("edit.goTo", json!({"reference": r.trim_start_matches('#')}));

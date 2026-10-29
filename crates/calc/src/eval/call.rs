@@ -85,7 +85,7 @@ impl<'h> Evaluator<'h> {
                         Ok(c) => c,
                         Err(e) => return Value::Error(e),
                     };
-                    match gridcraft_numfmt::text_function(v, &code, sys) {
+                    match nanshe_numfmt::text_function(v, &code, sys) {
                         Ok(s) => Value::text(s),
                         Err(e) => Value::Error(e),
                     }
@@ -108,7 +108,7 @@ impl<'h> Evaluator<'h> {
                 Ev::L(Arc::new(Lambda { params, body: body.clone(), env: self.env.clone() }))
             }
             "ISOMITTED" => {
-                let r = matches!(args.first(), Some(Expr::Name(n)) if self.env.iter().rev().find(|(k, _)| gridcraft_formula::same_name(k, n)).is_some_and(|(_, v)| matches!(v, Ev::V(Value::Empty))));
+                let r = matches!(args.first(), Some(Expr::Name(n)) if self.env.iter().rev().find(|(k, _)| nanshe_formula::same_name(k, n)).is_some_and(|(_, v)| matches!(v, Ev::V(Value::Empty))));
                 Ev::V(Value::Bool(r))
             }
             "MAP" | "REDUCE" | "SCAN" | "BYROW" | "BYCOL" | "MAKEARRAY" => self.higher_order(name, args),
@@ -202,13 +202,13 @@ impl<'h> Evaluator<'h> {
         }
         let index = self.value(&args[0]);
         if let Value::Array(_) = index {
-            let Some(spec) = gridcraft_functions::lookup("CHOOSE") else { return err(CellError::Name) };
+            let Some(spec) = nanshe_functions::lookup("CHOOSE") else { return err(CellError::Name) };
             let mut evaluated = vec![Arg { value: index, from_ref: false }];
             for argument in &args[1..] {
                 evaluated.push(Arg { value: self.value(argument), from_ref: false });
             }
             let mut context = FnCtx { ev: self, criteria: None, lambda: None };
-            return gridcraft_functions::call(spec, &evaluated, &mut context).pipe(Ev::V);
+            return nanshe_functions::call(spec, &evaluated, &mut context).pipe(Ev::V);
         }
         let index = match index.to_number() {
             Ok(number) => number.trunc() as i64,
@@ -285,7 +285,7 @@ impl<'h> Evaluator<'h> {
     }
 
     pub(super) fn builtin(&mut self, name: &str, args: &[Expr]) -> Ev {
-        let Some(spec) = gridcraft_functions::lookup(name) else {
+        let Some(spec) = nanshe_functions::lookup(name) else {
             // A defined name holding a LAMBDA, or a LET-bound lambda.
             return match self.name(name) {
                 Ev::L(l) => self.apply_lambda(&l, args),
@@ -319,7 +319,7 @@ impl<'h> Evaluator<'h> {
                 lambda = Some(l.clone());
                 ev = Ev::V(Value::Empty);
             }
-            if spec.category == gridcraft_functions::Category::Database
+            if spec.category == nanshe_functions::Category::Database
                 && i == 2
                 && let Ev::R(areas) = &ev
                 && let [area] = areas.as_slice()
@@ -354,7 +354,7 @@ impl<'h> Evaluator<'h> {
             evaluated.push(Arg { value, from_ref });
         }
         let mut ctx = FnCtx { ev: self, criteria, lambda };
-        gridcraft_functions::call(spec, &evaluated, &mut ctx).pipe(Ev::V)
+        nanshe_functions::call(spec, &evaluated, &mut ctx).pipe(Ev::V)
     }
 
     /// Performs aggregation operations without copying its ranges: blocks are folded over the stored
@@ -402,18 +402,18 @@ impl<'h> Evaluator<'h> {
     /// Adds one argument's value by calling `SUM` and `COUNT` on it, so coercion and error rules
     /// stay in one place (`AVERAGE` of an argument is its `SUM` over its `COUNT`).
     fn aggregate_value(&mut self, kind: Agg, value: Value, from_ref: bool, acc: &mut Acc) -> Result<(), Ev> {
-        let (Some(sum), Some(count)) = (gridcraft_functions::lookup("SUM"), gridcraft_functions::lookup("COUNT")) else {
+        let (Some(sum), Some(count)) = (nanshe_functions::lookup("SUM"), nanshe_functions::lookup("COUNT")) else {
             return Err(err(CellError::Name));
         };
         let args = [Arg { value, from_ref }];
         if kind != Agg::Count {
-            match gridcraft_functions::call(sum, &args, &mut FnCtx { ev: self, criteria: None, lambda: None }) {
+            match nanshe_functions::call(sum, &args, &mut FnCtx { ev: self, criteria: None, lambda: None }) {
                 Value::Number(n) => acc.sum += n,
                 other => return Err(Ev::V(other)),
             }
         }
         if kind != Agg::Sum {
-            match gridcraft_functions::call(count, &args, &mut FnCtx { ev: self, criteria: None, lambda: None }) {
+            match nanshe_functions::call(count, &args, &mut FnCtx { ev: self, criteria: None, lambda: None }) {
                 Value::Number(n) => acc.count = acc.count.saturating_add(n as u64),
                 other => return Err(Ev::V(other)),
             }
@@ -426,10 +426,10 @@ impl<'h> Evaluator<'h> {
     /// that name.
     pub(super) fn function_by_name(&self, e: &Expr) -> Option<String> {
         let Expr::Name(n) = e else { return None };
-        if self.env.iter().any(|(k, _)| gridcraft_formula::same_name(k, n)) || self.host.workbook().name(n, self.sheet).is_some() {
+        if self.env.iter().any(|(k, _)| nanshe_formula::same_name(k, n)) || self.host.workbook().name(n, self.sheet).is_some() {
             return None;
         }
         let u = n.to_ascii_uppercase();
-        gridcraft_functions::lookup(&u).map(|_| u)
+        nanshe_functions::lookup(&u).map(|_| u)
     }
 }

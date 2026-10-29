@@ -1,9 +1,9 @@
-# GridCraft control protocol
+# Nanshe control protocol
 
 Start the desktop app with a control port:
 
 ```sh
-gridcraft --control 7979            # or GRIDCRAFT_CONTROL_PORT=7979
+nanshe --control 7979            # or NANSHE_CONTROL_PORT=7979
 ```
 
 ## Authentication
@@ -13,10 +13,10 @@ The control port is reachable by every program on the machine, and by a web page
 (#777). **There is no way to turn this off.**
 
 - The app makes a token at start (256 random bits from the operating system, kept in memory) and
-  writes it to a file only you can read: `$XDG_RUNTIME_DIR/gridcraft/control-<port>.token` (else
-  `~/.cache/gridcraft/…`; Windows: `%USERPROFILE%\.gridcraft\…`; the folder is mode 0700 and the
+  writes it to a file only you can read: `$XDG_RUNTIME_DIR/nanshe/control-<port>.token` (else
+  `~/.cache/nanshe/…`; Windows: `%USERPROFILE%\.nanshe\…`; the folder is mode 0700 and the
   file 0600 on Unix). The path is printed on stderr. The token itself is never printed or logged.
-- Or choose the token yourself: `GRIDCRAFT_CONTROL_TOKEN=…` (preferred) or `--control-token …`
+- Or choose the token yourself: `NANSHE_CONTROL_TOKEN=…` (preferred) or `--control-token …`
   (visible in the process list), at least 16 characters. The app then writes no file.
 - The first line of a connection must be
   `{"id":0,"method":"auth","params":{"token":"…"}}`; the reply is
@@ -24,8 +24,8 @@ The control port is reachable by every program on the machine, and by a web page
   token, another method, text that isn't JSON such as an HTTP request, no line within 10 s, or
   one longer than 4 KiB) gets `{"ok":false,"error":"authentication required"}` and the
   connection is closed. After that, a line that isn't JSON also closes the connection.
-- `gridcraft-cli send`/`mcp --connect` and `gridcraft_mcp::Remote` do this themselves: they use
-  `GRIDCRAFT_CONTROL_TOKEN` if set, else the token file of that port (so they work for the same
+- `nanshe-cli send`/`mcp --connect` and `nanshe_mcp::Remote` do this themselves: they use
+  `NANSHE_CONTROL_TOKEN` if set, else the token file of that port (so they work for the same
   user on the same machine without setup). Your own client reads the file or the variable.
 
 ## Requests
@@ -50,7 +50,7 @@ connection; nothing sent after it runs. Blank lines are skipped.
 
 | Method | Params | What it does |
 |---|---|---|
-| `engine.execute` | `{command, params, window?, doc?}` | Runs any engine command (see `engine.commands` or `gridcraft-cli commands`) in the active window, or in the window named by `window` (a window id) or `doc` (a workbook id: its most recent window). The active window stays in front afterwards unless the command itself switches windows. `edit.goTo`, `edit.goToSpecial`, `selection.set` and `selection.move` scroll the active cell into view, as Go To does in the window |
+| `engine.execute` | `{command, params, window?, doc?}` | Runs any engine command (see `engine.commands` or `nanshe-cli commands`) in the active window, or in the window named by `window` (a window id) or `doc` (a workbook id: its most recent window). The active window stays in front afterwards unless the command itself switches windows. `edit.goTo`, `edit.goToSpecial`, `selection.set` and `selection.move` scroll the active cell into view, as Go To does in the window |
 | `window.list` | | The open windows: `[{window, doc, index, title, dirty, active, hidden}]`. `title` is the workbook name, or "Book1:1", "Book1:2"… when a workbook has several windows; `index` is the workbook's position among the open workbooks |
 | `engine.commands` | `{search?}` | Every command: id, label, ribbon path, shortcut, params doc, enabled; `search` keeps those whose id, label or ribbon path contains it (case-insensitive) |
 | `engine.journal` | | Commands run so far (replayable). Passwords (`password`, `…Password` params) are left out, so a replayed Protect Sheet has no password. Capped at 10,000 entries and 64 MB (serialized); past either cap the oldest entries go |
@@ -123,7 +123,7 @@ password returns "The password is incorrect." The password is left out of the jo
 quoted in an error. The opened workbook has no save path, so Save asks where to save it, without
 the password, and never replaces the encrypted original.
 
-For a headless equivalent (no window), use `gridcraft-cli mcp` or `gridcraft-cli run`;
+For a headless equivalent (no window), use `nanshe-cli mcp` or `nanshe-cli run`;
 see [`mcp.md`](mcp.md) and [`cli.md`](cli.md).
 
 ### Native printing
@@ -139,4 +139,4 @@ false. Set `printer` to a discovered name, integer `copies` from 1 to 999, `dupl
 rejected without changing earlier settings. `ui.printSubmit` explicitly submits the current
 print-ready PDF without opening a dialog; inspect `ui.printSettings` until `busy` becomes false
 and check `status`/`detail`. The browser keeps its own print hook. PDF export remains separate.
-GridCraft accepts the existing `file.print` sheet/pagination params on `ui.printSubmit`; the engine `file.print` command returns the PDF without spooling.
+Nanshe accepts the existing `file.print` sheet/pagination params on `ui.printSubmit`; the engine `file.print` command returns the PDF without spooling.

@@ -4,9 +4,9 @@
 //! from affected operations inside it: SUM(range * range) returns a scalar yet needs array
 //! evaluation. Legacy array-aware contexts such as SUMPRODUCT already preserve those operations.
 
-use gridcraft_core::CellRef;
-use gridcraft_formula::{BinOp, Expr, SheetSel, StructItem, UnOp};
-use gridcraft_model::{Formula, Workbook};
+use nanshe_core::CellRef;
+use nanshe_formula::{BinOp, Expr, SheetSel, StructItem, UnOp};
+use nanshe_model::{Formula, Workbook};
 
 #[derive(Clone, Copy, Default)]
 struct Shape {
@@ -55,11 +55,11 @@ impl Scan<'_> {
                     return *shape;
                 }
                 let (scope, bare) = match n.rsplit_once('!') {
-                    Some((s, name)) => (self.wb.sheet_index(&gridcraft_core::unquote_sheet(s)).unwrap_or(sheet), name),
+                    Some((s, name)) => (self.wb.sheet_index(&nanshe_core::unquote_sheet(s)).unwrap_or(sheet), name),
                     None => (sheet, n.as_str()),
                 };
                 if let Some(def) = self.wb.name(bare, scope) {
-                    return match gridcraft_formula::parse_name(def.formula.trim_start_matches('=')) {
+                    return match nanshe_formula::parse_name(def.formula.trim_start_matches('=')) {
                         Ok(expr) => self.expr(&expr, def.scope.unwrap_or(scope), array_context, depth + 1),
                         Err(_) => Shape::array(),
                     };
@@ -160,7 +160,7 @@ impl Scan<'_> {
         let array = match name {
             "INDIRECT" => match args.first() {
                 Some(Expr::Text(text)) if !matches!(args.get(1), Some(Expr::Bool(false))) => {
-                    gridcraft_formula::parse(text).map(|e| self.expr(&e, sheet, array_context, depth).array).unwrap_or(true)
+                    nanshe_formula::parse(text).map(|e| self.expr(&e, sheet, array_context, depth).array).unwrap_or(true)
                 }
                 _ => true,
             },

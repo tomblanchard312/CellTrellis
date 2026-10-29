@@ -75,8 +75,8 @@ pub fn shortcut(app: &mut SheetApp, key: Key, m: Modifiers) {
                 .session
                 .active()
                 .map(|d| {
-                    let today = gridcraft_engine::core::date::serial_in_system(d.wb.date_system, gridcraft_engine::calc::now_serial()).floor();
-                    gridcraft_engine::display::format(&gridcraft_engine::core::Value::Number(today), "m/d/yyyy", &d.wb).text
+                    let today = nanshe_engine::core::date::serial_in_system(d.wb.date_system, nanshe_engine::calc::now_serial()).floor();
+                    nanshe_engine::display::format(&nanshe_engine::core::Value::Number(today), "m/d/yyyy", &d.wb).text
                 })
                 .unwrap_or_default();
             app.begin_edit(Some(text), false);

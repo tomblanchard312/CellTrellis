@@ -17,7 +17,7 @@ pub(super) fn active_style(app: &SheetApp) -> Style {
 }
 
 pub(super) fn theme_colors(app: &SheetApp) -> [u32; 12] {
-    app.session.active().map(|d| d.wb.theme.colors).unwrap_or(gridcraft_engine::model::Theme::default().colors)
+    app.session.active().map(|d| d.wb.theme.colors).unwrap_or(nanshe_engine::model::Theme::default().colors)
 }
 
 /// Runs a command from a ribbon click (menu-style: no params may open a dialog).

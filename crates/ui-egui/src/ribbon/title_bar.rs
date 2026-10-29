@@ -72,8 +72,8 @@ pub fn title_bar(app: &mut SheetApp, ui: &mut Ui) {
             }
             // The commands' own availability: there must be a step, and no undo group may be open on
             // the document (an action that spans several calls is still running).
-            let can_undo = gridcraft_engine::cmd::can_undo(&app.session).is_ok();
-            let can_redo = gridcraft_engine::cmd::can_redo(&app.session).is_ok();
+            let can_undo = nanshe_engine::cmd::can_undo(&app.session).is_ok();
+            let can_redo = nanshe_engine::cmd::can_redo(&app.session).is_ok();
             // Named and marked enabled or not for assistive technology (and the UI tests).
             let undo = icon_button(ui, Icon::Undo, if can_undo { t.text_dim } else { t.text_disabled }, "Undo", vec2(26.0, ch));
             undo.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, can_undo, "Undo"));

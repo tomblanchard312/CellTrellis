@@ -5,10 +5,10 @@ mod common;
 
 use egui::{Event, Key, Modifiers, PointerButton, os::OperatingSystem};
 use egui_kittest::kittest::Queryable as _;
-use gridcraft_engine::Session;
-use gridcraft_engine::core::{CellRef, Value};
-use gridcraft_engine::model::HAlign;
-use gridcraft_ui_egui::SheetApp;
+use nanshe_engine::Session;
+use nanshe_engine::core::{CellRef, Value};
+use nanshe_engine::model::HAlign;
+use nanshe_ui_egui::SheetApp;
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
@@ -387,7 +387,7 @@ fn tab_letters_switch_to_their_ribbon_tabs() {
 
 #[test]
 fn f_opens_the_file_view_and_its_letters_still_run() {
-    use gridcraft_ui_egui::backstage::Page;
+    use nanshe_ui_egui::backstage::Page;
     let mut h = harness(blank());
     sequence(&mut h, &[Key::F], false);
     assert_eq!(h.state().backstage.as_ref().map(|b| b.page), Some(Page::Home), "F opens the File view on Home");
@@ -507,7 +507,7 @@ fn pending_sequences_are_silent_no_ops() {
 fn pending_sequences_go_live_when_the_command_lands() {
     // The command lands in the catalog (here: a test-registered stand-in).
     // The sequence must run it with no table edit.
-    gridcraft_engine::register_test_command("insert.equation", |s, _| {
+    nanshe_engine::register_test_command("insert.equation", |s, _| {
         s.execute("cell.set", json!({"cell": "Z9", "input": "live"}))?;
         Ok(json!({}))
     });
@@ -629,7 +629,7 @@ fn color_palette_navigates_with_arrows_and_enter_applies() {
 
 #[test]
 fn every_sequence_terminates_without_panicking() {
-    use gridcraft_ui_egui::keytips::keytip_table::SEQUENCES;
+    use nanshe_ui_egui::keytips::keytip_table::SEQUENCES;
     for (seq, _entry) in SEQUENCES {
         let mut h = harness(blank());
         key(&mut h, Key::F10); // arm
@@ -676,14 +676,14 @@ fn font_dropdown_highlight_follows_the_filtered_rows() {
     assert!(h.query_all_by_label("Georgia").count() >= 1, "an emptied filter lists every font again");
 }
 
-fn borders(h: &Harness, cell: &str) -> gridcraft_engine::model::Borders {
+fn borders(h: &Harness, cell: &str) -> nanshe_engine::model::Borders {
     let d = h.state().session.active().unwrap();
     let sh = d.wb.active().unwrap();
     d.wb.styles.get(sh.style_id(CellRef::parse(cell).unwrap())).borders
 }
 
 /// [left, right, top, bottom] line styles of `cell`.
-fn sides(h: &Harness, cell: &str) -> [gridcraft_engine::model::BorderStyle; 4] {
+fn sides(h: &Harness, cell: &str) -> [nanshe_engine::model::BorderStyle; 4] {
     let b = borders(h, cell);
     [b.left.style, b.right.style, b.top.style, b.bottom.style]
 }
@@ -696,7 +696,7 @@ fn selected(range: &str) -> Session {
 
 #[test]
 fn border_keytips_apply_their_own_preset() {
-    use gridcraft_engine::model::BorderStyle::{Double, None as N, Thick, Thin};
+    use nanshe_engine::model::BorderStyle::{Double, None as N, Thick, Thin};
     // Alt, H, B, letter on A1 alone: each Borders menu letter draws its own preset (they all drew
     // a bare bottom border before). Letters observed in Excel's Borders menu.
     for (k, want) in [
@@ -722,7 +722,7 @@ fn border_keytips_apply_their_own_preset() {
 
 #[test]
 fn border_keytip_no_border_clears_a_bordered_cell() {
-    use gridcraft_engine::model::BorderStyle::None as N;
+    use nanshe_engine::model::BorderStyle::None as N;
     let mut s = selected("A1");
     s.execute("home.borders", json!({"range": "A1", "preset": "all"})).unwrap();
     let mut h = harness(s);
@@ -733,7 +733,7 @@ fn border_keytip_no_border_clears_a_bordered_cell() {
 
 #[test]
 fn border_keytip_all_borders_covers_every_side_of_a_block() {
-    use gridcraft_engine::model::BorderStyle::Thin;
+    use nanshe_engine::model::BorderStyle::Thin;
     let mut h = harness(selected("A1:B2"));
     sequence(&mut h, &[Key::H, Key::B, Key::A], false);
     for cell in ["A1", "B1", "A2", "B2"] {
@@ -743,7 +743,7 @@ fn border_keytip_all_borders_covers_every_side_of_a_block() {
 
 #[test]
 fn border_keytip_outside_borders_skips_the_inside_edges() {
-    use gridcraft_engine::model::BorderStyle::{None as N, Thin};
+    use nanshe_engine::model::BorderStyle::{None as N, Thin};
     let mut h = harness(selected("A1:B2"));
     sequence(&mut h, &[Key::H, Key::B, Key::S], false);
     assert_eq!(sides(&h, "A1"), [Thin, N, Thin, N]);

@@ -1,4 +1,4 @@
-//! The GridCraft engine façade.
+//! The Nanshe engine façade.
 //!
 //! Every user-visible action is a command with a stable id (`cell.set`, `home.bold`,
 //! `data.sortAscending`…) and JSON parameters. The egui UI, the CLI, the control channel and MCP
@@ -27,18 +27,18 @@ pub mod windows;
 
 use std::sync::Arc;
 
-use gridcraft_calc::Calc;
-use gridcraft_core::{CellRef, RangeRef};
-use gridcraft_model::Workbook;
+use nanshe_calc::Calc;
+use nanshe_core::{CellRef, RangeRef};
+use nanshe_model::Workbook;
 use serde::Serialize;
 use serde_json::Value as Json;
 
 pub use cmd::{CommandInfo, CommandSpec, command_specs, find_command, register_test_command};
-pub use gridcraft_calc as calc;
-pub use gridcraft_core as core;
-pub use gridcraft_formula as formula;
-pub use gridcraft_model as model;
-pub use gridcraft_numfmt as numfmt;
+pub use nanshe_calc as calc;
+pub use nanshe_core as core;
+pub use nanshe_formula as formula;
+pub use nanshe_model as model;
+pub use nanshe_numfmt as numfmt;
 pub use selection::Selection;
 pub use windows::{Target, TargetGuard, WindowState, WindowView};
 
@@ -226,8 +226,8 @@ fn history_retained_bytes(older: &Workbook, newer: &Workbook) -> usize {
         if newer.sheets.iter().any(|next| Arc::ptr_eq(sheet, next)) {
             continue;
         }
-        bytes = bytes.saturating_add(std::mem::size_of::<gridcraft_model::Sheet>());
-        let empty = gridcraft_model::CellStore::new();
+        bytes = bytes.saturating_add(std::mem::size_of::<nanshe_model::Sheet>());
+        let empty = nanshe_model::CellStore::new();
         let next = newer.sheets.get(index).map_or(&empty, |next| &next.cells);
         bytes = bytes.saturating_add(sheet.cells.retained_bytes_against(next));
     }
@@ -394,9 +394,9 @@ impl Default for Prefs {
         Prefs {
             enter_direction: "down".into(),
             autocomplete: true,
-            user_name: "GridCraft User".into(),
-            default_font: gridcraft_model::DEFAULT_FONT.into(),
-            default_font_size: gridcraft_model::DEFAULT_FONT_SIZE,
+            user_name: "Nanshe User".into(),
+            default_font: nanshe_model::DEFAULT_FONT.into(),
+            default_font_size: nanshe_model::DEFAULT_FONT_SIZE,
             sheets_in_new_workbook: 1,
             r1c1: false,
             user_dictionary: vec![],
@@ -549,7 +549,7 @@ impl Session {
         let mut wb = Workbook::new();
         for _ in 1..self.prefs.sheets_in_new_workbook.clamp(1, 255) {
             let name = wb.next_sheet_name();
-            wb.sheets.push(Arc::new(gridcraft_model::Sheet::new(name)));
+            wb.sheets.push(Arc::new(nanshe_model::Sheet::new(name)));
         }
         self.add_document(DocState::new(wb, None, format!("Book{n}"), Trust::Local))
     }
@@ -982,7 +982,7 @@ impl Session {
 }
 
 /// Convenience: the active workbook's active sheet.
-pub fn active_sheet(s: &Session) -> Option<&gridcraft_model::Sheet> {
+pub fn active_sheet(s: &Session) -> Option<&nanshe_model::Sheet> {
     s.active().and_then(|d| d.wb.active())
 }
 

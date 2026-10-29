@@ -16,7 +16,7 @@
 //! - With no window left, the app quits, or (macOS) keeps running with its root hidden and the
 //!   menu bar showing until a workbook is created or opened.
 //!
-//! [`Session::windows`]: gridcraft_engine::Session::windows
+//! [`Session::windows`]: nanshe_engine::Session::windows
 
 use craft_window::{CASCADE_STEP, Frame, Rect, Viewports, WindowEvent, WindowId, WindowList, cascade};
 use serde_json::json;

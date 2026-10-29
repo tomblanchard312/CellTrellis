@@ -100,7 +100,7 @@ pub(super) fn recommended_charts(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut 
             ui.painter().rect_stroke(rect, 2.0, Stroke::new(1.0, t.separator), StrokeKind::Inside);
             let params = json!({"type": d.values.get("type").cloned().unwrap_or(Json::Null), "subtype": d.values.get("subtype").cloned().unwrap_or(Json::Null)});
             if let Some(doc) = app.session.active()
-                && let Ok((sheet, chart)) = gridcraft_engine::cmd::insert::build_chart(&app.session, &params)
+                && let Ok((sheet, chart)) = nanshe_engine::cmd::insert::build_chart(&app.session, &params)
             {
                 crate::chartview::paint_chart(ui.painter(), rect, &doc.wb, sheet, &chart);
             }

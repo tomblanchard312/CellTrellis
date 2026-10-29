@@ -1,10 +1,10 @@
 //! Freezing panes by dragging the freeze handles on the header edges (#195).
 
 use egui::{Event, Modifiers, PointerButton, Pos2, pos2};
-use gridcraft_engine::Session;
-use gridcraft_engine::core::CellRef;
-use gridcraft_ui_egui::SheetApp;
-use gridcraft_ui_egui::grid::{Geo, freeze_handles};
+use nanshe_engine::Session;
+use nanshe_engine::core::CellRef;
+use nanshe_ui_egui::SheetApp;
+use nanshe_ui_egui::grid::{Geo, freeze_handles};
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
 

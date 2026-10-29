@@ -5,7 +5,7 @@
 
 use std::cmp::Ordering;
 
-use gridcraft_core::{Array, CellError, Value, col_to_letters, compare};
+use nanshe_core::{Array, CellError, Value, col_to_letters, compare};
 
 use crate::criteria::{has_wildcards, lookup_equal};
 use crate::util::{R, arg, array_val, as_array, has, int, num, opt_bool, opt_int, opt_num, text, text_val};
@@ -431,7 +431,7 @@ fn transpose(args: &[Arg], _c: &mut dyn Ctx) -> R<Value> {
 /// parts (Microsoft's ADDRESS examples: `"[Book1]Sheet1"` stays bare, `"EXCEL SHEET"` becomes
 /// `'EXCEL SHEET'`). Unlike in a formula, `TRUE` and `FALSE` stay bare.
 fn quote_sheet(s: &str) -> String {
-    let bare = |p: &str| p.eq_ignore_ascii_case("TRUE") || p.eq_ignore_ascii_case("FALSE") || !gridcraft_core::sheet_needs_quotes(p);
+    let bare = |p: &str| p.eq_ignore_ascii_case("TRUE") || p.eq_ignore_ascii_case("FALSE") || !nanshe_core::sheet_needs_quotes(p);
     let word = |p: &str| !p.is_empty() && p.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.');
     let plain = match s.strip_prefix('[').and_then(|r| r.split_once(']')) {
         Some((book, sheet)) => word(book) && bare(sheet),
@@ -568,7 +568,7 @@ pub(crate) fn specs() -> Vec<FnSpec> {
 
 #[cfg(test)]
 mod tests {
-    use gridcraft_core::{CellError, Value};
+    use nanshe_core::{CellError, Value};
 
     use crate::util::testutil::*;
 

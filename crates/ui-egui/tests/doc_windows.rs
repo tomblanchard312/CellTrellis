@@ -8,9 +8,9 @@
 use std::cell::RefCell;
 
 use egui::{Context, RawInput, ViewportCommand, ViewportEvent, ViewportId, ViewportInfo};
-use gridcraft_engine::{Session, core::CellRef, core::Value};
-use gridcraft_ui_egui::doc_windows::DocWindows;
-use gridcraft_ui_egui::{SaveAnswer, SheetApp};
+use nanshe_engine::{Session, core::CellRef, core::Value};
+use nanshe_ui_egui::doc_windows::DocWindows;
+use nanshe_ui_egui::{SaveAnswer, SheetApp};
 use serde_json::json;
 
 thread_local! {
@@ -289,9 +289,9 @@ fn feedback_from_opening_a_workbook_shows_in_its_new_window() {
     desk.app.run("cell.set", json!({"cell": "A1", "input": "kept"})).unwrap();
     desk.frames(2);
     let book1 = desk.window_of(0);
-    let mut wb = gridcraft_engine::model::Workbook::new();
+    let mut wb = nanshe_engine::model::Workbook::new();
     wb.vba_project = Some(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1 fake OLE2 vbaProject".to_vec().into());
-    let b64 = gridcraft_engine::io::base64_encode(&gridcraft_engine::io::save_bytes(&wb, "macros.xlsm").unwrap());
+    let b64 = nanshe_engine::io::base64_encode(&nanshe_engine::io::save_bytes(&wb, "macros.xlsm").unwrap());
     desk.frame_with(|app, _| {
         // A script opening the file on the session, then the interface reporting on it.
         let r = app.session.run("file.open", json!({"name": "macros.xlsm", "base64": b64})).unwrap();
@@ -302,7 +302,7 @@ fn feedback_from_opening_a_workbook_shows_in_its_new_window() {
     let opened = desk.window_of(1);
     assert_eq!(desk.windows.shown_windows(), [book1, opened]);
     assert_eq!(desk.app.session.active_window(), Some(opened));
-    assert_eq!(desk.app.notice.as_ref().map(|n| n.kind), Some(gridcraft_ui_egui::NoticeKind::Warning), "the macro notice shows in the opened window");
+    assert_eq!(desk.app.notice.as_ref().map(|n| n.kind), Some(nanshe_ui_egui::NoticeKind::Warning), "the macro notice shows in the opened window");
     assert!(desk.app.message.is_some(), "and so does the alert");
     desk.app.enter_window(book1);
     assert!(desk.app.notice.is_none() && desk.app.message.is_none(), "Book1's window shows neither");
@@ -312,7 +312,7 @@ fn feedback_from_opening_a_workbook_shows_in_its_new_window() {
 /// Sheet2 at D4. Returns the window ids.
 fn two_windows_on_one_workbook(desk: &mut Desk) -> (u64, u64) {
     desk.app.run("home.insertSheet", json!({})).unwrap();
-    let path = std::env::temp_dir().join(format!("gridcraft-two-windows-{}-{:?}.xlsx", std::process::id(), std::thread::current().id()));
+    let path = std::env::temp_dir().join(format!("nanshe-two-windows-{}-{:?}.xlsx", std::process::id(), std::thread::current().id()));
     desk.app.run("file.save", json!({"path": path})).unwrap();
     let _ = std::fs::remove_file(&path);
     desk.app.run("sheet.activate", json!({"sheet": 0})).unwrap();
@@ -393,7 +393,7 @@ fn a_dialog_stays_with_its_window_across_a_switch() {
 
     // A script switching windows while the dialog is open.
     desk.frame_with(|app, ctx| {
-        let _ = gridcraft_ui_egui::control::handle(app, ctx, "engine.execute", &json!({"command": "window.activate", "params": {"window": w1}}));
+        let _ = nanshe_ui_egui::control::handle(app, ctx, "engine.execute", &json!({"command": "window.activate", "params": {"window": w1}}));
     });
     desk.frames(2);
     assert_eq!(desk.app.dialog.as_ref().map(|d| d.name()), Some("zoom"));
@@ -416,7 +416,7 @@ fn arrange_all_lays_out_the_native_windows_active_first() {
     // Without parameters, as a script calls it: tiled.
     let r = desk.app.run("view.arrangeAll", json!({})).unwrap();
     assert_eq!(r["arrange"], "tiled");
-    let tiled = gridcraft_ui_egui::doc_windows::arrange_rects("tiled", 3, craft_window::Rect::new(0.0, 0.0, 1000.0, 800.0));
+    let tiled = nanshe_ui_egui::doc_windows::arrange_rects("tiled", 3, craft_window::Rect::new(0.0, 0.0, 1000.0, 800.0));
     let r = |x, y, w, h| craft_window::Rect::new(x, y, w, h);
     assert_eq!(tiled, [r(0.0, 0.0, 500.0, 400.0), r(500.0, 0.0, 500.0, 400.0), r(0.0, 400.0, 1000.0, 400.0)]);
 }

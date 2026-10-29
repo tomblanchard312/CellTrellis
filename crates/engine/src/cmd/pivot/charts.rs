@@ -13,7 +13,7 @@ fn chart_pivot(s: &Session, p: &Json) -> Result<(usize, usize)> {
         let (sheet, addr) = match t.rsplit_once('!') {
             Some((sh, a)) => {
                 let sh = sh.trim();
-                let sh = gridcraft_core::unquote_sheet(sh);
+                let sh = nanshe_core::unquote_sheet(sh);
                 (d.wb.sheet_index(&sh), a)
             }
             None => (Some(d.wb.active_sheet()), t),
@@ -39,8 +39,7 @@ pub(super) fn insert_pivot_chart(s: &mut Session, p: &Json) -> Result<Json> {
     let series = pv::chart_series(&sh.name, area.start, &out);
     let t = str_param(p, "type").unwrap_or("column");
     let kind = crate::cmd::insert::chart_kind(t, str_param(p, "subtype").unwrap_or(""));
-    let at =
-        cell_param(s, p, "at")?.unwrap_or_else(|| CellRef::new(area.start.row, area.end.col.saturating_add(2).min(gridcraft_core::MAX_COLS - 1)));
+    let at = cell_param(s, p, "at")?.unwrap_or_else(|| CellRef::new(area.start.row, area.end.col.saturating_add(2).min(nanshe_core::MAX_COLS - 1)));
     let title = match p.get("title") {
         Some(Json::String(t)) => Some(t.clone()),
         Some(Json::Null) => None,

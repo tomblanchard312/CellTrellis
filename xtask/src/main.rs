@@ -29,9 +29,9 @@ commands:
   assets          check that every icon/image/font/sample file is attributed in ATTRIBUTION.md
   i18n-report     list the interface strings each language doesn't translate yet (always passes)
   layers          enforce the crate dependency layering (AGENTS.md \"Layering\")
-  wasm            cargo check --target wasm32-unknown-unknown for the L0-L5 crates (+ gridcraft-web), one call
+  wasm            cargo check --target wasm32-unknown-unknown for the L0-L5 crates (+ nanshe-web), one call
   parity [--check] [--out PATH]
-                  write docs/parity-checklist.md from gridcraft_engine::catalog (implemented vs missing ids)
+                  write docs/parity-checklist.md from nanshe_engine::catalog (implemented vs missing ids)
   keytips [--check]
                   regenerate crates/ui-egui/src/keytips/generated.rs from keytips.json (--check: fail if stale)
   version [set X.Y.Z[-pre]]
@@ -132,13 +132,13 @@ fn cmd_layers() -> Result<(), String> {
 }
 
 /// Workspace packages that must build for wasm32: every L0–L5 crate, plus the web app once it
-/// exists (`apps/gridcraft-web`).
+/// exists (`apps/nanshe-web`).
 fn wasm_set() -> Result<Vec<String>, String> {
     let crates = layers::from_metadata(&metadata()?)?;
     Ok(crates
         .into_iter()
         .filter(|c| match layers::classify(&c.name) {
-            Some(layers::Class::Layer(l)) => l <= 5 || c.name == "gridcraft-web",
+            Some(layers::Class::Layer(l)) => l <= 5 || c.name == "nanshe-web",
             _ => false,
         })
         .map(|c| c.name)

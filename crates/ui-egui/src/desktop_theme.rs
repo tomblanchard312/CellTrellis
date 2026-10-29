@@ -38,7 +38,7 @@ impl DesktopTheme {
     /// first answer is sent straight away, so the caller does not have to ask for it separately.
     pub fn start() -> Self {
         let (tx, rx) = channel();
-        let started = std::thread::Builder::new().name("gridcraft-desktop-theme".into()).spawn(move || {
+        let started = std::thread::Builder::new().name("nanshe-desktop-theme".into()).spawn(move || {
             let mut link = Link::default();
             let mut last = read(&mut link);
             if tx.send(last).is_err() {

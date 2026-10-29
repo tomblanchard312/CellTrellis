@@ -6,7 +6,7 @@
 
 use std::collections::BTreeMap;
 
-use gridcraft_model::{LineInfo, Sheet};
+use nanshe_model::{LineInfo, Sheet};
 
 /// The deepest outline level XLSX allows.
 pub const MAX_LEVEL: u8 = 7;

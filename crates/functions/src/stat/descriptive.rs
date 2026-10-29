@@ -270,7 +270,7 @@ pub(super) fn count_impl(a: &[Arg]) -> f64 {
             Value::Number(_) => c += 1,
             _ if x.from_ref => {}
             Value::Bool(_) => c += 1,
-            Value::Text(t) if gridcraft_core::parse::parse_number_text(t).is_some() => c += 1,
+            Value::Text(t) if nanshe_core::parse::parse_number_text(t).is_some() => c += 1,
             _ => {}
         }
     }

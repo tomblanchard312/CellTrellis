@@ -49,17 +49,11 @@ pub fn chart_kind(t: &str, sub: &str) -> ChartKind {
 
 /// Builds series from a block: first row/column as names/categories when they're text.
 pub fn series_from_range(sh: &Sheet, r: RangeRef, by_rows: bool) -> Vec<Series> {
-    let q = gridcraft_formula::quote_sheet(&sh.name);
+    let q = nanshe_formula::quote_sheet(&sh.name);
     let abs = |r: RangeRef| {
-        format!(
-            "{q}!${}${}:${}${}",
-            gridcraft_core::col_to_letters(r.start.col),
-            r.start.row + 1,
-            gridcraft_core::col_to_letters(r.end.col),
-            r.end.row + 1
-        )
+        format!("{q}!${}${}:${}${}", nanshe_core::col_to_letters(r.start.col), r.start.row + 1, nanshe_core::col_to_letters(r.end.col), r.end.row + 1)
     };
-    let abs1 = |c: CellRef| format!("{q}!${}${}", gridcraft_core::col_to_letters(c.col), c.row + 1);
+    let abs1 = |c: CellRef| format!("{q}!${}${}", nanshe_core::col_to_letters(c.col), c.row + 1);
     let is_text = |c: CellRef| sh.value(c).is_text() || sh.value(c).is_empty();
     let header_row = r.height() > 1
         && (r.start.col..=r.end.col).any(|c| sh.value(CellRef::new(r.start.row, c)).is_text())
@@ -167,8 +161,8 @@ pub fn recommend_charts(s: &Session, p: &Json) -> Result<Vec<(&'static str, &'st
     let (_, by_rows, series) = series_from_areas(sh, &areas)?;
     let ranges: Vec<RangeRef> = series
         .iter()
-        .filter_map(|x| match gridcraft_formula::parse(&x.values) {
-            Ok(gridcraft_formula::Expr::Ref(rf)) => Some(rf.range()),
+        .filter_map(|x| match nanshe_formula::parse(&x.values) {
+            Ok(nanshe_formula::Expr::Ref(rf)) => Some(rf.range()),
             _ => None,
         })
         .collect();
@@ -240,7 +234,7 @@ pub fn build_chart(s: &Session, p: &Json) -> Result<(usize, Chart)> {
     let at = cell_param_on(s, p, "at", sheet)?.unwrap_or_else(|| CellRef::new(bounds.start.row, bounds.end.col + 2));
     let title = str_param(p, "title").map(str::to_string).or_else(|| {
         if series.len() == 1 {
-            series[0].name.as_ref().map(|n| gridcraft_calc::evaluate(&d.wb, sheet, at, n).display())
+            series[0].name.as_ref().map(|n| nanshe_calc::evaluate(&d.wb, sheet, at, n).display())
         } else {
             Some("Chart Title".into())
         }
@@ -264,7 +258,7 @@ pub fn build_chart(s: &Session, p: &Json) -> Result<(usize, Chart)> {
         style: 1,
         x_title: None,
         y_title: None,
-        source: (areas.len() == 1).then(|| format!("{}!{}", gridcraft_formula::quote_sheet(&sh.name), bounds.a1())),
+        source: (areas.len() == 1).then(|| format!("{}!{}", nanshe_formula::quote_sheet(&sh.name), bounds.a1())),
         by_rows,
         pivot: None,
     };
@@ -297,8 +291,8 @@ pub(super) fn chart_set(s: &mut Session, p: &Json) -> Result<Json> {
     let quartiles = p
         .get("quartiles")
         .map(|v| match v.as_str() {
-            Some("exclusive") => Ok(gridcraft_model::QuartileMethod::Exclusive),
-            Some("inclusive") => Ok(gridcraft_model::QuartileMethod::Inclusive),
+            Some("exclusive") => Ok(nanshe_model::QuartileMethod::Exclusive),
+            Some("inclusive") => Ok(nanshe_model::QuartileMethod::Inclusive),
             _ => Err(bad("quartiles", "expected exclusive or inclusive")),
         })
         .transpose()?;
@@ -399,8 +393,8 @@ fn series_block(series: &[Series]) -> Option<(String, bool)> {
     let mut rows = 0;
     for s in series {
         for (i, f) in [Some(&s.values), s.categories.as_ref(), s.name.as_ref()].into_iter().flatten().enumerate() {
-            let Ok(gridcraft_formula::Expr::Ref(r)) = gridcraft_formula::parse(f) else { return None };
-            let gridcraft_formula::SheetSel::Named(n) = &r.sheet else { return None };
+            let Ok(nanshe_formula::Expr::Ref(r)) = nanshe_formula::parse(f) else { return None };
+            let nanshe_formula::SheetSel::Named(n) = &r.sheet else { return None };
             if !sheet.get_or_insert_with(|| n.clone()).eq_ignore_ascii_case(n) {
                 return None;
             }
@@ -411,7 +405,7 @@ fn series_block(series: &[Series]) -> Option<(String, bool)> {
             bounds = Some(bounds.map_or(range, |b| b.union(&range)));
         }
     }
-    Some((format!("{}!{}", gridcraft_formula::quote_sheet(&sheet?), bounds?.a1()), rows > 0 && rows == series.len()))
+    Some((format!("{}!{}", nanshe_formula::quote_sheet(&sheet?), bounds?.a1()), rows > 0 && rows == series.len()))
 }
 
 pub(super) fn chart_delete(s: &mut Session, p: &Json) -> Result<Json> {

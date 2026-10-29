@@ -1,9 +1,9 @@
 //! A formula started on one sheet and pointed at another sheet lands on the sheet it started on.
 
 use egui::vec2;
-use gridcraft_engine::Session;
-use gridcraft_engine::core::CellRef;
-use gridcraft_ui_egui::SheetApp;
+use nanshe_engine::Session;
+use nanshe_engine::core::CellRef;
+use nanshe_ui_egui::SheetApp;
 use serde_json::json;
 
 /// Two sheets, `range` selected on the first, and `=1+2` typed there; then pointing moves to the second sheet.

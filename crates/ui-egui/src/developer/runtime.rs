@@ -11,7 +11,7 @@ fn instant() -> Instant {
     Instant::now()
 }
 
-use gridcraft_engine::{DocState, Session, cmd::developer};
+use nanshe_engine::{DocState, Session, cmd::developer};
 use serde_json::{Value as Json, json};
 
 struct Reap(Child);

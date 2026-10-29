@@ -1,6 +1,6 @@
 use crate::Arg;
 use crate::util::testutil::*;
-use gridcraft_core::{CellError, DateSystem, Value, date::serial_from_ymd};
+use nanshe_core::{CellError, DateSystem, Value, date::serial_from_ymd};
 
 fn d(y: i64, m: i64, dd: i64) -> Arg {
     n(serial_from_ymd(DateSystem::D1900, y, m, dd).unwrap())

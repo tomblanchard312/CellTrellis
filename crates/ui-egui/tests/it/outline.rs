@@ -2,9 +2,9 @@
 //! Outline Settings dialog that moves the summary rows above their detail.
 
 use egui::{Event, Modifiers, PointerButton, Pos2};
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::SheetApp;
-use gridcraft_ui_egui::outline::{Action, layout};
+use nanshe_engine::Session;
+use nanshe_ui_egui::SheetApp;
+use nanshe_ui_egui::outline::{Action, layout};
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
@@ -102,7 +102,7 @@ fn settings_dialog_puts_summary_rows_above_their_detail() {
     // The − now sits on row 4, above the detail; it hides rows 5:8 and marks row 4 collapsed.
     let minus = button(&h, toggle(true, 1));
     let geo = h.state().grid.geo.clone().unwrap();
-    let row4 = geo.cell_rect(&sh, gridcraft_engine::core::CellRef::new(3, 0));
+    let row4 = geo.cell_rect(&sh, nanshe_engine::core::CellRef::new(3, 0));
     assert!(row4.y_range().contains(minus.y), "{minus:?} is not on row 4 ({row4:?})");
     click(&mut h, minus);
     assert_eq!(hidden_rows(&h), [4, 5, 6, 7]);

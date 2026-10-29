@@ -28,7 +28,7 @@ pub struct Geo {
     pub(super) ri: std::sync::Arc<LineIndex>,
     pub(super) ci: std::sync::Arc<LineIndex>,
     /// Page Layout view: cells sit on pages (`scroll` is then in page-layout units).
-    pub paper: Option<Arc<gridcraft_engine::paper::PageGrid>>,
+    pub paper: Option<Arc<nanshe_engine::paper::PageGrid>>,
 }
 
 impl Geo {
@@ -89,7 +89,7 @@ impl Geo {
     }
     /// Page Layout view geometry: `rect` excludes the rulers; cells are drawn at the print scale
     /// on pages laid out by `grid`; frozen panes don't apply (as in Excel).
-    pub fn paged(sh: &Sheet, rect: Rect, scroll: egui::Vec2, grid: Arc<gridcraft_engine::paper::PageGrid>) -> Geo {
+    pub fn paged(sh: &Sheet, rect: Rect, scroll: egui::Vec2, grid: Arc<nanshe_engine::paper::PageGrid>) -> Geo {
         let mut g = Geo::new(sh, rect, scroll);
         let zoom = (sh.zoom as f32 / 100.0).clamp(0.1, 4.0);
         g.z = zoom * DISPLAY_SCALE * grid.scale.clamp(0.1, 4.0);

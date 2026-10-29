@@ -1,7 +1,7 @@
 //! Chart caches keep the position of every point inside the referenced range.
 
-use gridcraft_core::{CellRef, Value};
-use gridcraft_model::{Sheet, Workbook};
+use nanshe_core::{CellRef, Value};
+use nanshe_model::{Sheet, Workbook};
 use std::sync::Arc;
 
 use crate::chart::ref_values;

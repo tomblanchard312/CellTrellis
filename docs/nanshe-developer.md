@@ -4,11 +4,11 @@ Last updated: 2026-10-28.
 
 ## Compared implementations
 
-The port starts at GridCraft `70327cd3d9b7de9af1bcaa33488c0736a0d346d8` and takes the reusable
+The port starts at upstream GridCraft `70327cd3d9b7de9af1bcaa33488c0736a0d346d8` and takes the reusable
 language/compiler and local-service client from Nisaba
 `a4298e6fc1ecfdedac64cfe763943737c608b33a`.
 
-| Area | Nisaba | GridCraft at the fork | Nanshe |
+| Area | Nisaba | Upstream GridCraft at the fork | Nanshe |
 |---|---|---|---|
 | Developer interface | Optional VBA CLI; no integrated editor | Recorded command scripts; preserves VBA projects | In-app source editor, language selector, runtime output, review and apply |
 | VBA | VBA → VB.NET → Roslyn; Word object model | Preserved but not executed | Reused transpiler/security checks, Excel-style object model, isolated preview process |
@@ -30,7 +30,7 @@ Install a .NET SDK 8 or later and build:
 dotnet build vba/NansheVba.sln -m:1
 # Use the directory for your SDK's target framework (net8.0, net9.0, net10.0...).
 export NANSHE_VBA_RUNNER="$PWD/vba/src/Nanshe.Vba/bin/Debug/net10.0/Nanshe.Vba"
-cargo run -p gridcraft
+cargo run -p nanshe
 ```
 
 Windows: set `NANSHE_VBA_RUNNER` to `Nanshe.Vba.exe`. Keep the helper executable beside its
@@ -43,7 +43,7 @@ Selection, ActiveCell, Value/Value2, Formula, Select, ClearContents, Offset, Res
 Font setters and NumberFormat setter. Multiple-cell reads return 1-based two-dimensional arrays;
 array writes must match the destination dimensions. Value writes preserve text literally, while
 Formula explicitly parses formulas. Sheet activation and reads see earlier changes through
-GridCraft's actual calculation engine in the preview session.
+Nanshe's actual calculation engine in the preview session.
 
 ```vb
 Sub Main()
@@ -115,7 +115,7 @@ the workbook, or dropping the job cancels the runner. Unix runners start in thei
 `taskkill /T /F`. The child is reaped even on protocol failure. Deliberately detached processes
 and external side effects remain outside this lifecycle; this is not an OS resource sandbox.
 
-Source for VBA, Python and R is stored separately using GridCraft's existing hidden-name storage.
+Source for VBA, Python and R is stored separately using Nanshe's existing hidden-name storage.
 It survives XLSX saves; edited drafts join the normal Save/Close flow. CSV exports cannot retain
 script source. Code is never executed on open. Switching source language, editing code, or
 accepting a Scribe code draft clears the run acknowledgement and invalidates the old preview.
@@ -136,7 +136,10 @@ On Windows, the default is `\\.\pipe\SharedAI-<your-user-SID>-default`, overridd
 the server process's token SID before sending requests and opens the pipe with identification-only
 security quality of service. Keep `sharedai-worker.exe` beside `sharedai-daemon.exe`; set
 `SHAREDAI_DAEMON` to the daemon executable when it is not in a helper directory or on PATH.
-Autostart runs as the current user without elevation or a console window. Pipe connection attempts,
+Autostart runs as the current user without elevation or a console window. Enki creates its protected
+registry under `%LOCALAPPDATA%\SharedAI` by default. An explicit `SHAREDAI_REGISTRY` override
+must have a parent satisfying Enki's private-storage ACL checks; ordinary inherited permissions
+are rejected. Use the default private location in a fresh test profile. Pipe connection attempts,
 reads and writes have deadlines; streaming polls for Stop every 200 ms.
 No models are downloaded by Nanshe.
 
@@ -145,7 +148,9 @@ that local endpoint. It streams replies off the UI thread and supports Stop. Nis
 tag filtering is reused; truncated, failed or cancelled replies never become actionable
 suggestions. Formula proposals use canonical English formula syntax and target the cell captured
 when the request began. A workbook revision change makes Apply fail. Code drafts only open in the
-Developer editor and must be reviewed and run explicitly.
+Developer editor and must be reviewed and run explicitly. Task panes retain keyboard ownership
+when a running job disables an editor, preventing pending keystrokes from editing worksheet cells.
+An explicit click on the worksheet restores its normal keyboard handling.
 
 ## Platforms and evidence boundaries
 
@@ -170,9 +175,9 @@ dotnet run --project vba/tests/Nanshe.Vba.Tests --no-build
 # Set this to exercise the real .NET subprocess in the Rust integration test.
 export NANSHE_VBA_TEST_RUNNER="$NANSHE_VBA_RUNNER"
 # Set NANSHE_RSCRIPT to exercise the R subprocess test (requires jsonlite).
-cargo test -p gridcraft-ui-egui developer --lib
-cargo test -p gridcraft-engine cmd::developer --lib
-cargo test -p gridcraft-enki
+cargo test -p nanshe-ui-egui developer --lib
+cargo test -p nanshe-engine cmd::developer --lib
+cargo test -p nanshe-enki
 cargo xtask ci
 ```
 
@@ -184,9 +189,9 @@ protocol fixture by default. Opt-in real-service checks require an isolated runn
 ```sh
 export SHAREDAI_SOCKET=/path/to/private-test-dir/ipc.sock # Windows: SHAREDAI_PIPE
 export NANSHE_ENKI_TEST_MODEL=/absolute/path/to/chat-model.gguf
-cargo test -p gridcraft-enki live_enki -- --ignored --nocapture
+cargo test -p nanshe-enki live_enki -- --ignored --nocapture
 # The preceding test registers nanshe-smoke in the test daemon's registry.
-cargo test -p gridcraft-ui-egui live_enki --lib -- --ignored --nocapture
+cargo test -p nanshe-ui-egui live_enki --lib -- --ignored --nocapture
 ```
 
 Use a separate `SHAREDAI_REGISTRY` and data directory when starting this test daemon. The tests

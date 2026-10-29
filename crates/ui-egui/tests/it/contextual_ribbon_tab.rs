@@ -2,8 +2,8 @@
 //! The tab remembered in the saved UI state, or left behind when the selection moves away, must
 //! not leave the ribbon blank: it falls back to Home.
 
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::SheetApp;
+use nanshe_engine::Session;
+use nanshe_ui_egui::SheetApp;
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
@@ -57,10 +57,10 @@ fn leaving_the_table_while_on_table_design_returns_to_home() {
 
 #[test]
 fn startup_opens_on_home_not_the_saved_tab() {
-    let saved = gridcraft_ui_egui::UiState { ribbon_tab: "Table Design".into(), dark: true, ..Default::default() };
+    let saved = nanshe_ui_egui::UiState { ribbon_tab: "Table Design".into(), dark: true, ..Default::default() };
     let json = serde_json::to_string(&saved).unwrap();
     assert!(json.contains(r#""ribbonTab":"Table Design""#), "{json}");
-    let restored = serde_json::from_str::<gridcraft_ui_egui::UiState>(&json).unwrap().at_startup();
+    let restored = serde_json::from_str::<nanshe_ui_egui::UiState>(&json).unwrap().at_startup();
     assert_eq!(restored.ribbon_tab, "Home", "the saved tab is not restored");
     assert!(restored.dark, "the other preferences are");
 }

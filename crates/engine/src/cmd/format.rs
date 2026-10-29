@@ -1,7 +1,7 @@
 //! Formatting: Home › Font, Alignment, Number, Styles, Cells › Format.
 
-use gridcraft_core::{CellRef, RangeRef};
-use gridcraft_model::{BorderLine, BorderStyle, Borders, Color, Fill, HAlign, NumFmt, Style, StyleId, Theme, Underline, VAlign, VertAlign};
+use nanshe_core::{CellRef, RangeRef};
+use nanshe_model::{BorderLine, BorderStyle, Borders, Color, Fill, HAlign, NumFmt, Style, StyleId, Theme, Underline, VAlign, VertAlign};
 use serde_json::{Value as Json, json};
 
 use super::{
@@ -650,7 +650,7 @@ fn merge(s: &mut Session, p: &Json, how: &str) -> Result<Json> {
                             let others: Vec<CellRef> = sh.cells.iter_range(m).map(|(c, _)| c).filter(|c| *c != m.start).collect();
                             for c in others {
                                 if let Some(mut cell) = sh.cells.get(c).cloned() {
-                                    cell.value = gridcraft_core::Value::Empty;
+                                    cell.value = nanshe_core::Value::Empty;
                                     cell.formula = None;
                                     sh.set_cell(c, cell);
                                 }
@@ -668,7 +668,7 @@ fn merge(s: &mut Session, p: &Json, how: &str) -> Result<Json> {
                         let others: Vec<CellRef> = sh.cells.iter_range(*r).map(|(c, _)| c).filter(|c| *c != r.start).collect();
                         for c in others {
                             if let Some(mut cell) = sh.cells.get(c).cloned() {
-                                cell.value = gridcraft_core::Value::Empty;
+                                cell.value = nanshe_core::Value::Empty;
                                 cell.formula = None;
                                 sh.set_cell(c, cell);
                             }
@@ -686,7 +686,7 @@ fn merge(s: &mut Session, p: &Json, how: &str) -> Result<Json> {
             let blocked = sh
                 .cells
                 .iter_range(reach)
-                .filter(|(_, x)| x.formula.is_some() && x.value == gridcraft_core::Value::Error(gridcraft_core::CellError::Spill));
+                .filter(|(_, x)| x.formula.is_some() && x.value == nanshe_core::Value::Error(nanshe_core::CellError::Spill));
             touched.extend(blocked.map(|(c, _)| (sheet, c)));
         }
         cx.changed.extend(touched);
@@ -731,10 +731,10 @@ fn set_fmt(s: &mut Session, p: &Json, code: &str) -> Result<Json> {
 }
 
 /// Adds or removes one decimal place in the number format (Increase/Decrease Decimal).
-pub fn adjust_decimals(code: &str, value: &gridcraft_core::Value, delta: i32) -> String {
+pub fn adjust_decimals(code: &str, value: &nanshe_core::Value, delta: i32) -> String {
     if code == "General" {
         // Start from the displayed number of decimals.
-        let text = value.as_f64().map(gridcraft_core::number_to_text).unwrap_or_default();
+        let text = value.as_f64().map(nanshe_core::number_to_text).unwrap_or_default();
         let dec = text.split_once('.').map_or(0, |(_, d)| d.len()) as i32;
         let n = (dec + delta).max(0) as usize;
         return if n == 0 { "0".into() } else { format!("0.{}", "0".repeat(n)) };
@@ -805,7 +805,7 @@ fn decimals(s: &mut Session, p: &Json, delta: i32) -> Result<Json> {
     set_fmt(s, p, &new)
 }
 
-pub use gridcraft_model::points_to_chars;
+pub use nanshe_model::points_to_chars;
 
 mod cell_styles;
 mod sizes;
@@ -839,7 +839,7 @@ mod tests {
 
     #[test]
     fn decimal_steps() {
-        let v = gridcraft_core::Value::Number(1.5);
+        let v = nanshe_core::Value::Number(1.5);
         assert_eq!(adjust_decimals("General", &v, 1), "0.00");
         assert_eq!(adjust_decimals("General", &v, -1), "0");
         assert_eq!(adjust_decimals("0", &v, 1), "0.0");

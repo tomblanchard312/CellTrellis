@@ -91,7 +91,7 @@ pub fn cell_family(name: &str, bold: bool, italic: bool) -> FontFamily {
 /// `exact` lays the text out (a galley kept until the end of the frame); otherwise the glyph
 /// advances are summed without kerning, which is cheap and never narrower. This takes the
 /// Context lock (`fonts_mut`): never call it, or run a command, while an egui lock is held.
-pub fn cell_text_width(ctx: &egui::Context, text: &str, font: &gridcraft_engine::model::Font, exact: bool) -> f32 {
+pub fn cell_text_width(ctx: &egui::Context, text: &str, font: &nanshe_engine::model::Font, exact: bool) -> f32 {
     let family = cell_family(&font.name, font.bold, font.italic);
     let id = FontId::new(font.size * 96.0 / 72.0, family);
     ctx.fonts_mut(|f| {
@@ -104,7 +104,7 @@ pub fn cell_text_width(ctx: &egui::Context, text: &str, font: &gridcraft_engine:
             }
         })
     })
-    .unwrap_or_else(|| gridcraft_engine::cmd::format::approx_text_width(text, font.size, font.bold))
+    .unwrap_or_else(|| nanshe_engine::cmd::format::approx_text_width(text, font.size, font.bold))
 }
 
 /// Whether epaint can open face `index` of this font file and it maps characters to glyphs.

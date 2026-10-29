@@ -1,4 +1,4 @@
-use gridcraft_formula::{Expr, FormulaLocale, parse, parse_input, print, print_input};
+use nanshe_formula::{Expr, FormulaLocale, parse, parse_input, print, print_input};
 
 fn input(src: &str) -> String {
     print(&parse_input(src, FormulaLocale::Es, |_| false).unwrap())
@@ -129,12 +129,12 @@ fn spanish_display_round_trips_text_containing_separators() {
 fn local_names_match_aliases_in_any_case_like_the_evaluator() {
     // `ſi` (long s) is `SI` case-insensitively, so the call is the LAMBDA, not IF.
     assert_eq!(input("LET(ſi;LAMBDA(x;x*2);SI(3))"), "LET(ſi,LAMBDA(x,x*2),SI(3))");
-    assert!(gridcraft_formula::same_name("ß", "ẞ"));
-    assert!(gridcraft_formula::same_name("dług", "DŁUG"));
-    assert!(gridcraft_formula::same_name("ſi", "SI"));
-    assert!(gridcraft_formula::same_name("σοφός", "ΣΟΦΌΣ"));
+    assert!(nanshe_formula::same_name("ß", "ẞ"));
+    assert!(nanshe_formula::same_name("dług", "DŁUG"));
+    assert!(nanshe_formula::same_name("ſi", "SI"));
+    assert!(nanshe_formula::same_name("σοφός", "ΣΟΦΌΣ"));
     // Dotless ı is its own letter outside Turkic languages.
-    assert!(!gridcraft_formula::same_name("ı", "i"));
-    assert!(!gridcraft_formula::same_name("ı", "I"));
-    assert!(!gridcraft_formula::same_name("a", "b"));
+    assert!(!nanshe_formula::same_name("ı", "i"));
+    assert!(!nanshe_formula::same_name("ı", "I"));
+    assert!(!nanshe_formula::same_name("a", "b"));
 }

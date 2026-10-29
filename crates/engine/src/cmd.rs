@@ -24,9 +24,9 @@ pub mod stash;
 pub mod view;
 pub mod whatif;
 
-use gridcraft_calc::Key;
-use gridcraft_core::{CellRef, RangeRef};
-use gridcraft_model::Workbook;
+use nanshe_calc::Key;
+use nanshe_core::{CellRef, RangeRef};
+use nanshe_model::Workbook;
 use serde::Serialize;
 use serde_json::Value as Json;
 
@@ -233,25 +233,25 @@ pub(crate) fn u32_param(p: &Json, key: &str) -> Option<u32> {
 
 /// An object anchor mode from Excel's wording or the model's: `"moveAndSize"`/`"twoCell"`,
 /// `"moveOnly"`/`"oneCell"`, `"absolute"`/`"don't move or size"` (case-insensitive).
-pub(crate) fn anchor_mode_param(p: &Json) -> Option<gridcraft_model::AnchorMode> {
+pub(crate) fn anchor_mode_param(p: &Json) -> Option<nanshe_model::AnchorMode> {
     parse_anchor_mode(str_param(p, "mode").or_else(|| str_param(p, "anchorMode"))?)
 }
 
-pub(crate) fn parse_anchor_mode(s: &str) -> Option<gridcraft_model::AnchorMode> {
+pub(crate) fn parse_anchor_mode(s: &str) -> Option<nanshe_model::AnchorMode> {
     match s.to_ascii_lowercase().replace([' ', '-', '_', '\''], "").as_str() {
-        "moveandsize" | "moveandsizeandcells" | "twocell" => Some(gridcraft_model::AnchorMode::MoveAndSize),
-        "moveonly" | "movebutdontsize" | "movebutdontsizewithcells" | "onecell" => Some(gridcraft_model::AnchorMode::MoveOnly),
-        "absolute" | "dontmoveorsize" | "dontmoveorsizewithcells" | "none" => Some(gridcraft_model::AnchorMode::Absolute),
+        "moveandsize" | "moveandsizeandcells" | "twocell" => Some(nanshe_model::AnchorMode::MoveAndSize),
+        "moveonly" | "movebutdontsize" | "movebutdontsizewithcells" | "onecell" => Some(nanshe_model::AnchorMode::MoveOnly),
+        "absolute" | "dontmoveorsize" | "dontmoveorsizewithcells" | "none" => Some(nanshe_model::AnchorMode::Absolute),
         _ => None,
     }
 }
 
 /// The wire name of an anchor mode (matches the `mode` param of [`anchor_mode_param`]).
-pub(crate) fn anchor_mode_name(m: gridcraft_model::AnchorMode) -> &'static str {
+pub(crate) fn anchor_mode_name(m: nanshe_model::AnchorMode) -> &'static str {
     match m {
-        gridcraft_model::AnchorMode::MoveAndSize => "moveAndSize",
-        gridcraft_model::AnchorMode::MoveOnly => "moveOnly",
-        gridcraft_model::AnchorMode::Absolute => "absolute",
+        nanshe_model::AnchorMode::MoveAndSize => "moveAndSize",
+        nanshe_model::AnchorMode::MoveOnly => "moveOnly",
+        nanshe_model::AnchorMode::Absolute => "absolute",
     }
 }
 pub(crate) fn ok() -> Result<Json> {
@@ -300,7 +300,7 @@ pub(crate) fn target_sheet(s: &Session, p: &Json) -> Result<usize> {
     Ok(d.wb.active_sheet())
 }
 
-pub(crate) use gridcraft_core::split_sheet;
+pub(crate) use nanshe_core::split_sheet;
 
 /// A single-cell parameter. Absent or null is `Ok(None)` (callers default it); a value that is not
 /// a cell reference, or that names a sheet other than the active one, is an error rather than a
@@ -355,9 +355,9 @@ fn wall_clock() -> std::time::Duration {
 }
 
 pub(crate) fn commit<R>(d: &mut DocState, f: impl FnOnce(&mut Ctx) -> Result<R>) -> Result<R> {
-    // `GRIDCRAFT_PROFILE` timing, never on wasm where the clock traps. `elapsed` on the epoch
+    // `NANSHE_PROFILE` timing, never on wasm where the clock traps. `elapsed` on the epoch
     // reads the wall clock without the (disallowed) `now`.
-    let t0 = if cfg!(target_arch = "wasm32") { None } else { std::env::var_os("GRIDCRAFT_PROFILE").map(|_| wall_clock()) };
+    let t0 = if cfg!(target_arch = "wasm32") { None } else { std::env::var_os("NANSHE_PROFILE").map(|_| wall_clock()) };
     let since = |t0: std::time::Duration| wall_clock().saturating_sub(t0);
     let mut sel = d.selection.clone();
     let mut ctx = Ctx { wb: (*d.wb).clone(), changed: Vec::new(), structural: false, sel: &mut sel, fit_rows: Vec::new(), protection_checked: false };
@@ -428,7 +428,7 @@ fn check_protection(old: &Workbook, new: &Workbook, unlocked: &[(String, String)
 ///
 /// Cell edits are guarded separately, by whether the cell is locked (`locked_cell_error`): these
 /// permissions are the ones that are not about one cell's contents.
-pub(crate) fn refuse_unless_allowed(s: &Session, sheet: usize, what: &str, pick: fn(&gridcraft_model::SheetProtection) -> bool) -> Result<()> {
+pub(crate) fn refuse_unless_allowed(s: &Session, sheet: usize, what: &str, pick: fn(&nanshe_model::SheetProtection) -> bool) -> Result<()> {
     if s.doc()?.wb.sheet(sheet).is_some_and(|sh| sh.protection.as_ref().is_some_and(|pr| !pick(pr))) {
         return Err(EngineError::Other(format!("{what} isn't allowed on this protected sheet (Review › Unprotect Sheet).")));
     }
@@ -437,7 +437,7 @@ pub(crate) fn refuse_unless_allowed(s: &Session, sheet: usize, what: &str, pick:
 
 /// Whether a locked cell on a protected sheet stays locked: `None` when it's in an Allow Edit
 /// Range without a password or one unlocked in this session, else the message to show.
-pub(crate) fn locked_cell_error(sh: &gridcraft_model::Sheet, c: CellRef, unlocked: &[(String, String)]) -> Option<String> {
+pub(crate) fn locked_cell_error(sh: &nanshe_model::Sheet, c: CellRef, unlocked: &[(String, String)]) -> Option<String> {
     let mut needs_password = None;
     for r in sh.edit_ranges.iter().filter(|r| r.contains(c)) {
         if r.password.is_none() || unlocked.iter().any(|(s, t)| *s == sh.name && *t == r.title) {
@@ -482,8 +482,8 @@ fn check_arrays(old: &Workbook, new: &Workbook) -> Result<()> {
 }
 
 /// Two cells hold the same value or formula (formats aside).
-fn same_content(a: Option<&gridcraft_model::Cell>, b: Option<&gridcraft_model::Cell>) -> bool {
-    let empty = |c: Option<&gridcraft_model::Cell>| c.is_none_or(|c| c.formula.is_none() && c.value.is_empty());
+fn same_content(a: Option<&nanshe_model::Cell>, b: Option<&nanshe_model::Cell>) -> bool {
+    let empty = |c: Option<&nanshe_model::Cell>| c.is_none_or(|c| c.formula.is_none() && c.value.is_empty());
     match (a, b) {
         (Some(a), Some(b)) => match (&a.formula, &b.formula) {
             (Some(x), Some(y)) => x.text == y.text && x.array == y.array,
@@ -538,9 +538,9 @@ pub fn auto_row_height(wb: &mut Workbook, si: usize, row: u32) {
     }
     let default = sh.default_row_height;
     // Fast path: rows of default-size, unwrapped content keep the default height.
-    let plain = sh.cells.row(row, 0, gridcraft_core::MAX_COLS - 1).all(|(_, cell)| {
+    let plain = sh.cells.row(row, 0, nanshe_core::MAX_COLS - 1).all(|(_, cell)| {
         let st = wb.styles.get(cell.style);
-        st.font.size <= gridcraft_model::DEFAULT_FONT_SIZE && !st.align.wrap
+        st.font.size <= nanshe_model::DEFAULT_FONT_SIZE && !st.align.wrap
     });
     if plain {
         if sh.rows.get(&row).is_some_and(|i| i.size.is_some())
@@ -549,7 +549,7 @@ pub fn auto_row_height(wb: &mut Workbook, si: usize, row: u32) {
         {
             {
                 e.size = None;
-                if *e == gridcraft_model::LineInfo::default() {
+                if *e == nanshe_model::LineInfo::default() {
                     shm.rows.remove(&row);
                 }
             }
@@ -561,9 +561,9 @@ pub fn auto_row_height(wb: &mut Workbook, si: usize, row: u32) {
     // picked out once, and per cell the candidates are re-checked (normally none or a couple;
     // a sheet with many merges and many saved columns would otherwise scan all of them per
     // cell, rows × merges × columns).
-    let row_merges: Vec<gridcraft_core::RangeRef> =
+    let row_merges: Vec<nanshe_core::RangeRef> =
         sh.merges.iter().copied().filter(|m| !m.is_single() && m.start.row <= row && row <= m.end.row).collect();
-    for (c, cell) in sh.cells.row(row, 0, gridcraft_core::MAX_COLS - 1) {
+    for (c, cell) in sh.cells.row(row, 0, nanshe_core::MAX_COLS - 1) {
         // Merged cells never auto-fit their rows, like Excel (column autofit skips them too).
         if row_merges.iter().any(|m| m.contains(CellRef::new(row, c))) {
             continue;
@@ -572,7 +572,7 @@ pub fn auto_row_height(wb: &mut Workbook, si: usize, row: u32) {
         let size = st.font.size;
         // Scaled from an 11pt row's height, not the sheet's default: a sheet whose default
         // already fits a bigger font (21pt rows for 16pt text) would otherwise scale it twice.
-        let line = (size * 1.8).round().max(gridcraft_model::DEFAULT_ROW_HEIGHT * size / gridcraft_model::DEFAULT_FONT_SIZE);
+        let line = (size * 1.8).round().max(nanshe_model::DEFAULT_ROW_HEIGHT * size / nanshe_model::DEFAULT_FONT_SIZE);
         let mut lines = 1.0f32;
         if !cell.value.is_empty() || cell.formula.is_some() {
             // Only a wrapping cell is laid out over several lines: each explicit line break
@@ -582,7 +582,7 @@ pub fn auto_row_height(wb: &mut Workbook, si: usize, row: u32) {
                 let w = sh.col_width(c).max(1.0) - 6.0;
                 lines = text.lines().map(|l| wrapped_line_count(l, w.max(1.0), size, st.font.bold)).sum::<f32>().max(1.0);
             }
-        } else if st.font.size <= gridcraft_model::DEFAULT_FONT_SIZE {
+        } else if st.font.size <= nanshe_model::DEFAULT_FONT_SIZE {
             continue;
         }
         let h = if lines > 1.0 { (size * 96.0 / 72.0 * 1.22 * lines + 5.0).ceil() } else { line };
@@ -591,7 +591,7 @@ pub fn auto_row_height(wb: &mut Workbook, si: usize, row: u32) {
     let Some(shm) = wb.sheet_mut(si) else { return };
     let e = shm.rows.entry(row).or_default();
     e.size = if (need - default).abs() < 0.5 { None } else { Some(need) };
-    if *e == gridcraft_model::LineInfo::default() {
+    if *e == nanshe_model::LineInfo::default() {
         shm.rows.remove(&row);
     }
 }
@@ -600,7 +600,7 @@ impl Ctx<'_> {
     pub fn sheet_index(&self) -> usize {
         self.wb.active_sheet()
     }
-    pub fn sheet_mut(&mut self, i: usize) -> Result<&mut gridcraft_model::Sheet> {
+    pub fn sheet_mut(&mut self, i: usize) -> Result<&mut nanshe_model::Sheet> {
         self.wb.sheet_mut(i).ok_or_else(|| EngineError::Other("no such sheet".into()))
     }
     pub fn touch(&mut self, sheet: usize, c: CellRef) {

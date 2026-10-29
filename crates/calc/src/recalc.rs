@@ -12,9 +12,9 @@
 
 use std::collections::VecDeque;
 
-use gridcraft_core::{Array, CellError, CellRef, RangeRef, Value};
-use gridcraft_formula::Expr;
-use gridcraft_model::{CalcMode, Workbook};
+use nanshe_core::{Array, CellError, CellRef, RangeRef, Value};
+use nanshe_formula::Expr;
+use nanshe_model::{CalcMode, Workbook};
 
 use crate::eval::{Evaluator, Host, precedents, stack_position};
 
@@ -284,7 +284,7 @@ impl Calc {
         let t1 = prof_now();
         let n = dirty.len();
         self.run(wb, dirty, false);
-        if std::env::var_os("GRIDCRAFT_PROFILE").is_some() {
+        if std::env::var_os("NANSHE_PROFILE").is_some() {
             eprintln!("recalc: {} seeds, closure {} cells {:.1} ms, run {:.1} ms", seeds.len(), n, t1 - t0, prof_now() - t1);
         }
     }
@@ -349,14 +349,14 @@ impl Calc {
                 }
                 if host.iterate && !host.members.is_empty() {
                     let passes = host.iterate_loops(&dirty, wb.calc.max_iterations, wb.calc.max_change);
-                    if std::env::var_os("GRIDCRAFT_PROFILE").is_some() {
+                    if std::env::var_os("NANSHE_PROFILE").is_some() {
                         eprintln!("  iterative calculation: {} passes over {} formulas", passes, host.tainted.len());
                     }
                 }
                 (host.results, host.spills, host.cycles)
             };
             self.rng = rng;
-            if std::env::var_os("GRIDCRAFT_PROFILE").is_some() {
+            if std::env::var_os("NANSHE_PROFILE").is_some() {
                 eprintln!("  eval {} formulas {:.1} ms", results.len(), prof_now() - tp);
             }
             let tw = prof_now();
@@ -377,7 +377,7 @@ impl Calc {
             if full {
                 // Everything was already evaluated once; spill dependents need another pass.
             }
-            if std::env::var_os("GRIDCRAFT_PROFILE").is_some() {
+            if std::env::var_os("NANSHE_PROFILE").is_some() {
                 eprintln!("  write-back {:.1} ms", prof_now() - tw);
             }
             spill_changes.sort_by_key(|(s, c)| (*s, c.row, c.col));
@@ -479,15 +479,15 @@ impl Calc {
     }
 }
 
-fn spill_is_blocked(sheet: &gridcraft_model::Sheet, anchor: CellRef, range: RangeRef, end: CellRef) -> bool {
-    end.row >= gridcraft_core::MAX_ROWS
-        || end.col >= gridcraft_core::MAX_COLS
+fn spill_is_blocked(sheet: &nanshe_model::Sheet, anchor: CellRef, range: RangeRef, end: CellRef) -> bool {
+    end.row >= nanshe_core::MAX_ROWS
+        || end.col >= nanshe_core::MAX_COLS
         || range.iter().any(|cell| cell != anchor && (sheet.cells.has(cell) || sheet.spill.contains_key(&cell)))
         || sheet.merges.iter().any(|merge| merge.intersects(&range))
         || sheet.tables.iter().any(|table| table.range.contains(anchor))
 }
 
-fn fill_spill(sheet: &mut gridcraft_model::Sheet, anchor: CellRef, range: RangeRef, array: &Array) {
+fn fill_spill(sheet: &mut nanshe_model::Sheet, anchor: CellRef, range: RangeRef, array: &Array) {
     for (index, cell) in range.iter().enumerate() {
         if cell != anchor {
             sheet.spill.insert(cell, array.data.get(index).cloned().unwrap_or_default());
@@ -500,14 +500,14 @@ fn fill_spill(sheet: &mut gridcraft_model::Sheet, anchor: CellRef, range: RangeR
 /// UTC; the local offset isn't available without platform calls. Falls back to a fixed date only
 /// when no clock is available.
 pub fn now_serial() -> f64 {
-    gridcraft_core::date::unix_now_ms().map_or(46302.5, gridcraft_core::date::serial_from_unix_ms)
+    nanshe_core::date::unix_now_ms().map_or(46302.5, nanshe_core::date::serial_from_unix_ms)
 }
 
 /// Evaluates a formula in the context of a cell without storing it (conditional formats, data
 /// validation, Evaluate Formula, Name Manager previews, the CLI `eval`).
 pub fn evaluate(wb: &Workbook, sheet: usize, at: CellRef, formula: &str) -> Value {
     let body = formula.strip_prefix('=').unwrap_or(formula);
-    let Ok(expr) = gridcraft_formula::parse(body) else { return Value::Error(CellError::Name) };
+    let Ok(expr) = nanshe_formula::parse(body) else { return Value::Error(CellError::Name) };
     evaluate_expr(wb, sheet, at, &expr)
 }
 
@@ -520,15 +520,15 @@ pub fn evaluate_expr(wb: &Workbook, sheet: usize, at: CellRef, expr: &Expr) -> V
 }
 
 fn prof_now() -> f64 {
-    gridcraft_core::date::unix_now_ms().unwrap_or(0.0)
+    nanshe_core::date::unix_now_ms().unwrap_or(0.0)
 }
 
 #[cfg(test)]
 pub(crate) mod tests {
     use std::time::Duration;
 
-    use gridcraft_core::{CellRef, RangeRef, Value};
-    use gridcraft_model::{Cell, Formula, Workbook};
+    use nanshe_core::{CellRef, RangeRef, Value};
+    use nanshe_model::{Cell, Formula, Workbook};
 
     use super::{Calc, HashMap, Host, Intervals, Key, PassHost};
 
@@ -641,7 +641,7 @@ pub(crate) mod tests {
     fn open_and_bulk_edit(rows: u32) -> Duration {
         let mut wb = sum_rows(rows);
         let mut calc = Calc::new();
-        let started = gridcraft_core::date::unix_now_ms().unwrap_or(0.0);
+        let started = nanshe_core::date::unix_now_ms().unwrap_or(0.0);
         calc.recalc_all(&mut wb);
         let values: Vec<Key> = (0..rows).map(|r| (0, CellRef::new(r, 4))).collect();
         if let Some(sh) = wb.sheet_mut(0) {
@@ -652,7 +652,7 @@ pub(crate) mod tests {
         calc.cells_changed(&mut wb, &values);
         let formulas: Vec<Key> = (0..rows).map(|r| (0, CellRef::new(r, 10))).collect();
         calc.cells_changed(&mut wb, &formulas);
-        let ended = gridcraft_core::date::unix_now_ms().unwrap_or(started);
+        let ended = nanshe_core::date::unix_now_ms().unwrap_or(started);
         let elapsed = Duration::from_secs_f64((ended - started).max(0.0) / 1000.0);
         let last = wb.sheet(0).map(|s| s.value(CellRef::new(rows - 1, 10)));
         let r = rows - 1;
@@ -720,7 +720,7 @@ pub(crate) mod tests {
         set(&mut wb, &mut calc, "CZ3", "30");
         assert_eq!(num(&wb, "DA6"), 36.0);
         // Ranges on another sheet.
-        wb.sheets.push(std::sync::Arc::new(gridcraft_model::Sheet::new("Data")));
+        wb.sheets.push(std::sync::Arc::new(nanshe_model::Sheet::new("Data")));
         set(&mut wb, &mut calc, "DA9", "=SUM(Data!A1:A3)+SUM(Data!A:CZ)");
         assert_eq!(num(&wb, "DA9"), 0.0);
         wb.sheet_mut(1).unwrap().cells.set(CellRef::parse("A2").unwrap(), Cell::value(Value::Number(4.0)));
@@ -741,7 +741,7 @@ pub(crate) mod tests {
         let mut put = |wb: &mut Workbook, at: String, text: String| {
             let at = CellRef::parse(&at).unwrap();
             wb.sheet_mut(0).unwrap().cells.set(at, Cell::formula(Formula::new(&text)));
-            exprs.insert((0, at), std::sync::Arc::new(gridcraft_formula::parse(&text[1..]).unwrap()));
+            exprs.insert((0, at), std::sync::Arc::new(nanshe_formula::parse(&text[1..]).unwrap()));
         };
         // A1 reads A2, ..., A64 (the 64th formula deep) reads a wide range of formulas.
         for r in 1..64 {
@@ -766,7 +766,7 @@ pub(crate) mod tests {
     pub(crate) fn probe_visit_range(wb: &Workbook, pending: &[(&str, &str)], range: RangeRef) -> Option<Vec<Value>> {
         let mut exprs = HashMap::default();
         for (at, formula) in pending {
-            let expr = gridcraft_formula::parse(formula.strip_prefix('=').unwrap_or(formula)).ok()?;
+            let expr = nanshe_formula::parse(formula.strip_prefix('=').unwrap_or(formula)).ok()?;
             exprs.insert((0, CellRef::parse(at)?), std::sync::Arc::new(expr));
         }
 

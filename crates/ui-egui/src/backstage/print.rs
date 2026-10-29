@@ -107,8 +107,8 @@ const PREVIEW_COLS: u32 = 60;
 
 /// Draws one printed page in miniature: the cells' displayed text at the page's print scale,
 /// inside the sheet's margins. `paper_w` is the page width in points.
-fn paint_page(p: &egui::Painter, rect: Rect, paper_w: f32, page: &Json, wb: &gridcraft_engine::model::Workbook, t: &Tokens) {
-    let Some(range) = page.get("range").and_then(Json::as_str).and_then(gridcraft_engine::core::RangeRef::parse) else { return };
+fn paint_page(p: &egui::Painter, rect: Rect, paper_w: f32, page: &Json, wb: &nanshe_engine::model::Workbook, t: &Tokens) {
+    let Some(range) = page.get("range").and_then(Json::as_str).and_then(nanshe_engine::core::RangeRef::parse) else { return };
     let Some(sh) = page.get("sheet").and_then(Json::as_str).and_then(|n| wb.sheet_index(n)).and_then(|i| wb.sheets.get(i)) else { return };
     // Preview pixels per point, and per sheet pixel (sheet geometry is 96 dpi: 0.75 pt per pixel).
     let per_pt = rect.width() / paper_w;
@@ -145,15 +145,15 @@ fn paint_page(p: &egui::Painter, rect: Rect, paper_w: f32, page: &Json, wb: &gri
             if x >= body.right() {
                 break;
             }
-            let cell = gridcraft_engine::core::CellRef::new(row, col);
-            let text = gridcraft_engine::display::cell_text(wb, sh, cell);
+            let cell = nanshe_engine::core::CellRef::new(row, col);
+            let text = nanshe_engine::display::cell_text(wb, sh, cell);
             if !text.is_empty() {
                 let numeric = sh.value(cell).as_f64().is_some();
                 // Text runs on over empty neighbours, as on the sheet; numbers stay in their cell.
                 let mut span = w;
                 if !numeric {
                     let mut next = col.saturating_add(1);
-                    while next <= last_col && x + span < body.right() && sh.value(gridcraft_engine::core::CellRef::new(row, next)).is_empty() {
+                    while next <= last_col && x + span < body.right() && sh.value(nanshe_engine::core::CellRef::new(row, next)).is_empty() {
                         span += sh.col_width(next) * per_px;
                         next = next.saturating_add(1);
                     }

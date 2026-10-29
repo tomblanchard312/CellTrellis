@@ -3,8 +3,8 @@
 
 use std::collections::HashMap;
 
-use gridcraft_core::{CellRef, RangeRef, Value, compare};
-use gridcraft_model::{CfOperator, CfRule, CfValueKind, Color, CondFormat, PatternType, Sheet, Style, Underline, Workbook, default_icon_thresholds};
+use nanshe_core::{CellRef, RangeRef, Value, compare};
+use nanshe_model::{CfOperator, CfRule, CfValueKind, Color, CondFormat, PatternType, Sheet, Style, Underline, Workbook, default_icon_thresholds};
 
 /// The conditional look of one cell.
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -121,7 +121,7 @@ fn threshold(wb: &Workbook, sheet: usize, at: CellRef, st: &RuleStats, k: &CfVal
         CfValueKind::Number(n) => *n,
         CfValueKind::Percent(p) => min + (max - min) * p / 100.0,
         CfValueKind::Percentile(p) => percentile(&st.sorted, *p),
-        CfValueKind::Formula(f) => gridcraft_calc::evaluate(wb, sheet, at, f).to_number().unwrap_or(0.0),
+        CfValueKind::Formula(f) => nanshe_calc::evaluate(wb, sheet, at, f).to_number().unwrap_or(0.0),
     }
 }
 
@@ -134,7 +134,7 @@ fn lerp(a: [u8; 3], b: [u8; 3], t: f64) -> [u8; 3] {
     ]
 }
 
-pub use gridcraft_model::icon_count;
+pub use nanshe_model::icon_count;
 
 struct RuleEval<'a> {
     wb: &'a Workbook,
@@ -150,7 +150,7 @@ fn simple_rule_style<'a>(ctx: &RuleEval<'_>, rule: &'a CfRule) -> Option<&'a Sty
     let RuleEval { wb, sheet, cell, first, value, text, stats } = ctx;
     match rule {
         CfRule::CellIs { op, a, b, style } => {
-            let eval = |f: &str| gridcraft_calc::evaluate(wb, *sheet, *cell, &relative(f, *first, *cell));
+            let eval = |f: &str| nanshe_calc::evaluate(wb, *sheet, *cell, &relative(f, *first, *cell));
             let av = eval(a);
             let matches = match op {
                 CfOperator::Between | CfOperator::NotBetween => {
@@ -169,7 +169,7 @@ fn simple_rule_style<'a>(ctx: &RuleEval<'_>, rule: &'a CfRule) -> Option<&'a Sty
             (matches && !value.is_error()).then_some(style.as_ref())
         }
         CfRule::Expression { formula, style } => {
-            gridcraft_calc::evaluate(wb, *sheet, *cell, &relative(formula, *first, *cell)).to_bool().unwrap_or(false).then_some(style.as_ref())
+            nanshe_calc::evaluate(wb, *sheet, *cell, &relative(formula, *first, *cell)).to_bool().unwrap_or(false).then_some(style.as_ref())
         }
         CfRule::ContainsText { text: needle, style } => {
             (!value.is_error() && text.to_lowercase().contains(&needle.to_lowercase())).then_some(style.as_ref())
@@ -198,9 +198,9 @@ fn simple_rule_style<'a>(ctx: &RuleEval<'_>, rule: &'a CfRule) -> Option<&'a Sty
 }
 
 fn time_period_matches(wb: &Workbook, period: &str, serial: f64) -> bool {
-    let today = gridcraft_core::date::serial_in_system(wb.date_system, gridcraft_calc::now_serial()).floor();
+    let today = nanshe_core::date::serial_in_system(wb.date_system, nanshe_calc::now_serial()).floor();
     let day = serial.floor();
-    let date = |serial| gridcraft_core::date::datetime_from_serial(wb.date_system, serial);
+    let date = |serial| nanshe_core::date::datetime_from_serial(wb.date_system, serial);
     let week_start = today - date(today).map(|value| value.weekday as f64).unwrap_or(0.0);
     let (year, month) = date(today).map(|value| (value.year, value.month)).unwrap_or((2026, 1));
     let year_month = date(day).map(|value| (value.year, value.month));
@@ -403,10 +403,8 @@ fn relative(f: &str, first: CellRef, c: CellRef) -> String {
     if first == c {
         return f.to_string();
     }
-    match gridcraft_formula::parse(f.trim_start_matches('=')) {
-        Ok(e) => {
-            gridcraft_formula::print(&gridcraft_formula::adjust::shift_relative(e, c.row as i64 - first.row as i64, c.col as i64 - first.col as i64))
-        }
+    match nanshe_formula::parse(f.trim_start_matches('=')) {
+        Ok(e) => nanshe_formula::print(&nanshe_formula::adjust::shift_relative(e, c.row as i64 - first.row as i64, c.col as i64 - first.col as i64)),
         Err(_) => f.to_string(),
     }
 }

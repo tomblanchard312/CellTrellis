@@ -3,8 +3,8 @@
 //! left. Entering, editing, saving and reopening such a formula must neither overflow the stack
 //! nor fall back to an error: Excel computes it.
 
-use gridcraft_core::{CellRef, Value};
-use gridcraft_engine::{DocState, Session, io};
+use nanshe_core::{CellRef, Value};
+use nanshe_engine::{DocState, Session, io};
 use serde_json::json;
 
 /// Excel's longest flat chain of literals: 4,096 operands, 8,192 characters with the `=`.
@@ -78,7 +78,7 @@ fn longest_flat_chains_survive_editing_saving_and_reopening() {
         let bytes = io::save_bytes(wb, "chains.xlsx").expect("save");
         let (reopened, _) = io::open_bytes("chains.xlsx", &bytes).expect("open");
         let mut session = Session::new();
-        session.add_document(DocState::new(reopened, None, "chains".into(), gridcraft_engine::Trust::FromFile));
+        session.add_document(DocState::new(reopened, None, "chains".into(), nanshe_engine::Trust::FromFile));
         session.execute("formulas.calculateNow", json!({})).expect("recalc");
         assert_eq!(value(&session, "C2"), Value::Number(4096.0));
         assert_eq!(value(&session, "C3"), Value::Number(-4094.0));

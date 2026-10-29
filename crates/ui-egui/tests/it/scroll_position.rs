@@ -1,9 +1,9 @@
 //! The saved scroll position (`sheetView topLeftCell`) is restored on open and saved back (#378).
 
-use gridcraft_engine::core::{CellRef, Value};
-use gridcraft_engine::model::Workbook;
-use gridcraft_engine::{DocState, Session};
-use gridcraft_ui_egui::{SheetApp, grid::Geo};
+use nanshe_engine::core::{CellRef, Value};
+use nanshe_engine::model::Workbook;
+use nanshe_engine::{DocState, Session};
+use nanshe_ui_egui::{SheetApp, grid::Geo};
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
@@ -18,7 +18,7 @@ fn harness(freeze: Option<(u32, u32)>) -> Harness {
     sh.view_active = CellRef::parse("A31").unwrap();
     sh.freeze = freeze;
     let mut session = Session::new();
-    session.add_document(DocState::new(wb, None, "Book1".into(), gridcraft_engine::Trust::Local));
+    session.add_document(DocState::new(wb, None, "Book1".into(), nanshe_engine::Trust::Local));
     let mut h = crate::common::builder().with_size(egui::vec2(1200.0, 800.0)).build_ui_state(
         |ui, app: &mut SheetApp| {
             app.logic(ui.ctx());

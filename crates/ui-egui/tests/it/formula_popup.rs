@@ -1,8 +1,8 @@
 //! Formula helpers must stay in the worksheet while its editor scrolls.
 use egui::{Context, Id, LayerId, Order, RawInput, Rect, pos2, vec2};
-use gridcraft_engine::Session;
-use gridcraft_engine::core::CellRef;
-use gridcraft_ui_egui::SheetApp;
+use nanshe_engine::Session;
+use nanshe_engine::core::CellRef;
+use nanshe_ui_egui::SheetApp;
 
 fn frame(ctx: &Context, app: &mut SheetApp) -> egui::FullOutput {
     let mut output =
@@ -31,7 +31,7 @@ fn visible(ctx: &Context, editor: &str) -> bool {
 fn cell_formula_helpers_hide_when_scrolled_out_and_return_with_the_editor() {
     for text in ["=SU", "=SUM("] {
         let ctx = Context::default();
-        ctx.set_fonts(gridcraft_ui_egui::theme::pinned_font_definitions());
+        ctx.set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());
         let mut session = Session::new();
         session.new_workbook();
         let mut app = crate::common::app(session);
@@ -41,14 +41,14 @@ fn cell_formula_helpers_hide_when_scrolled_out_and_return_with_the_editor() {
             app.editor.as_mut().unwrap().update_autocomplete(&["SUM".into(), "SUMIF".into()]);
         }
         frames(&ctx, &mut app);
-        assert!(visible(&ctx, "gridcraft.cell_editor"), "visible cell shows {text} help");
+        assert!(visible(&ctx, "nanshe.cell_editor"), "visible cell shows {text} help");
         app.view_mut().unwrap().scroll.y = 400.0;
         frames(&ctx, &mut app);
-        assert!(!visible(&ctx, "gridcraft.cell_editor"), "scrolled-out cell must hide {text} help");
+        assert!(!visible(&ctx, "nanshe.cell_editor"), "scrolled-out cell must hide {text} help");
         assert_eq!(app.editor.as_ref().unwrap().text, text, "scrolling preserves the edit");
         app.view_mut().unwrap().scroll.y = 0.0;
         frames(&ctx, &mut app);
-        assert!(visible(&ctx, "gridcraft.cell_editor"), "scrolling back restores {text} help");
+        assert!(visible(&ctx, "nanshe.cell_editor"), "scrolling back restores {text} help");
     }
 }
 
@@ -57,7 +57,7 @@ fn cell_formula_helpers_hide_when_scrolled_out_and_return_with_the_editor() {
 #[test]
 fn hidden_row_and_column_hide_the_wrapped_editor_until_unhidden() {
     let ctx = Context::default();
-    ctx.set_fonts(gridcraft_ui_egui::theme::pinned_font_definitions());
+    ctx.set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());
     let mut session = Session::new();
     session.new_workbook();
     session.run("home.wrapText", serde_json::json!({"range": "A2", "on": true})).unwrap();
@@ -68,7 +68,7 @@ fn hidden_row_and_column_hide_the_wrapped_editor_until_unhidden() {
     frames(&ctx, &mut app);
     app.begin_edit(Some("=SUM(".into()), false);
     frames(&ctx, &mut app);
-    assert!(!visible(&ctx, "gridcraft.cell_editor"), "a hidden cell must not show its helper");
+    assert!(!visible(&ctx, "nanshe.cell_editor"), "a hidden cell must not show its helper");
     assert_eq!(app.editor.as_ref().unwrap().text, "=SUM(", "hiding the cell preserves the edit");
     let cells = app.grid.cells_rect.expect("the grid drew");
     assert!(!paints_visible_text(&frame(&ctx, &mut app), "=SUM(", cells), "a hidden cell must not paint its editor");
@@ -76,7 +76,7 @@ fn hidden_row_and_column_hide_the_wrapped_editor_until_unhidden() {
     app.session.run("home.unhideRows", serde_json::json!({"rows": "2:2"})).unwrap();
     app.session.run("home.unhideColumns", serde_json::json!({"cols": "A:A"})).unwrap();
     frames(&ctx, &mut app);
-    assert!(visible(&ctx, "gridcraft.cell_editor"), "unhiding the cell restores its helper");
+    assert!(visible(&ctx, "nanshe.cell_editor"), "unhiding the cell restores its helper");
     assert!(paints_visible_text(&frame(&ctx, &mut app), "=SUM(", cells), "unhiding the cell restores its editor");
     assert_eq!(app.editor.as_ref().unwrap().text, "=SUM(", "unhiding the cell preserves the edit");
 }
@@ -95,24 +95,24 @@ fn paints_visible_text(output: &egui::FullOutput, text: &str, cells: Rect) -> bo
 /// Formula-bar help stays visible while the sheet scrolls.
 fn formula_bar_hint_remains_visible_when_the_worksheet_scrolls() {
     let ctx = Context::default();
-    ctx.set_fonts(gridcraft_ui_egui::theme::pinned_font_definitions());
+    ctx.set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());
     let mut session = Session::new();
     session.new_workbook();
     let mut app = crate::common::app(session);
     frames(&ctx, &mut app);
     app.begin_edit(Some("=SUM(".into()), true);
     frames(&ctx, &mut app);
-    assert!(visible(&ctx, "gridcraft.formula_bar"));
+    assert!(visible(&ctx, "nanshe.formula_bar"));
     app.view_mut().unwrap().scroll.y = 400.0;
     frames(&ctx, &mut app);
-    assert!(visible(&ctx, "gridcraft.formula_bar"));
+    assert!(visible(&ctx, "nanshe.formula_bar"));
 }
 
 #[test]
 /// Cell argument help is clipped to the worksheet instead of painting over the headers.
 fn cell_argument_hint_is_clipped_to_the_worksheet() {
     let ctx = Context::default();
-    ctx.set_fonts(gridcraft_ui_egui::theme::pinned_font_definitions());
+    ctx.set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());
     let mut session = Session::new();
     session.new_workbook();
     let mut app = crate::common::app(session);
@@ -131,7 +131,7 @@ fn cell_argument_hint_is_clipped_to_the_worksheet() {
 /// An editor for a scrolled-out cell still handles Esc.
 fn scrolled_out_cell_editor_still_handles_escape() {
     let ctx = Context::default();
-    ctx.set_fonts(gridcraft_ui_egui::theme::pinned_font_definitions());
+    ctx.set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());
     let mut session = Session::new();
     session.new_workbook();
     let mut app = crate::common::app(session);
@@ -162,7 +162,7 @@ fn scrolled_out_cell_editor_still_handles_escape() {
 /// The editor and its helper clip below the frozen top row, stay hidden while the cell is under it, and return on scroll-back.
 fn cell_editor_and_helper_stay_below_the_frozen_top_row() {
     let ctx = Context::default();
-    ctx.set_fonts(gridcraft_ui_egui::theme::pinned_font_definitions());
+    ctx.set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());
     let mut session = Session::new();
     session.new_workbook();
     session.run("view.freezeTopRow", serde_json::json!({})).unwrap();
@@ -174,11 +174,11 @@ fn cell_editor_and_helper_stay_below_the_frozen_top_row() {
     let scroll = sh.row_top(4) as f32;
     app.begin_edit(Some("=SUM(".into()), false);
     frames(&ctx, &mut app);
-    assert!(visible(&ctx, "gridcraft.cell_editor"));
+    assert!(visible(&ctx, "nanshe.cell_editor"));
     app.view_mut().unwrap().scroll.y = scroll - frozen_h / 2.0;
     frames(&ctx, &mut app);
     let output = frame(&ctx, &mut app);
-    let frozen_bottom = app.grid.cells_rect.unwrap().top() + frozen_h * gridcraft_ui_egui::grid::DISPLAY_SCALE;
+    let frozen_bottom = app.grid.cells_rect.unwrap().top() + frozen_h * nanshe_ui_egui::grid::DISPLAY_SCALE;
     let editor = output
         .shapes
         .iter()
@@ -189,7 +189,7 @@ fn cell_editor_and_helper_stay_below_the_frozen_top_row() {
     frames(&ctx, &mut app);
     let geo = app.grid.geo.as_ref().expect("grid drew");
     let sh = app.session.active().unwrap().wb.active().unwrap();
-    let edited = gridcraft_engine::core::CellRef::new(4, 1);
+    let edited = nanshe_engine::core::CellRef::new(4, 1);
     assert!(
         geo.hidden_under_frozen(sh, edited),
         "B5 must be scrolled fully under the frozen row: requested {scroll}, kept {:?}, geo scroll {:?}, cells {:?}, frozen_h {}, cell {:?}",
@@ -199,11 +199,11 @@ fn cell_editor_and_helper_stay_below_the_frozen_top_row() {
         geo.frozen_h,
         geo.cell_rect(sh, edited)
     );
-    assert!(!visible(&ctx, "gridcraft.cell_editor"), "cell hidden under the frozen row must hide its helper");
+    assert!(!visible(&ctx, "nanshe.cell_editor"), "cell hidden under the frozen row must hide its helper");
     assert_eq!(app.editor.as_ref().unwrap().text, "=SUM(");
     app.view_mut().unwrap().scroll.y = 0.0;
     frames(&ctx, &mut app);
-    assert!(visible(&ctx, "gridcraft.cell_editor"), "scrolling back restores the helper");
+    assert!(visible(&ctx, "nanshe.cell_editor"), "scrolling back restores the helper");
 }
 
 /// The editor is drawn in screen coordinates, so its frozen-pane quadrant must be mirrored
@@ -214,7 +214,7 @@ fn cell_editor_and_helper_stay_below_the_frozen_top_row() {
 fn frozen_column_editor_paints_in_both_panes_on_a_right_to_left_sheet() {
     for (cell, text) in [("A2", "frozen"), ("B2", "scrolling")] {
         let ctx = Context::default();
-        ctx.set_fonts(gridcraft_ui_egui::theme::pinned_font_definitions());
+        ctx.set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());
         let mut session = Session::new();
         session.new_workbook();
         session.run("view.rightToLeft", serde_json::json!({"on": true})).unwrap();
@@ -257,7 +257,7 @@ fn frozen_column_editor_paints_in_both_panes_on_a_right_to_left_sheet() {
 fn argument_hint_shows_the_function_description() {
     // #363: inside DATEDIF( the hint lists the units the third argument takes.
     let ctx = Context::default();
-    ctx.set_fonts(gridcraft_ui_egui::theme::pinned_font_definitions());
+    ctx.set_fonts(nanshe_ui_egui::theme::pinned_font_definitions());
     let mut session = Session::new();
     session.new_workbook();
     let mut app = crate::common::app(session);

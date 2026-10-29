@@ -4,7 +4,7 @@
 //! reach a loopback port. So the first line of every connection must be
 //! `{"id":…,"method":"auth","params":{"token":"…"}}`, with the secret the app made at start. The
 //! app keeps it in memory and writes it to a file only the user can read (or the user chooses it
-//! with `GRIDCRAFT_CONTROL_TOKEN`); [`Remote`](crate::Remote) reads it from the same places.
+//! with `NANSHE_CONTROL_TOKEN`); [`Remote`](crate::Remote) reads it from the same places.
 
 use std::path::PathBuf;
 
@@ -12,7 +12,7 @@ use serde_json::{Value, json};
 
 /// Environment variable holding a token chosen by the user. The app uses it instead of making
 /// one (and writes no file); clients use it instead of reading the file.
-pub const TOKEN_ENV: &str = "GRIDCRAFT_CONTROL_TOKEN";
+pub const TOKEN_ENV: &str = "NANSHE_CONTROL_TOKEN";
 /// The method of the handshake line.
 pub const AUTH_METHOD: &str = "auth";
 /// Shortest token the app accepts from the user (a made one has 256 bits).
@@ -69,15 +69,15 @@ pub fn check_first_line(line: &str, token: &str) -> Result<Value, Value> {
 }
 
 /// Where the app writes the token it made for `port`, and where clients look for it: a folder
-/// only the user can open (`$XDG_RUNTIME_DIR/gridcraft`, else `~/.cache/gridcraft`; on Windows
-/// `%USERPROFILE%\.gridcraft`), file `control-<port>.token`. `None` when no such folder is known.
+/// only the user can open (`$XDG_RUNTIME_DIR/nanshe`, else `~/.cache/nanshe`; on Windows
+/// `%USERPROFILE%\.nanshe`), file `control-<port>.token`. `None` when no such folder is known.
 pub fn token_path(port: u16) -> Option<PathBuf> {
     let dir = if cfg!(windows) {
-        PathBuf::from(std::env::var_os("USERPROFILE").filter(|v| !v.is_empty())?).join(".gridcraft")
+        PathBuf::from(std::env::var_os("USERPROFILE").filter(|v| !v.is_empty())?).join(".nanshe")
     } else if let Some(run) = std::env::var_os("XDG_RUNTIME_DIR").filter(|v| !v.is_empty()) {
-        PathBuf::from(run).join("gridcraft")
+        PathBuf::from(run).join("nanshe")
     } else {
-        PathBuf::from(std::env::var_os("HOME").filter(|v| !v.is_empty())?).join(".cache").join("gridcraft")
+        PathBuf::from(std::env::var_os("HOME").filter(|v| !v.is_empty())?).join(".cache").join("nanshe")
     };
     Some(dir.join(format!("control-{port}.token")))
 }

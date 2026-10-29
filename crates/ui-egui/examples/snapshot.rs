@@ -1,11 +1,11 @@
-//! Renders the whole GridCraft window offscreen (wgpu, no window) to a PNG.
+//! Renders the whole Nanshe window offscreen (wgpu, no window) to a PNG.
 //!
-//! `cargo run --release -p gridcraft-ui-egui --example snapshot -- [--sample sales] [--in file.xlsx]
+//! `cargo run --release -p nanshe-ui-egui --example snapshot -- [--sample sales] [--in file.xlsx]
 //!  [--size 1440x900] [--scale 2] [--cmd 'id={json}']... [--tab Insert] [--dark] [--language en|es|zh|ja|ko|ru|pt|de|cs|fr|tr]
 //!  [--dialog 'name={json}'] [--hf-edit header|footer] out.png`
 
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::SheetApp;
+use nanshe_engine::Session;
+use nanshe_ui_egui::SheetApp;
 use serde_json::json;
 
 fn main() {
@@ -81,7 +81,7 @@ fn main() {
     }
     // Catalog the installed fonts first (the app scans in the background from its first frame), so
     // the workbook's fonts are drawn in their own faces, not a substitute.
-    let _ = gridcraft_ui_egui::fonts::catalog();
+    let _ = nanshe_ui_egui::fonts::catalog();
     let mut session = Session::new();
     if let Some(p) = &input {
         session.execute("file.open", json!({"path": p})).expect("open");
@@ -107,7 +107,7 @@ fn main() {
                 let mut app = SheetApp::new(session, Default::default());
                 app.ui.dark = dark;
                 if let Some(code) = &language
-                    && let Some(l) = gridcraft_ui_egui::i18n::Language::parse(code)
+                    && let Some(l) = nanshe_ui_egui::i18n::Language::parse(code)
                 {
                     app.ui.language = l;
                 }
@@ -124,8 +124,8 @@ fn main() {
                 // Page Layout view: edit the first page's centre header (or footer) section.
                 let active = app.session.active().and_then(|d| d.wb.active().cloned().map(|s| (d.wb.active_sheet(), s)));
                 if let (Some(part), Some((si, sh))) = (&hf_edit, active) {
-                    let zone = gridcraft_engine::paper::HfZone { footer: part == "footer", section: 1 };
-                    gridcraft_ui_egui::paper_view::begin(&mut app, si, &sh, (0, 0), zone);
+                    let zone = nanshe_engine::paper::HfZone { footer: part == "footer", section: 1 };
+                    nanshe_ui_egui::paper_view::begin(&mut app, si, &sh, (0, 0), zone);
                 }
                 app
             },

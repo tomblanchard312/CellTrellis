@@ -2,8 +2,8 @@
 //! into the formula box at its caret, as in Excel, and leaves the selection the rule applies to alone.
 
 use egui::{Event, Key, Modifiers, PointerButton, Pos2, pos2, vec2};
-use gridcraft_engine::Session;
-use gridcraft_ui_egui::{SheetApp, grid::Geo};
+use nanshe_engine::Session;
+use nanshe_ui_egui::{SheetApp, grid::Geo};
 use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
@@ -46,7 +46,7 @@ fn cell_center(h: &Harness, a1: &str) -> Pos2 {
     let app = h.state();
     let sheet = app.session.active().unwrap().wb.active().unwrap();
     let geo = Geo::new(sheet, app.grid.rect.unwrap(), app.view().scroll);
-    let c = gridcraft_engine::core::CellRef::parse(a1).unwrap();
+    let c = nanshe_engine::core::CellRef::parse(a1).unwrap();
     pos2(geo.x(sheet, c.col) + sheet.col_width(c.col) * geo.z * 0.5, geo.y(sheet, c.row) + sheet.row_height(c.row) * geo.z * 0.5)
 }
 

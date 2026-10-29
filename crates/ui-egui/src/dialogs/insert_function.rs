@@ -11,7 +11,7 @@ pub(super) fn insert_function(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dia
         r.request_focus();
     });
     let locale = language.formula_locale();
-    let list = gridcraft_engine::cmd::formulas::function_list();
+    let list = nanshe_engine::cmd::formulas::function_list();
     // The names and descriptions searched are the ones shown, so in the interface language.
     let q = d.search.to_lowercase();
     let hits: Vec<&Json> = list

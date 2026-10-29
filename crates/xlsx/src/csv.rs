@@ -2,9 +2,9 @@
 
 use std::sync::Arc;
 
-use gridcraft_core::parse::parse_input;
-use gridcraft_core::{CellRef, MAX_COLS, MAX_ROWS, Value};
-use gridcraft_model::{Cell, NumFmt, Sheet, StyleId, Workbook};
+use nanshe_core::parse::parse_input;
+use nanshe_core::{CellRef, MAX_COLS, MAX_ROWS, Value};
+use nanshe_model::{Cell, NumFmt, Sheet, StyleId, Workbook};
 
 use crate::{CsvOptions, IoError};
 

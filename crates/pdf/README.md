@@ -1,4 +1,4 @@
-# gridcraft-pdf
+# nanshe-pdf
 
 A small, dependency-free PDF 1.7 writer for vector drawing and RGBA images.
 
@@ -9,7 +9,7 @@ The geometry-taking methods now use `Point` and `Rect` values to name their coor
 follows:
 
 ```rust
-use gridcraft_pdf::{Font, PdfDoc, Point, Rect};
+use nanshe_pdf::{Font, PdfDoc, Point, Rect};
 
 let mut doc = PdfDoc::new();
 let page = doc.add_page(612.0, 792.0);
