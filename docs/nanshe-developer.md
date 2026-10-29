@@ -4,11 +4,11 @@ Last updated: 2026-10-28.
 
 ## Compared implementations
 
-The port starts at upstream GridCraft `70327cd3d9b7de9af1bcaa33488c0736a0d346d8` and takes the reusable
+The port starts at upstream Nanshe `70327cd3d9b7de9af1bcaa33488c0736a0d346d8` and takes the reusable
 language/compiler and local-service client from Nisaba
 `a4298e6fc1ecfdedac64cfe763943737c608b33a`.
 
-| Area | Nisaba | Upstream GridCraft at the fork | Nanshe |
+| Area | Nisaba | Upstream Nanshe at the fork | Nanshe |
 |---|---|---|---|
 | Developer interface | Optional VBA CLI; no integrated editor | Recorded command scripts; preserves VBA projects | In-app source editor, language selector, runtime output, review and apply |
 | VBA | VBA → VB.NET → Roslyn; Word object model | Preserved but not executed | Reused transpiler/security checks, Excel-style object model, isolated preview process |

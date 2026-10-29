@@ -24,20 +24,29 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-ARCH="$(uname -m)"
-case "$ARCH" in
-  amd64 | x86_64) ARCH=x86_64 ;;
-  arm64 | aarch64) ARCH=aarch64 ;;
-  *) echo "unsupported architecture $ARCH" >&2; exit 2 ;;
-esac
+# Cross-builds (release workflow sets CARGO_BUILD_TARGET) take the arch from the target, not the host.
+if [[ -n "${CARGO_BUILD_TARGET:-}" ]]; then
+  case "$CARGO_BUILD_TARGET" in
+    aarch64-unknown-freebsd) ARCH=aarch64 ;;
+    x86_64-unknown-freebsd) ARCH=x86_64 ;;
+    *) echo "unsupported CARGO_BUILD_TARGET $CARGO_BUILD_TARGET (expected x86_64-unknown-freebsd or aarch64-unknown-freebsd)" >&2; exit 2 ;;
+  esac
+else
+  ARCH="$(uname -m)"
+  case "$ARCH" in
+    amd64 | x86_64) ARCH=x86_64 ;;
+    arm64 | aarch64) ARCH=aarch64 ;;
+    *) echo "unsupported architecture $ARCH" >&2; exit 2 ;;
+  esac
+fi
 BASENAME="nanshe-$VERSION-freebsd-$ARCH"
 
 echo "==> Nanshe $VERSION for FreeBSD $ARCH"
 
 if [[ "$SKIP_BUILD" = 0 ]]; then
-  (cd "$ROOT" && cargo build --release --locked -p nanshe -p nanshe-cli)
+  (cd "$ROOT" && cargo build --release --locked -p nanshe -p nanshe-cli ${CARGO_BUILD_TARGET:+--target "$CARGO_BUILD_TARGET"})
 fi
-BIN="$CARGO_TARGET_DIR/release"
+BIN="$CARGO_TARGET_DIR/${CARGO_BUILD_TARGET:+$CARGO_BUILD_TARGET/}release"
 WORK="$CARGO_TARGET_DIR/freebsd-package"
 TREE="$WORK/$BASENAME"
 rm -rf "$WORK"
@@ -56,6 +65,7 @@ copy_docs "$TREE/share/doc/nanshe"
 tar -C "$WORK" -czf "$DIST/$BASENAME.tar.gz" "$BASENAME"
 echo "wrote $DIST/$BASENAME.tar.gz"
 
-"$TREE/bin/nanshe-cli" --version
+# A cross-built binary cannot run on the x86_64 host.
+if [[ -z "${CARGO_BUILD_TARGET:-}" ]]; then "$TREE/bin/nanshe-cli" --version; fi
 echo "==> done"
 ls -lh "$DIST/$BASENAME.tar.gz"

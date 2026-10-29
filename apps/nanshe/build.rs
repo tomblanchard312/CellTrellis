@@ -17,7 +17,7 @@ fn main() {
         .set("ProductName", "Nanshe")
         .set("FileDescription", "Nanshe spreadsheet")
         .set("CompanyName", "Tom Blanchard")
-        .set("LegalCopyright", "Copyright (c) the GridCraft authors. MIT OR Apache-2.0.")
+        .set("LegalCopyright", "Copyright (c) the Nanshe authors. MIT OR Apache-2.0.")
         .set("OriginalFilename", "nanshe.exe")
         .set("InternalName", "nanshe");
     if let Err(e) = res.compile() {

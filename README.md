@@ -3,7 +3,7 @@
 A Rust spreadsheet with a Developer workspace for **VBA, Python and R**, and **Scribe**, a local
 assistant powered by [Enki](https://github.com/tomblanchard312/Enki).
 
-Nanshe is a fork of [GridCraft](https://github.com/storytold/gridcraft) by the ArtCraft team.
+Nanshe is a fork of [Nanshe](https://github.com/storytold/gridcraft) by the ArtCraft team.
 It keeps Nanshe's engine, command protocol, file formats and internal crate names so upstream
 improvements remain easy to merge. The desktop uses a separate Nanshe settings profile, dark
 surfaces and blue accents. About lists the upstream contributors and licenses.
@@ -45,6 +45,6 @@ not a signed Nanshe release. The upstream self-update feed is disabled for this 
 
 ## License and credits
 
-MIT OR Apache-2.0. Nanshe is copyright (c) 2026 ArtCraft Team and the GridCraft contributors;
+MIT OR Apache-2.0. Nanshe is copyright (c) 2026 ArtCraft Team and the Nanshe contributors;
 Nisaba-derived and Nanshe changes are copyright (c) 2026 Tom Blanchard. See [NOTICE](NOTICE) and
 [ATTRIBUTION.md](ATTRIBUTION.md). Nanshe is not sponsored or endorsed by the ArtCraft team.
