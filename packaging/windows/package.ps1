@@ -88,6 +88,11 @@ Remove-Item -Recurse -Force $Stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 Copy-Item (Join-Path $Bin 'nanshe.exe'), (Join-Path $Bin 'nanshe-cli.exe') $Stage
 
+$VbaRuntime = Join-Path $Stage 'runtimes\vba'
+Invoke-Native "publish self-contained VBA runtime ($Arch)" {
+  dotnet publish (Join-Path $Root 'vba\src\Nanshe.Vba') -c Release -r "win-$Arch" --self-contained true -o $VbaRuntime
+}
+
 & (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'nanshe.exe') (Join-Path $Stage 'nanshe-cli.exe')
 
 # ---- font notices for the MSI ------------------------------------------------------------------
@@ -110,7 +115,7 @@ $Msi = Join-Path $Dist "nanshe-$Version-windows-$Arch.msi"
 Invoke-Native 'wix build' {
   wix build (Join-Path $PSScriptRoot 'nanshe.wxs') -arch $Arch `
     -d "Version=$MsiVersion" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\nanshe.ico')" `
-    -d "DocsDir=$Docs" -d "HasCraftFontLicences=$HasCraftFontLicences" `
+    -d "DocsDir=$Docs" -d "HasCraftFontLicences=$HasCraftFontLicences" -d "HasVbaRuntime=1" `
     -o $Msi
 }
 # Check the compiled scope, path and registration contract before signing.
@@ -124,6 +129,7 @@ $Portable = Join-Path $TargetDir "windows-package\nanshe-$Version-windows-$Arch-
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
+Copy-Item (Join-Path $Stage 'runtimes') $Portable -Recurse
 foreach ($f in 'README.md', 'LICENSE', 'LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE', 'ATTRIBUTION.md') {
   $p = Join-Path $Root $f
   if (Test-Path $p) { Copy-Item $p $Portable }

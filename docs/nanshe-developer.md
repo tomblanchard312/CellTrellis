@@ -24,7 +24,7 @@ repository is needed to compile Nanshe. The protocol client comes from public Ni
 
 ### VBA
 
-Install a .NET SDK 8 or later and build:
+Install a .NET SDK 10 or later and build:
 
 ```sh
 dotnet build vba/NansheVba.sln -m:1
@@ -33,9 +33,20 @@ export NANSHE_VBA_RUNNER="$PWD/vba/src/Nanshe.Vba/bin/Debug/net10.0/Nanshe.Vba"
 cargo run -p nanshe
 ```
 
-Windows: set `NANSHE_VBA_RUNNER` to `Nanshe.Vba.exe`. Keep the helper executable beside its
-DLLs, runtime configuration and Roslyn assemblies. It is an optional component; Cargo does not
-build it. It uses the VB compiler shipped in the SDK, with no new NuGet package dependencies.
+The Windows app artifact includes a self-contained helper in `runtimes/vba/`; extract the whole
+archive beside `nanshe.exe`. No separate .NET installation is required for that package. Cargo
+alone does not build the helper. For custom builds, set `NANSHE_VBA_RUNNER` to the helper
+executable and keep all its DLLs, runtime and portable Roslyn assemblies together. The compiler uses the official
+Microsoft.CodeAnalysis.VisualBasic 5.9.0 package so cross-published helpers do not load
+platform-specific assemblies from the build machine’s SDK. A missing runtime is
+shown in the Developer tab before Run is enabled.
+
+Python and R can also be supplied beside the app at `runtimes/python/python.exe` and
+`runtimes/R/bin/Rscript.exe`; explicit environment settings take priority. R still needs jsonlite.
+
+Spelling uses the bundled SCOWL English word list on Windows, Linux, macOS and the web;
+no operating-system dictionary installation is required. Custom dictionary entries remain in
+Nanshe preferences. The list and its redistribution notices are in `crates/engine/assets/`.
 
 Supported spreadsheet surface: Application, ActiveWorkbook/ThisWorkbook, Workbooks (the active
 workbook only), ActiveSheet, Worksheets/Sheets by name or 1-based index, Range, Cells,
@@ -234,3 +245,21 @@ local cross-target compilation and clippy; native hosted pipe test results are t
 
 The inherited fresh-file permission test expects a restrictive mask;
 it fails under this host's `umask 0002`. No file-saving implementation was changed in this port.
+
+
+## Shared Scribe memory and worksheet editing
+
+Enki protocol 3 stores completed Scribe conversations across the app and shares them with
+Nisaba. The conversation section shows history and a compacted summary. Preferences and
+style are saved explicitly and survive clearing history. Compaction is local, lossy and commits
+only after successful generation; concurrent changes are preserved by revision checks. Full
+history asks for compaction or clearing, and a failed append is reported. Prompts and answers
+may contain sensitive text and are persisted in Enki's private local registry. An older Enki
+can still answer but cannot save shared memory. Use matching updated app and daemon builds.
+
+**Chat and edit** can prepare cell values, formulas, highlights, font colours, bold/italic,
+number formats and selection changes on the current sheet. Scribe sees bounded live sheet
+and selection data. Plans are validated in a workbook copy, with limits of 32 actions and
+1000 cells. Invalid formulas and unsupported commands are rejected. Review the listed changes
+and choose **Apply worksheet changes**; they form one Undo step. Changing the workbook first
+invalidates the proposal. Model settings, including Refresh models, are separate from Send.

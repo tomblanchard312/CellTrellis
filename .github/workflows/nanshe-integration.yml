@@ -37,12 +37,26 @@ jobs:
       - uses: actions/checkout@v4
       - run: rustup toolchain install stable --profile minimal
       - run: cargo +stable build -p nanshe -p nanshe-cli
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet publish vba/src/Nanshe.Vba -c Release -r win-x64 --self-contained true -o target/debug/runtimes/vba
+      - name: Test the self-contained VBA helper
+        shell: pwsh
+        run: |
+          $request = @{source="Sub Main()`nDebug.Print 42`nEnd Sub";macro='Main'} | ConvertTo-Json -Compress
+          $frames = @($request | & target/debug/runtimes/vba/Nanshe.Vba.exe bridge | ForEach-Object { $_ | ConvertFrom-Json })
+          if ($LASTEXITCODE -ne 0 -or 'done' -notin $frames.type) { throw 'Packaged VBA helper failed' }
+      - run: Copy-Item NOTICE,ATTRIBUTION.md target/debug
       - uses: actions/upload-artifact@v4
         with:
           name: nanshe-windows-x64
           path: |
             target/debug/nanshe.exe
             target/debug/nanshe-cli.exe
+            target/debug/runtimes/vba/**
+            target/debug/NOTICE
+            target/debug/ATTRIBUTION.md
           if-no-files-found: error
   runtime-bridge:
     runs-on: ubuntu-latest

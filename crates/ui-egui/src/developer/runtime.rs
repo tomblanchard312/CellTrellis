@@ -14,6 +14,54 @@ fn instant() -> Instant {
 use nanshe_engine::{DocState, Session, cmd::developer};
 use serde_json::{Value as Json, json};
 
+pub(super) fn program(variable: &str, packaged: &str, fallback: &str) -> std::path::PathBuf {
+    if let Some(path) = std::env::var_os(variable) {
+        return path.into();
+    }
+    if let Ok(exe) = std::env::current_exe()
+        && let Some(parent) = exe.parent()
+    {
+        let path = parent.join("runtimes").join(packaged);
+        if path.is_file() {
+            return path;
+        }
+    }
+    if let Some(paths) = std::env::var_os("PATH") {
+        for dir in std::env::split_paths(&paths) {
+            if cfg!(windows) && dir.to_string_lossy().to_ascii_lowercase().contains("windowsapps") {
+                continue;
+            }
+            let path = dir.join(fallback);
+            if path.is_file() {
+                return path;
+            }
+            if cfg!(windows) && path.with_extension("exe").is_file() {
+                return path.with_extension("exe");
+            }
+        }
+    }
+    fallback.into()
+}
+
+pub(super) fn missing_runtime(language: &str) -> Option<String> {
+    let (variable, packaged, fallback, help) = match language {
+        "VBA" => (
+            "NANSHE_VBA_RUNNER",
+            "vba/Nanshe.Vba.exe",
+            if cfg!(windows) { "Nanshe.Vba.exe" } else { "Nanshe.Vba" },
+            "Use the complete Nanshe Windows package, including runtimes/vba, or configure NANSHE_VBA_RUNNER.",
+        ),
+        "Python" => {
+            ("NANSHE_PYTHON", "python/python.exe", if cfg!(windows) { "python" } else { "python3" }, "Install Python 3 and configure NANSHE_PYTHON.")
+        }
+        "R" => ("NANSHE_RSCRIPT", "R/bin/Rscript.exe", "Rscript", "Install R with jsonlite and configure NANSHE_RSCRIPT."),
+        _ => return Some("Unknown scripting language".into()),
+    };
+    let path = program(variable, packaged, fallback);
+    let available = path.is_file();
+    (!available).then(|| format!("{language} runtime is missing. {help}"))
+}
+
 struct Reap(Child);
 impl Drop for Reap {
     fn drop(&mut self) {
@@ -39,19 +87,44 @@ pub(super) fn macro_preview(program: &Path, source: &str, name: &str, doc: DocSt
 pub(super) fn script_preview(language: &str, source: &str, doc: DocState, cancel: Arc<AtomicBool>) -> Result<Json, String> {
     let command = match language {
         "Python" => {
-            let mut cmd =
-                Command::new(std::env::var_os("NANSHE_PYTHON").unwrap_or_else(|| if cfg!(windows) { "python".into() } else { "python3".into() }));
+            let mut cmd = Command::new(program("NANSHE_PYTHON", "python/python.exe", if cfg!(windows) { "python" } else { "python3" }));
             cmd.args(["-I", "-u", "-X", "utf8", "-c", include_str!("runners/python.py")]);
             cmd
         }
         "R" => {
-            let mut cmd = Command::new(std::env::var_os("NANSHE_RSCRIPT").unwrap_or_else(|| "Rscript".into()));
-            cmd.args(["--vanilla", "-e", include_str!("runners/r.R")]);
-            cmd
+            let file = RRunner::create()?;
+            let mut cmd = Command::new(program("NANSHE_RSCRIPT", "R/bin/Rscript.exe", "Rscript"));
+            cmd.arg("--vanilla").arg(&file.0);
+            return run(cmd, source, "", doc, cancel);
         }
         _ => return Err("Unknown scripting language".into()),
     };
     run(command, source, "", doc, cancel)
+}
+
+// Rscript on Windows reparses -e quoting; a private script file keeps its JSON strings intact.
+struct RRunner(std::path::PathBuf);
+impl RRunner {
+    fn create() -> Result<Self, String> {
+        static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let path = std::env::temp_dir().join(format!("nanshe-r-{}-{}.R", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
+        let mut options = std::fs::OpenOptions::new();
+        options.write(true).create_new(true);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options.mode(0o600);
+        }
+        let mut file = options.open(&path).map_err(|e| format!("Cannot create R runner: {e}"))?;
+        let runner = Self(path);
+        file.write_all(include_bytes!("runners/r.R")).map_err(|e| format!("Cannot write R runner: {e}"))?;
+        Ok(runner)
+    }
+}
+impl Drop for RRunner {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.0);
+    }
 }
 
 fn run(mut command: Command, source: &str, name: &str, doc: DocState, cancel: Arc<AtomicBool>) -> Result<Json, String> {
@@ -169,6 +242,22 @@ mod tests {
         let mut s = Session::new();
         s.new_workbook();
         s.doc().unwrap().clone()
+    }
+
+    #[test]
+    fn r_runner_file_is_private_complete_and_removed_after_use() {
+        let path;
+        {
+            let file = RRunner::create().unwrap();
+            path = file.0.clone();
+            assert_eq!(std::fs::read(&path).unwrap(), include_bytes!("runners/r.R"));
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                assert_eq!(std::fs::metadata(&path).unwrap().permissions().mode() & 0o777, 0o600);
+            }
+        }
+        assert!(!path.exists());
     }
 
     #[test]

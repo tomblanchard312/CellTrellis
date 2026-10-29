@@ -1,4 +1,4 @@
-//! Nanshe releases are separate from the upstream Nanshe update feed.
+//! Nanshe releases are separate from the upstream GridCraft update feed.
 use crate::SheetApp;
 
 pub(crate) fn start(app: &mut SheetApp, manual: bool) {

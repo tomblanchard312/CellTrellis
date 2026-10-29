@@ -110,6 +110,11 @@ pub enum Icon {
     Paper,
     PrintArea,
     Script,
+    CommandPalette,
+    AgentControl,
+    Journal,
+    Update,
+    Scribe,
     Pen,
     Share,
     Search,
@@ -633,10 +638,55 @@ fn paint_with(p: &Painter, rect: Rect, icon: Icon, c: Color32, pal: &Palette) {
             g.rect(2.5, 2.5, 11.0, 11.0, None, Some(light));
             g.line(&[(4.0, 4.0), (11.0, 4.0), (11.0, 10.0), (4.0, 10.0), (4.0, 4.0)], blue, 1.4);
         }
+        Icon::Scribe => {
+            // Nisaba's speech bubble and four-pointed spark, scaled from its 20-unit grid.
+            for (points, color) in [
+                (&[(2.5, 4.5), (14.5, 4.5), (14.5, 14.0), (8.0, 14.0), (4.5, 17.0), (4.5, 14.0), (2.5, 14.0)][..], c),
+                (&[(15.0, 1.5), (16.0, 4.0), (18.5, 5.0), (16.0, 6.0), (15.0, 8.5), (14.0, 6.0), (11.5, 5.0), (14.0, 4.0)][..], blue),
+            ] {
+                let mut points: Vec<(f32, f32)> = points.iter().map(|(x, y)| (x * 0.8, y * 0.8)).collect();
+                if let Some(first) = points.first().copied() {
+                    points.push(first);
+                }
+                g.stroke(&points, color);
+            }
+            g.stroke(&[(4.4, 6.4), (8.8, 6.4)], c);
+            g.stroke(&[(4.4, 8.8), (7.6, 8.8)], c);
+        }
+        Icon::CommandPalette => {
+            g.rect(1.5, 2.5, 13.0, 11.0, None, Some(c));
+            g.line(&[(4.0, 5.5), (6.5, 8.0), (4.0, 10.5)], blue, 1.4);
+            g.line(&[(8.0, 10.5), (12.0, 10.5)], c, 1.3);
+        }
+        Icon::AgentControl => {
+            for (x, y) in [(3.0, 3.0), (13.0, 3.0), (8.0, 13.0)] {
+                g.line(&[(8.0, 7.0), (x, y)], c, 1.1);
+                g.circle(x, y, 1.7, Some(paper), Some(blue));
+            }
+            g.rect(5.5, 4.5, 5.0, 5.0, Some(blue), None);
+            g.circle(7.0, 6.8, 0.5, Some(paper), None);
+            g.circle(9.0, 6.8, 0.5, Some(paper), None);
+        }
+        Icon::Journal => {
+            g.rect(2.5, 1.5, 10.0, 13.0, None, Some(c));
+            for y in [4.5, 7.5, 10.5] {
+                g.circle(5.0, y, 0.55, Some(blue), None);
+                g.line(&[(7.0, y), (10.0, y)], c, 1.1);
+            }
+            g.line(&[(1.0, 4.5), (3.5, 4.5)], blue, 1.2);
+            g.line(&[(1.0, 10.5), (3.5, 10.5)], blue, 1.2);
+        }
+        Icon::Update => {
+            g.line(&[(2.0, 7.0), (3.0, 4.0), (6.0, 2.5), (10.0, 2.5), (13.0, 5.0)], blue, 1.3);
+            g.line(&[(10.0, 5.0), (13.5, 5.5), (13.5, 2.0)], blue, 1.3);
+            g.line(&[(14.0, 9.0), (13.0, 12.0), (10.0, 13.5), (6.0, 13.5), (3.0, 11.0)], c, 1.3);
+            g.line(&[(6.0, 11.0), (2.5, 10.5), (2.5, 14.0)], c, 1.3);
+        }
         Icon::Script => {
             g.rect(2.0, 2.0, 12.0, 12.0, None, Some(c));
-            g.line(&[(4.5, 6.0), (7.0, 8.0), (4.5, 10.0)], green, 1.3);
-            g.stroke(&[(8.0, 10.5), (11.5, 10.5)], c);
+            g.line(&[(6.0, 5.5), (3.5, 8.0), (6.0, 10.5)], blue, 1.3);
+            g.line(&[(10.0, 5.5), (12.5, 8.0), (10.0, 10.5)], blue, 1.3);
+            g.stroke(&[(9.0, 4.5), (7.0, 11.5)], c);
         }
         Icon::Pen => {
             g.poly(&[(3.0, 13.0), (4.0, 10.0), (11.0, 3.0), (13.0, 5.0), (6.0, 12.0)], blue);

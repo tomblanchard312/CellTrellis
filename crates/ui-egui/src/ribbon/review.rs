@@ -2,7 +2,7 @@ use super::controls::{act, anchor_keytip, control_keytip, menu_items, sep};
 use super::{Icon, SheetApp, Stroke, StrokeKind, Tokens, Ui, big_button, json, small_button};
 
 pub(super) fn review(app: &mut SheetApp, ui: &mut Ui) {
-    if big_button(ui, Icon::Script, "Scribe", "Local spreadsheet assistant powered by Enki", false).clicked() {
+    if big_button(ui, Icon::Scribe, "Scribe", "Local spreadsheet assistant powered by Enki", false).clicked() {
         app.run_or_alert("view.scribe", json!({}));
     }
     let __k = big_button(ui, Icon::Spell, "Spelling", "Spelling (F7)", false);

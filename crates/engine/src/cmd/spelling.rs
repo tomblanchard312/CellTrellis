@@ -1,5 +1,4 @@
-//! Spelling: checks text cells against the system word list (`/usr/share/dict/words` on macOS
-//! and Linux; nothing is bundled) plus a user dictionary kept in the engine preferences.
+//! Spelling uses a bundled English word list plus the user dictionary on every platform.
 
 use std::collections::HashSet;
 use std::sync::OnceLock;
@@ -20,25 +19,7 @@ pub fn specs() -> Vec<CommandSpec> {
 
 fn dictionary() -> &'static HashSet<String> {
     static DICT: OnceLock<HashSet<String>> = OnceLock::new();
-    DICT.get_or_init(|| {
-        #[cfg(target_arch = "wasm32")]
-        {
-            HashSet::new()
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            let mut set = HashSet::new();
-            for path in ["/usr/share/dict/words", "/usr/share/dict/american-english", "/usr/share/dict/british-english"] {
-                if let Ok(text) = std::fs::read_to_string(path) {
-                    for w in text.lines().take(2_000_000) {
-                        set.insert(w.trim().to_lowercase());
-                    }
-                    break;
-                }
-            }
-            set
-        }
-    })
+    DICT.get_or_init(|| include_str!("../../assets/english-words.txt").lines().map(|word| word.trim().to_lowercase()).collect())
 }
 
 fn known(s: &Session, w: &str) -> bool {
@@ -195,5 +176,17 @@ mod tests {
         assert_eq!(edits1(&"a".repeat(MAX_SUGGEST_LEN)).len(), 54 * MAX_SUGGEST_LEN + 25);
         assert!(edits1(&"a".repeat(MAX_SUGGEST_LEN + 1)).is_empty());
         assert!(edits1(&"a".repeat(1_000_000)).is_empty());
+    }
+}
+
+#[cfg(test)]
+mod bundled_dictionary_tests {
+    use super::*;
+    #[test]
+    fn english_spelling_works_without_system_files() {
+        assert!(dictionary().len() > 50_000);
+        assert!(dictionary().contains("hello"));
+        assert!(!dictionary().contains("helo"));
+        assert!(suggestions("helo").contains(&"hello".to_string()));
     }
 }

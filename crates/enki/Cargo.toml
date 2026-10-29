@@ -9,6 +9,7 @@ description = "A small blocking client for the SharedAI local inference daemon (
 workspace = true
 
 [dependencies]
+serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
 

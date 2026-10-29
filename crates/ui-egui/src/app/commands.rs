@@ -133,9 +133,15 @@ impl SheetApp {
             }
             "ui.printSettings" => printing::settings(&mut self.printing, p, self.services.printers.as_ref()),
             "ui.printSubmit" => self.submit_print(p.clone()),
-            "ui.developerPreview" | "ui.developerStatus" | "ui.developerStop" | "ui.scribeModels" | "ui.scribeAsk" => {
-                crate::developer::command(self, id, p)
-            }
+            "ui.developerPreview"
+            | "ui.developerStatus"
+            | "ui.developerStop"
+            | "ui.scribeModels"
+            | "ui.scribeAsk"
+            | "ui.scribeMemoryRefresh"
+            | "ui.scribeMemorySave"
+            | "ui.scribeMemoryCompact"
+            | "ui.scribeMemoryClear" => crate::developer::command(self, id, p),
             "view.developer" | "view.scribe" => {
                 self.grid.pane = Some(if id == "view.developer" { "developer" } else { "scribe" }.into());
                 Ok(Json::Null)
