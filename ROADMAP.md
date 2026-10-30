@@ -1,5 +1,7 @@
 # CellTrellis roadmap
 
+> **Scribe navigation fix: 2026-10-30** · Unsent analysis requests no longer block switching tools. Each tool retains its request and settings for the current workbook session; Close analysis help restores the ordinary Scribe request. A running generation must be stopped before switching context. Readiness estimates unchanged.
+
 > **Scribe update: 2026-10-29** · What-If Analysis has an Ask Scribe entry; Forecast Sheet, Goal Seek and Data Analysis dialogs offer contextual Scribe help. Requests use selected worksheet data and current tool settings, remain editable before Send, and return to the tool with settings retained. Scribe explains configuration; native tools perform calculations after confirmation. Native Linux validation; other native platforms remain unverified. Readiness estimates unchanged.
 
 > **Integration update: 2026-10-29** · Combined local product branding, Enki and file-picker changes with the synchronized upstream code. Existing settings and installation identities are retained. Readiness estimates are unchanged.

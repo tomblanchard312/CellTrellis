@@ -140,6 +140,7 @@ impl SheetApp {
             | "ui.scribeAsk"
             | "ui.scribeAnalysis"
             | "ui.scribeReturnAnalysis"
+            | "ui.scribeCloseAnalysis"
             | "ui.scribeMemoryRefresh"
             | "ui.scribeMemorySave"
             | "ui.scribeMemoryCompact"
