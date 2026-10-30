@@ -140,8 +140,8 @@ pub(crate) fn command(app: &mut SheetApp, id: &str, p: &Json) -> Result<Json, St
                 {
                     return Err("Invalid Scribe request".into());
                 }
-                if id == "ui.scribeAsk" && (request.model.is_empty() || request.prompt.trim().is_empty()) {
-                    return Err("Choose a model and enter a request".into());
+                if id == "ui.scribeAsk" && request.prompt.trim().is_empty() {
+                    return Err("Enter a request".into());
                 }
                 start_scribe(app, &request, id == "ui.scribeModels")?;
                 let draft = app.developer.drafts.entry(uid).or_insert_with(|| Draft::new(String::new()));
@@ -416,8 +416,14 @@ fn macro_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool
 }
 
 fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool) {
-    ui.label("Scribe · CellTrellis");
-    ui.weak("Ask a question, highlight cells, create formulas, or draft a macro. Review changes before applying them.");
+    ui.horizontal_top(|ui| {
+        let (rect, _) = ui.allocate_exact_size(egui::vec2(32.0, 40.0), egui::Sense::hover());
+        crate::icons::paint(ui.painter(), rect, crate::icons::Icon::Scribe, ui.visuals().text_color());
+        ui.vertical(|ui| {
+            ui.label("Scribe · CellTrellis");
+            ui.weak("Ask a question, highlight cells, create formulas, or draft a macro. Review changes before applying them.");
+        });
+    });
     #[cfg(not(any(unix, windows)))]
     ui.weak("Local Enki requires the desktop app.");
     ui.add_enabled_ui(!busy, |ui| {
@@ -443,16 +449,10 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
     ui.horizontal(|ui| {
         #[cfg(not(target_arch = "wasm32"))]
         {
-            if ui
-                .add_enabled(
-                    !busy && cfg!(any(unix, windows)) && !draft.model.is_empty() && !draft.prompt.trim().is_empty(),
-                    egui::Button::new("Send"),
-                )
-                .clicked()
-            {
+            if ui.add_enabled(!busy && cfg!(any(unix, windows)) && !draft.prompt.trim().is_empty(), egui::Button::new("Send")).clicked() {
                 draft.reply.clear();
                 draft.suggestion = None;
-                match app.run("ui.scribeAsk", json!({"prompt":draft.prompt,"model":draft.model,"mode":draft.mode})) {
+                match app.run("ui.scribeAsk", json!({"prompt":draft.prompt,"mode":draft.mode})) {
                     Ok(_) => draft.status = "Scribe is writing…".into(),
                     Err(e) => draft.status = e,
                 }
@@ -490,29 +490,6 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
         }
     }
     memory_ui(app, ui, draft, busy);
-    ui.separator();
-    egui::CollapsingHeader::new("Model settings").default_open(draft.models.is_empty()).show(ui, |ui| {
-        ui.add_enabled_ui(!busy, |ui| {
-            ui.horizontal_wrapped(|ui| {
-                craft_ui::ComboBox::from_id_salt("scribe_model")
-                    .selected_text(if draft.model.is_empty() { "Choose a model" } else { &draft.model })
-                    .show_ui(ui, |ui| {
-                        for model in &draft.models {
-                            ui.selectable_value(&mut draft.model, model.clone(), model);
-                        }
-                    })
-                    .response
-                    .accessible_name("Scribe model");
-                #[cfg(not(target_arch = "wasm32"))]
-                if ui.button("Refresh models").clicked() {
-                    match app.run("ui.scribeModels", json!({})) {
-                        Ok(_) => draft.status = "Finding local models…".into(),
-                        Err(e) => draft.status = e,
-                    }
-                }
-            });
-        });
-    });
 }
 
 fn memory_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool) {
@@ -549,7 +526,7 @@ fn memory_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
             ] {
                 let has_memory = app.developer.memory.is_some();
                 if ui.add_enabled(!busy && (has_memory || id == "ui.scribeMemoryRefresh"), egui::Button::new(label)).clicked() {
-                    let p = json!({"preferences":app.developer.memory_notes,"model":draft.model});
+                    let p = json!({"preferences":app.developer.memory_notes});
                     match app.run(id, p) {
                         Ok(_) => app.developer.memory_status = "Updating shared memory…".into(),
                         Err(e) => app.developer.memory_status = e,
@@ -664,7 +641,6 @@ fn start_memory(app: &mut SheetApp, id: &str, p: &Json) -> Result<(), String> {
     use nanshe_enki as enki;
     let endpoint = enki::endpoint("").map_err(|e| e.to_string())?;
     let id = id.to_string();
-    let model = p["model"].as_str().unwrap_or("").to_string();
     let preferences = p["preferences"].as_str().unwrap_or("").to_string();
     if preferences.len() > 8192 {
         return Err("Preferences exceed 8 KiB".into());
@@ -680,6 +656,8 @@ fn start_memory(app: &mut SheetApp, id: &str, p: &Json) -> Result<(), String> {
                 enki::memory::update(&endpoint, "nanshe", &memory)
             }
             "ui.scribeMemoryCompact" => {
+                let model = enki::select_text_model(&enki::list_models(&endpoint, "nanshe").map_err(|e| e.to_string())?, "writing")
+                    .ok_or("The local assistant is not ready. Configure text generation in Enki and retry.")?;
                 let memory = enki::memory::get(&endpoint, "nanshe").map_err(|e| e.to_string())?;
                 enki::memory::compact(&endpoint, "nanshe", &model, &memory, &cancel)
             }
@@ -723,6 +701,19 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
         if list {
             return tx.send(Event::Models(enki::list_models(&endpoint, "nanshe").map_err(|e| e.to_string())?)).map_err(|e| e.to_string());
         }
+        let models = enki::list_models(&endpoint, "nanshe").map_err(|_| "The local assistant is unavailable. Check Enki and retry.".to_string())?;
+        let task = if mode == "Formula" {
+            "formula"
+        } else if mode.starts_with("Write ") {
+            "code"
+        } else {
+            "writing"
+        };
+        let model = if model.is_empty() {
+            enki::select_text_model(&models, task).ok_or("The local assistant is not ready. Configure text generation in Enki and retry.")?
+        } else {
+            model
+        };
         let instruction = if mode == "Chat and edit" { scribe::EDIT } else { scribe_instruction(&mode) };
         let mut messages = vec![enki::Message::new("system", format!("{} {instruction}", scribe::IDENTITY))];
         if let Some(memory) = &memory {
@@ -834,6 +825,25 @@ mod tests {
                 })
                 .build_ui_state(move |ui, app| show(app, ui, scribe), app);
             harness.run_steps(2);
+        }
+    }
+
+    #[test]
+    fn scribe_keeps_model_selection_out_of_the_pane() {
+        use egui_kittest::kittest::Queryable;
+        let mut session = nanshe_engine::Session::new();
+        session.new_workbook();
+        let mut app = SheetApp::new(session, Default::default());
+        let uid = app.session.doc().unwrap().uid;
+        let mut draft = Draft::new(String::new());
+        draft.model = "private-model-name".into();
+        draft.models = vec![draft.model.clone()];
+        app.developer.drafts.insert(uid, draft);
+        let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(520.0, 900.0)).build_ui_state(|ui, app| show(app, ui, true), app);
+        h.run_steps(2);
+        assert!(h.query_by_label("Send").is_some());
+        for label in ["Model settings", "Scribe model", "private-model-name", "Refresh models"] {
+            assert!(h.query_by_label(label).is_none(), "model control visible: {label}");
         }
     }
 

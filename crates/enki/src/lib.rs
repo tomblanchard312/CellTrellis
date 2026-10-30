@@ -13,6 +13,9 @@
 
 pub mod memory;
 
+mod selection;
+pub use selection::select_text_model;
+
 use std::fmt;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};

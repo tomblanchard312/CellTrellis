@@ -1,4 +1,4 @@
-//! CellTrellis's icon set, drawn in code on a 16×16 design grid (original artwork; see
+//! CellTrellis's icon set, with original vector drawings and shared Scribe artwork (see
 //! ATTRIBUTION.md). Large ribbon icons use the same drawings at 32×32 with accent colours.
 //! Accent and paper colours come from the theme tokens, so icons follow light and dark mode;
 //! icons placed on the sheet ([`paint_on_sheet`]) keep the light colours, as the sheet does.
@@ -7,6 +7,21 @@ use egui::epaint::{CubicBezierShape, PathShape, PathStroke};
 use egui::{Color32, Painter, Pos2, Rect, Stroke, pos2, vec2};
 
 use crate::theme::{Cat, Tokens};
+
+const SCRIBE_PNG: &[u8] = include_bytes!("../../../assets/icons/scribe.png");
+
+fn scribe_texture(ctx: &egui::Context) -> Option<egui::TextureHandle> {
+    let key = egui::Id::unique("celltrellis.scribe.icon");
+    if let Some(texture) = ctx.data(|d| d.get_temp::<egui::TextureHandle>(key)) {
+        return Some(texture);
+    }
+    let rgba = image::load_from_memory_with_format(SCRIBE_PNG, image::ImageFormat::Png).ok()?.into_rgba8();
+    let size = [rgba.width() as usize, rgba.height() as usize];
+    let image = egui::ColorImage::from_rgba_unmultiplied(size, rgba.as_raw());
+    let texture = ctx.load_texture("Scribe", image, egui::TextureOptions::LINEAR);
+    ctx.data_mut(|d| d.insert_temp(key, texture.clone()));
+    Some(texture)
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Icon {
@@ -659,19 +674,11 @@ fn paint_with(p: &Painter, rect: Rect, icon: Icon, c: Color32, pal: &Palette) {
             g.line(&[(4.0, 4.0), (11.0, 4.0), (11.0, 10.0), (4.0, 10.0), (4.0, 4.0)], blue, 1.4);
         }
         Icon::Scribe => {
-            // Nisaba's speech bubble and four-pointed spark, scaled from its 20-unit grid.
-            for (points, color) in [
-                (&[(2.5, 4.5), (14.5, 4.5), (14.5, 14.0), (8.0, 14.0), (4.5, 17.0), (4.5, 14.0), (2.5, 14.0)][..], c),
-                (&[(15.0, 1.5), (16.0, 4.0), (18.5, 5.0), (16.0, 6.0), (15.0, 8.5), (14.0, 6.0), (11.5, 5.0), (14.0, 4.0)][..], blue),
-            ] {
-                let mut points: Vec<(f32, f32)> = points.iter().map(|(x, y)| (x * 0.8, y * 0.8)).collect();
-                if let Some(first) = points.first().copied() {
-                    points.push(first);
-                }
-                g.stroke(&points, color);
+            if let Some(texture) = scribe_texture(p.ctx()) {
+                p.image(texture.id(), r, Rect::from_min_max(Pos2::ZERO, pos2(1.0, 1.0)), Color32::WHITE);
+            } else {
+                p.text(r.center(), egui::Align2::CENTER_CENTER, "S", egui::FontId::proportional(side * 0.7), blue);
             }
-            g.stroke(&[(4.4, 6.4), (8.8, 6.4)], c);
-            g.stroke(&[(4.4, 8.8), (7.6, 8.8)], c);
         }
         Icon::CommandPalette => {
             g.rect(1.5, 2.5, 13.0, 11.0, None, Some(c));
@@ -921,6 +928,25 @@ fn paint_alignment(g: &G<'_>, icon: Icon, c: Color32, light: Color32, blue: Colo
         }
         if icon == Icon::IndentDec {
             g.poly(&[(5.0, 6.0), (2.0, 8.0), (5.0, 10.0)], blue);
+        }
+    }
+}
+
+#[cfg(test)]
+mod scribe_brand_tests {
+    use super::*;
+    #[test]
+    fn scribe_logo_uses_the_approved_texture_at_toolbar_and_header_sizes() {
+        let ctx = egui::Context::default();
+        let texture = scribe_texture(&ctx).unwrap();
+        for size in [24.0, 32.0, 40.0] {
+            let output = ctx.run_ui(egui::RawInput::default(), |ui| {
+                paint(ui.painter(), Rect::from_min_size(Pos2::ZERO, vec2(size, size)), Icon::Scribe, Color32::WHITE);
+            });
+            let painted = output.shapes.iter().any(|s| matches!(&s.shape,egui::Shape::Mesh(m) if m.texture_id==texture.id()));
+            output.drop_without_applying_deltas();
+            assert!(painted, "Scribe must paint the approved image, not the generic speech bubble");
+            assert_eq!(scribe_texture(&ctx).unwrap().id(), texture.id());
         }
     }
 }
