@@ -49,7 +49,7 @@ fn image_meshes(h: &egui_kittest::Harness<'static, SheetApp>) -> Vec<(Rect, Rect
         .shapes
         .iter()
         .filter_map(|shape| match &shape.shape {
-            Shape::Mesh(mesh) if mesh.texture_id != TextureId::default() => {
+            Shape::Mesh(mesh) if mesh.texture_id != TextureId::default() && h.state().grid.rect.is_some_and(|r| r.intersects(shape.clip_rect)) => {
                 let mut bounds = Rect::NOTHING;
                 for vertex in &mesh.vertices {
                     bounds.extend_with(vertex.pos);
