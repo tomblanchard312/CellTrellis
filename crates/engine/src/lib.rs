@@ -566,6 +566,22 @@ impl Session {
         self.activate_window(w);
         self.docs.len() - 1
     }
+    /// Replaces the active workbook while retaining its native window identity.
+    pub fn replace_active_document(&mut self, d: DocState) -> usize {
+        let window = self.active_window();
+        if self.active().is_some() {
+            self.close_document(self.active);
+        }
+        let index = self.add_document(d);
+        if let Some(id) = window {
+            let active = self.active_window();
+            if let Some(w) = self.windows.iter_mut().find(|w| Some(w.id) == active) {
+                w.id = id;
+            }
+            self.active_window = Some(id);
+        }
+        index
+    }
     /// Closes a workbook and its windows; the most recently active remaining window comes forward.
     pub fn close_document(&mut self, i: usize) {
         if i < self.docs.len() {

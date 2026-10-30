@@ -332,8 +332,11 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
                         for (label, answer) in
                             [("Don't Save", crate::SaveAnswer::DontSave), ("Cancel", crate::SaveAnswer::Cancel), ("Save", crate::SaveAnswer::Save)]
                         {
-                            if ui.button(label).clicked() && app.answer_save_changes(answer, quitting, ui.ctx()) {
-                                open = false;
+                            if ui.button(label).clicked() {
+                                let settled = if let (false, Some(sample), Some(uid)) = (quitting, d.values.get("template").and_then(Json::as_str), d.values.get("doc").and_then(Json::as_u64)) {
+                                    app.answer_template_save(answer, sample, uid)
+                                } else { app.answer_save_changes(answer, quitting, ui.ctx()) };
+                                if settled { open = false; }
                             }
                         }
                     });
@@ -347,7 +350,7 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
                         }
                         for (n, t) in nanshe_engine::sample::SAMPLES {
                             if ui.button(*t).clicked() {
-                                app.run_or_alert("file.new", json!({"sample": n}));
+                                app.run_or_alert("ui.openTemplate", json!({"sample": n}));
                                 open = false;
                             }
                         }

@@ -349,7 +349,7 @@ fn new_tiles(app: &mut SheetApp, ui: &mut Ui, out: &mut Outcome) {
         }
         for (i, (name, title)) in nanshe_engine::sample::SAMPLES.iter().enumerate() {
             if tile(ui, title, Some(i)).clicked() {
-                app.run_or_alert("file.new", json!({"sample": name}));
+                app.run_or_alert("ui.openTemplate", json!({"sample": name}));
                 out.close = true;
             }
         }

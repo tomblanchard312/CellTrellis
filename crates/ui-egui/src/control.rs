@@ -188,6 +188,7 @@ pub fn handle(app: &mut SheetApp, ctx: &egui::Context, method: &str, p: &Json) -
             let mut v: Vec<Json> = app.session.commands().into_iter().map(|c| serde_json::to_value(c).unwrap_or_default()).collect();
             let language_params = format!("{{language: {}}} (alias: code)", crate::i18n::Language::code_list("|"));
             for (id, label, params) in [
+                ("ui.openTemplate", "Open template in current window", "{sample: budget|sales|grades}"),
                 ("ui.ribbonTab", "Ribbon Tab", ""),
                 ("view.developer", "Developer", ""),
                 ("ui.developerPreview", "Run script preview", ""),

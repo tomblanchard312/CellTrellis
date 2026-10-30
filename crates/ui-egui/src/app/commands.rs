@@ -46,8 +46,13 @@ impl SheetApp {
         if let Some(r) = self.run_ui_command(id, &params) {
             return r;
         }
+        let replacing_template = id == "file.new" && params["replace"].as_bool() == Some(true);
         let before = self.session.active_window();
         let r = self.session.run(id, params);
+        if replacing_template && r.is_ok() {
+            self.reset_workbook_ui();
+            self.backstage = None;
+        }
         if id.starts_with("file.") && self.session.active_window() != before {
             // File › New or Open from the Backstage view: the window it was in goes back to its sheet.
             self.backstage = None;
@@ -133,6 +138,7 @@ impl SheetApp {
             }
             "ui.printSettings" => printing::settings(&mut self.printing, p, self.services.printers.as_ref()),
             "ui.printSubmit" => self.submit_print(p.clone()),
+            "ui.openTemplate" => self.open_template(p),
             "ui.developerPreview"
             | "ui.developerStatus"
             | "ui.developerStop"

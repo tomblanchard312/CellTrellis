@@ -1,6 +1,56 @@
 use super::{Json, Notice, NoticeKind, OpenWindow, SheetApp, clean_error, json};
 
 impl SheetApp {
+    pub(crate) fn open_template(&mut self, p: &Json) -> Result<Json, String> {
+        let sample = p["sample"].as_str().ok_or("Template name is required")?;
+        if !nanshe_engine::sample::SAMPLES.iter().any(|(name, _)| *name == sample) {
+            return Err("Unknown template".into());
+        }
+        self.settle_drafts()?;
+        let doc = self.session.active();
+        let needs_save = doc.is_some_and(|d| d.is_dirty() || (d.path.is_none() && d.wb.sheets.iter().any(|s| s.used_range().is_some())));
+        if needs_save {
+            let title = doc.map(|d| d.display_title()).unwrap_or_default();
+            let uid = doc.map(|d| d.uid);
+            self.open_dialog("saveChanges", json!({"title":title,"template":sample,"doc":uid}));
+            return Ok(json!({"confirmationRequired":true}));
+        }
+        self.run("file.new", json!({"sample":sample,"replace":true}))
+    }
+
+    pub(crate) fn answer_template_save(&mut self, answer: crate::SaveAnswer, sample: &str, uid: u64) -> bool {
+        if self.session.active().map(|d| d.uid) != Some(uid) {
+            self.alert("The workbook changed. Open the template again.".into());
+            return true;
+        }
+        match answer {
+            crate::SaveAnswer::Cancel => true,
+            crate::SaveAnswer::Save => {
+                if let Err(e) = self.run("file.save", json!({})) {
+                    self.alert(e);
+                    return false;
+                }
+                if self.session.active().is_none_or(|d| d.uid != uid || d.is_dirty() || d.path.is_none()) {
+                    return false;
+                }
+                match self.run("file.new", json!({"sample":sample,"replace":true})) {
+                    Ok(_) => true,
+                    Err(e) => {
+                        self.alert(e);
+                        false
+                    }
+                }
+            }
+            crate::SaveAnswer::DontSave => match self.run("file.new", json!({"sample":sample,"replace":true,"force":true})) {
+                Ok(_) => true,
+                Err(e) => {
+                    self.alert(e);
+                    false
+                }
+            },
+        }
+    }
+
     pub fn open_path(&mut self, path: &str) {
         match self.run("file.open", json!({"path": path})) {
             Ok(r) => self.after_open(Some(path), &r),
@@ -123,5 +173,111 @@ impl SheetApp {
     /// preferences, so it stays as the user left it across restarts (#1901).
     pub fn toggle_autosave(&mut self) {
         self.ui.autosave = !self.ui.autosave;
+    }
+}
+
+#[cfg(test)]
+mod template_tests {
+    use super::*;
+    use crate::{SaveAnswer, Services};
+
+    fn app() -> SheetApp {
+        let mut session = nanshe_engine::Session::new();
+        session.new_workbook();
+        SheetApp::new(session, Services::default())
+    }
+
+    #[test]
+    fn template_tile_and_save_cancel_buttons_keep_the_current_window() {
+        use egui_kittest::kittest::Queryable;
+        let mut app = app();
+        app.use_prepared_fonts();
+        let window = app.session.active_window();
+        app.open_backstage(crate::backstage::Page::New);
+        let mut h = egui_kittest::Harness::builder()
+            .with_size(egui::vec2(1280.0, 900.0))
+            .with_context_setup(|ctx| {
+                ctx.set_fonts(crate::theme::pinned_font_definitions());
+                crate::theme::apply(ctx, true);
+            })
+            .build_ui_state(
+                |ui, app: &mut SheetApp| {
+                    app.logic(ui.ctx());
+                    app.ui(ui);
+                },
+                app,
+            );
+        h.run_steps(3);
+        let label = nanshe_engine::sample::SAMPLES.iter().find(|(n, _)| *n == "budget").unwrap().1;
+        h.get_by_label(label).click();
+        h.run_steps(3);
+        assert_eq!(h.state().session.active_window(), window);
+        assert_eq!(h.state().session.windows().len(), 1);
+        let uid = h.state().session.doc().unwrap().uid;
+        h.state_mut().run("ui.openTemplate", json!({"sample":"sales"})).unwrap();
+        h.run_steps(2);
+        h.get_by_role_and_label(egui::accesskit::Role::Button, "Cancel").click();
+        h.run_steps(2);
+        assert_eq!(h.state().session.doc().unwrap().uid, uid);
+        h.state_mut().run("ui.openTemplate", json!({"sample":"sales"})).unwrap();
+        h.run_steps(2);
+        h.get_by_role_and_label(egui::accesskit::Role::Button, "Don't Save").click();
+        h.run_steps(2);
+        assert_ne!(h.state().session.doc().unwrap().uid, uid);
+        assert_eq!(h.state().session.active_window(), window);
+        assert_eq!(h.state().session.windows().len(), 1);
+    }
+
+    #[test]
+    fn template_reuses_blank_window_and_gets_a_new_document_identity() {
+        let mut app = app();
+        let window = app.session.active_window();
+        let uid = app.session.doc().unwrap().uid;
+        app.run("ui.openTemplate", json!({"sample":"budget"})).unwrap();
+        assert_eq!(app.session.active_window(), window);
+        assert_eq!(app.session.windows().len(), 1);
+        assert_eq!(app.session.documents().len(), 1);
+        assert_ne!(app.session.doc().unwrap().uid, uid);
+        assert!(app.session.doc().unwrap().wb.active().unwrap().used_range().is_some());
+    }
+
+    #[test]
+    fn template_cancel_discard_and_invalid_requests_protect_current_workbook() {
+        let mut app = app();
+        app.run("cell.set", json!({"cell":"A1","input":"Keep me"})).unwrap();
+        let uid = app.session.doc().unwrap().uid;
+        let window = app.session.active_window();
+        app.run("ui.openTemplate", json!({"sample":"budget"})).unwrap();
+        assert_eq!(app.dialog.as_ref().unwrap().name(), "saveChanges");
+        assert_eq!(app.session.doc().unwrap().uid, uid);
+        assert!(app.answer_template_save(SaveAnswer::Cancel, "budget", uid));
+        assert_eq!(app.session.doc().unwrap().uid, uid);
+        assert!(app.run("file.new", json!({"sample":"budget","replace":true})).is_err());
+        assert!(app.run("file.new", json!({"sample":"missing","replace":true,"force":true})).is_err());
+        assert_eq!(app.run("cell.get", json!({"cell":"A1"})).unwrap()["value"], "Keep me");
+        assert!(app.answer_template_save(SaveAnswer::DontSave, "budget", uid));
+        assert_ne!(app.session.doc().unwrap().uid, uid);
+        assert_eq!(app.session.active_window(), window);
+    }
+
+    #[test]
+    fn template_save_requires_success_and_cancelled_picker_keeps_original() {
+        let mut app = app();
+        app.run("cell.set", json!({"cell":"A1","input":"Saved original"})).unwrap();
+        let uid = app.session.doc().unwrap().uid;
+        app.services.pick_save = Some(Box::new(|_| None));
+        assert!(!app.answer_template_save(SaveAnswer::Save, "budget", uid));
+        assert_eq!(app.session.doc().unwrap().uid, uid);
+        let dir = std::env::temp_dir().join(format!("celltrellis-template-save-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let target = dir.join("original.xlsx");
+        let path = target.to_string_lossy().into_owned();
+        app.services.pick_save = Some(Box::new(move |_| Some(path.clone())));
+        assert!(app.answer_template_save(SaveAnswer::Save, "budget", uid));
+        assert_ne!(app.session.doc().unwrap().uid, uid);
+        let mut original = nanshe_engine::Session::new();
+        original.run("file.open", json!({"path":target})).unwrap();
+        assert_eq!(original.run("cell.get", json!({"cell":"A1"})).unwrap()["value"], "Saved original");
+        std::fs::remove_dir_all(dir).unwrap();
     }
 }

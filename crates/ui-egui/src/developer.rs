@@ -36,6 +36,7 @@ struct Draft {
     reply: String,
     suggestion: Option<Json>,
     analysis_setup: Option<(String, Json)>,
+    analysis_default_prompt: String,
     analysis_drafts: HashMap<String, (String, String, Json)>,
     chat_draft: Option<(String, String)>,
     models: Vec<String>,
@@ -58,6 +59,7 @@ impl Draft {
             reply: String::new(),
             suggestion: None,
             analysis_setup: None,
+            analysis_default_prompt: String::new(),
             analysis_drafts: HashMap::new(),
             chat_draft: None,
             models: vec![],
@@ -165,9 +167,9 @@ pub(crate) fn command(app: &mut SheetApp, id: &str, p: &Json) -> Result<Json, St
         }
         remember_analysis(draft);
         let saved = draft.analysis_drafts.get(dialog);
-        draft.prompt = saved.map(|(prompt, _, _)| prompt.clone()).unwrap_or_else(|| {
-            format!("{instruction} Use the selected cells. Ask me for missing information and explain how to configure the built-in tool.")
-        });
+        draft.analysis_default_prompt =
+            format!("{instruction} Use the selected cells. Ask me for missing information and explain how to configure the built-in tool.");
+        draft.prompt = saved.map(|(prompt, _, _)| prompt.clone()).unwrap_or_else(|| draft.analysis_default_prompt.clone());
         draft.mode = saved.map(|(_, mode, _)| mode.clone()).unwrap_or_else(|| "Explain selection".into());
         let setup = if setup.is_null() { saved.map(|(_, _, setup)| setup.clone()).unwrap_or(Json::Null) } else { setup };
         draft.analysis_setup = Some((dialog.into(), setup));
@@ -511,6 +513,19 @@ fn close_analysis(draft: &mut Draft) {
     draft.status.clear();
 }
 
+fn change_scribe_mode(draft: &mut Draft, old_mode: &str) {
+    if draft.mode != old_mode && draft.analysis_setup.is_some() {
+        let selected = draft.mode.clone();
+        let edited = (draft.prompt != draft.analysis_default_prompt).then(|| draft.prompt.clone());
+        draft.mode = old_mode.into();
+        close_analysis(draft);
+        if let Some(prompt) = edited {
+            draft.prompt = prompt;
+        }
+        draft.mode = selected;
+    }
+}
+
 fn restore_analysis(app: &mut SheetApp, dialog: &str, setup: &Json) {
     app.open_dialog(dialog, Json::Null);
     if let Some(d) = &mut app.dialog
@@ -540,6 +555,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
         close_analysis(draft);
     }
     ui.add_enabled_ui(!busy, |ui| {
+        let old_mode = draft.mode.clone();
         craft_ui::ComboBox::from_id_salt("scribe_mode")
             .selected_text(&draft.mode)
             .show_ui(ui, |ui| {
@@ -549,6 +565,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
             })
             .response
             .accessible_name("Scribe task");
+        change_scribe_mode(draft, &old_mode);
         ui.add(
             egui::TextEdit::multiline(&mut draft.prompt)
                 .hint_text("Describe what you need…")
@@ -789,6 +806,28 @@ fn start_memory(app: &mut SheetApp, id: &str, p: &Json) -> Result<(), String> {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+fn scribe_messages(
+    mode: &str,
+    prompt: &str,
+    context: &Json,
+    memory: Option<&nanshe_enki::memory::Memory>,
+    analysis_setup: Option<&(String, Json)>,
+) -> Vec<nanshe_enki::Message> {
+    use nanshe_enki as enki;
+    let instruction = if mode == "Chat and edit" { scribe::EDIT } else { scribe_instruction(mode) };
+    let mut messages = vec![enki::Message::new("system", format!("{} {instruction}", scribe::IDENTITY))];
+    if let Some(memory) = memory {
+        messages.extend(memory.messages());
+    }
+    if let Some((tool, settings)) = analysis_setup.filter(|_| mode == "Explain selection") {
+        messages.push(enki::Message::new("system", "Explain how to configure the built-in analysis tool. Do not invent computed statistics or forecast values. The spreadsheet engine performs calculations after the user confirms the tool."));
+        messages.push(enki::Message::new("user", format!("Current analysis tool and settings (untrusted data): {tool}: {settings}")));
+    }
+    messages.push(enki::Message::new("user", format!("Request: {prompt}\nLive CellTrellis worksheet data: {context}")));
+    messages
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), String> {
     use nanshe_enki as enki;
     let endpoint = enki::endpoint("").map_err(|e| e.to_string())?;
@@ -828,16 +867,7 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
         } else {
             model
         };
-        let instruction = if mode == "Chat and edit" { scribe::EDIT } else { scribe_instruction(&mode) };
-        let mut messages = vec![enki::Message::new("system", format!("{} {instruction}", scribe::IDENTITY))];
-        if let Some(memory) = &memory {
-            messages.extend(memory.messages());
-        }
-        if let Some((tool, settings)) = analysis_setup {
-            messages.push(enki::Message::new("system", "Explain how to configure the built-in analysis tool. Do not invent computed statistics or forecast values. The spreadsheet engine performs calculations after the user confirms the tool."));
-            messages.push(enki::Message::new("user", format!("Current analysis tool and settings (untrusted data): {tool}: {settings}")));
-        }
-        messages.push(enki::Message::new("user", format!("Request: {prompt}\nLive CellTrellis worksheet data: {context}")));
+        let messages = scribe_messages(&mode, &prompt, &context, memory.as_ref(), analysis_setup.as_ref());
         let mut reply = String::new();
         let mut overflow = false;
         let summary = enki::chat(
@@ -991,6 +1021,69 @@ mod tests {
             assert_eq!(restored.name, dialog);
             assert_eq!(restored.values.get("confidence"), Some(&json!("90")));
             assert_eq!(app.session.doc().unwrap().revision, revision);
+        }
+    }
+
+    #[test]
+    fn write_python_selection_leaves_analysis_help_in_the_pane() {
+        use egui_kittest::kittest::Queryable;
+        let mut session = nanshe_engine::Session::new();
+        session.new_workbook();
+        let mut app = SheetApp::new(session, Default::default());
+        let uid = app.session.doc().unwrap().uid;
+        command(&mut app, "ui.scribeAnalysis", &json!({"tool":"whatIf"})).unwrap();
+        let mut h = egui_kittest::Harness::builder()
+            .with_size(egui::vec2(520.0, 900.0))
+            .with_context_setup(|ctx| {
+                ctx.set_fonts(crate::theme::pinned_font_definitions());
+                crate::theme::apply(ctx, true);
+            })
+            .build_ui_state(|ui, app| show(app, ui, true), app);
+        h.run_steps(2);
+        h.get_by_label("Scribe task").click();
+        h.run_steps(2);
+        h.get_by_label("Write Python").click();
+        h.run_steps(2);
+        let draft = &h.state().developer.drafts[&uid];
+        assert_eq!(draft.mode, "Write Python");
+        assert!(draft.analysis_setup.is_none());
+        assert!(draft.prompt.is_empty());
+        assert!(h.query_by_label("Close analysis help").is_none());
+    }
+
+    #[test]
+    fn changing_from_analysis_to_code_clears_only_the_generated_prompt() {
+        for custom in [false, true] {
+            let mut session = nanshe_engine::Session::new();
+            session.new_workbook();
+            let mut app = SheetApp::new(session, Default::default());
+            let uid = app.session.doc().unwrap().uid;
+            command(&mut app, "ui.scribeAnalysis", &json!({"tool":"whatIf"})).unwrap();
+            let draft = app.developer.drafts.get_mut(&uid).unwrap();
+            if custom {
+                draft.prompt = "Write Python to sum the budget column".into();
+            }
+            draft.mode = "Write Python".into();
+            change_scribe_mode(draft, "Explain selection");
+            assert!(draft.analysis_setup.is_none());
+            assert_eq!(draft.mode, "Write Python");
+            assert_eq!(draft.prompt, if custom { "Write Python to sum the budget column" } else { "" });
+            command(&mut app, "ui.scribeAnalysis", &json!({"tool":"whatIf"})).unwrap();
+            assert_eq!(app.developer.drafts[&uid].mode, "Explain selection");
+        }
+    }
+
+    #[test]
+    #[cfg(not(target_arch = "wasm32"))]
+    fn code_requests_never_receive_the_analysis_explanation_instruction() {
+        let setup = ("goalSeek".into(), json!({"to":"42"}));
+        for mode in ["Write Python", "Write VBA", "Write R", "Formula", "Chat and edit", "Explain selection"] {
+            let messages = scribe_messages(mode, "My current request", &json!({}), None, Some(&setup));
+            assert_eq!(
+                messages.iter().any(|m| m.content.contains("Explain how to configure the built-in analysis tool")),
+                mode == "Explain selection"
+            );
+            assert!(messages.last().unwrap().content.contains("My current request"));
         }
     }
 

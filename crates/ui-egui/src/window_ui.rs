@@ -113,6 +113,11 @@ impl SheetApp {
         self.parked.retain(|w, _| session.window(*w).is_some());
     }
 
+    pub(crate) fn reset_workbook_ui(&mut self) {
+        let mut outgoing = WindowUi::fresh(&self.grid);
+        self.swap_window_ui(&mut outgoing);
+    }
+
     /// Activates window `id` (it becomes the most recently active) with its interface state.
     pub fn enter_window(&mut self, id: u64) {
         self.session.activate_window(id);

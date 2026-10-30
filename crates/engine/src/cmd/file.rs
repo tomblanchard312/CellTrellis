@@ -7,7 +7,7 @@ use crate::DocState;
 
 pub fn specs() -> Vec<CommandSpec> {
     vec![
-        cmd!(noundo "file.new", "New Workbook", ["File"], Some("Cmd+N"), "{sample?: \"budget\"|\"sales\"|\"grades\"}", always, new_workbook),
+        cmd!(noundo "file.new", "New Workbook", ["File"], Some("Cmd+N"), "{sample?: \"budget\"|\"sales\"|\"grades\", replace?: bool, force?: bool}", always, new_workbook),
         cmd!(noundo "file.open", "Open…", ["File"], Some("Cmd+O"), "{path} | {name, base64}, plus {password} for a password-protected workbook and {csvAsText?: bool} to keep every csv/tsv/txt field as text, with no number or date conversion (xlsx, xlsm, xls import, xlsb and ods data import, csv, tsv, txt, json)", always, open),
         cmd!(noundo "file.save", "Save", ["File"], Some("Cmd+S"), "{path?} (xlsx by default; .csv/.tsv/.json/.html/.pdf by extension)", has_doc, save),
         cmd!(noundo "file.saveAs", "Save As…", ["File"], Some("Cmd+Shift+S"), "{path} (.xlsx, .csv, .tsv, .json, .html, or .pdf: a PDF of the active sheet)", has_doc, save_as),
@@ -32,11 +32,19 @@ pub fn specs() -> Vec<CommandSpec> {
 }
 
 fn new_workbook(s: &mut Session, p: &Json) -> Result<Json> {
+    if p.get("replace").and_then(Json::as_bool) == Some(true) {
+        let name = str_param(p, "sample").ok_or_else(|| bad("file.new", "replacing a workbook requires a template"))?;
+        let wb = crate::sample::build(name).ok_or_else(|| bad("file.new", format!("unknown sample `{name}`")))?;
+        if s.active().is_some_and(|d| d.is_dirty()) && p.get("force").and_then(Json::as_bool) != Some(true) {
+            return Err(bad("file.new", "save changes or explicitly discard them before replacing the workbook"));
+        }
+        let i = s.replace_active_document(DocState::new(wb, None, crate::sample::title(name), crate::Trust::Local));
+        return Ok(json!({"index":i,"title":s.doc()?.display_title()}));
+    }
     let i = match str_param(p, "sample") {
         Some(name) => {
             let wb = crate::sample::build(name).ok_or_else(|| bad("file.new", format!("unknown sample `{name}`")))?;
-            let title = crate::sample::title(name);
-            s.add_document(DocState::new(wb, None, title, crate::Trust::Local))
+            s.add_document(DocState::new(wb, None, crate::sample::title(name), crate::Trust::Local))
         }
         None => s.new_workbook(),
     };
