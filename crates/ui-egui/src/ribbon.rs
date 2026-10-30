@@ -155,9 +155,6 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
                                 if big_button(ui, Icon::Script, "Code Editor", "Edit and preview VBA, Python and R scripts", false).clicked() {
                                     app.run_or_alert("view.developer", json!({}));
                                 }
-                                if big_button(ui, Icon::Scribe, "Scribe", "Local spreadsheet assistant powered by Enki", false).clicked() {
-                                    app.run_or_alert("view.scribe", json!({}));
-                                }
                             }
                             "Table Design" => table_design(app, ui),
                             "Chart Design" => chart_design(app, ui),

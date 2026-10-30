@@ -1,5 +1,7 @@
 # CellTrellis roadmap
 
+> **Scribe navigation: 2026-10-30** · The branded Scribe button is always available in the top bar, independent of the selected ribbon tab. The Review shortcut is removed; existing assistant behavior is unchanged.
+
 > **Runtime integration: 2026-10-30** · Complete VBA runtime staging and scripting dependency guards now cover native package builders and local installs; see [runtime packaging](docs/scripting-runtimes.md). Platform readiness estimates are unchanged.
 
 > **Scribe and template update: 2026-10-30** · Switching to coding, formula or chat mode leaves analysis-only guidance behind; generated analysis questions are cleared while user-written requests are kept. Built-in templates reuse the active window, asking Save / Don’t Save / Cancel before replacing unsaved work. Save failures and cancelled save pickers retain the original workbook. Readiness estimates unchanged.

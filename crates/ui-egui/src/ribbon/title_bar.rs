@@ -126,6 +126,9 @@ pub fn title_bar(app: &mut SheetApp, ui: &mut Ui) {
                 if __k.clicked() {
                     app.open_dialog("commandSearch", json!({}));
                 }
+                if small_button(ui, Icon::Scribe, "Scribe", "Scribe", false).clicked() {
+                    app.run_or_alert("view.scribe", json!({}));
+                }
                 let share = small_button(ui, Icon::Share, "Share", "Share: export or save a copy", true);
                 egui::Popup::menu(&share).show(|ui| {
                     if ui.button("Export as PDF…").clicked() {
@@ -209,6 +212,31 @@ fn paint_title(ui: &Ui, center: egui::Pos2, title: &str, dirty: bool, max_w: f32
 #[cfg(test)]
 mod title_bar_tests {
     use super::*;
+
+    #[test]
+    fn scribe_opens_from_the_title_bar_on_any_ribbon_tab() {
+        use egui_kittest::kittest::Queryable;
+        for tab in ["Home", "Review", "Developer"] {
+            let mut app = SheetApp::new(nanshe_engine::Session::new(), crate::Services::default());
+            app.ui.ribbon_tab = tab.into();
+            let mut h = egui_kittest::Harness::builder()
+                .with_size(vec2(1440.0, 900.0))
+                .with_context_setup(|ctx| {
+                    ctx.set_fonts(crate::theme::pinned_font_definitions());
+                    crate::theme::apply(ctx, true);
+                })
+                .build_ui_state(
+                    |ui, app: &mut SheetApp| {
+                        title_bar(app, ui);
+                    },
+                    app,
+                );
+            h.run_steps(2);
+            h.query_by_label("Scribe").expect("persistent Scribe button").click();
+            h.run_steps(2);
+            assert_eq!(h.state().grid.pane.as_deref(), Some("scribe"));
+        }
+    }
 
     #[test]
     fn mac_title_bar_centres_and_clears_the_traffic_lights() {
