@@ -6,13 +6,13 @@ pub(super) fn goal_seek(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, c
     let (mut set, mut to, mut changing) = (get("set"), get("to"), get("changing"));
     egui::Grid::new("gs").show(ui, |ui| {
         ui.label("Set cell:");
-        ui.text_edit_singleline(&mut set);
+        ui.text_edit_singleline(&mut set).accessible_name("Set cell");
         ui.end_row();
         ui.label("To value:");
-        ui.text_edit_singleline(&mut to);
+        ui.text_edit_singleline(&mut to).accessible_name("To value");
         ui.end_row();
         ui.label("By changing cell:");
-        ui.text_edit_singleline(&mut changing);
+        ui.text_edit_singleline(&mut changing).accessible_name("By changing cell");
         ui.end_row();
     });
     d.values.insert("set".into(), json!(set.clone()));

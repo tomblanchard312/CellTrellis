@@ -195,6 +195,8 @@ pub fn handle(app: &mut SheetApp, ctx: &egui::Context, method: &str, p: &Json) -
                 ("ui.developerStop", "Stop script or Scribe", ""),
                 ("ui.scribeModels", "Refresh Scribe models", ""),
                 ("ui.scribeAsk", "Ask Scribe", ""),
+                ("ui.scribeReturnAnalysis", "Return to analysis tool", ""),
+                ("ui.scribeAnalysis", "Prepare Scribe analysis help", "{tool: whatIf|forecast|analysis, setup?: object}"),
                 ("ui.scribeMemoryRefresh", "Read shared Scribe memory", ""),
                 ("ui.scribeMemorySave", "Save shared preferences", "{preferences}"),
                 ("ui.scribeMemoryCompact", "Compact shared conversation", "{model}"),

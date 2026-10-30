@@ -90,6 +90,7 @@ pub(super) fn data(app: &mut SheetApp, ui: &mut Ui) {
             app,
             ui,
             &[
+                ("Ask Scribe about What-If Analysis…", "ui.scribeAnalysis", json!({"tool":"whatIf"})),
                 ("Goal Seek…", "dialog:goalSeek", json!({})),
                 ("Scenario Manager…", "data.scenarioManager", json!({})),
                 ("Data Table…", "data.dataTable", json!({})),

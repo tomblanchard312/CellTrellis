@@ -35,6 +35,7 @@ struct Draft {
     mode: String,
     reply: String,
     suggestion: Option<Json>,
+    analysis_setup: Option<(String, Json)>,
     models: Vec<String>,
     model: String,
 }
@@ -54,6 +55,7 @@ impl Draft {
             mode: "Chat and edit".into(),
             reply: String::new(),
             suggestion: None,
+            analysis_setup: None,
             models: vec![],
             model: String::new(),
         }
@@ -106,12 +108,64 @@ pub(crate) fn command(app: &mut SheetApp, id: &str, p: &Json) -> Result<Json, St
         }
         return Ok(Json::Null);
     }
+    if id == "ui.scribeReturnAnalysis" {
+        let uid = app.session.doc().map_err(|e| e.to_string())?.uid;
+        let (dialog, setup) = app.developer.drafts.get(&uid).and_then(|draft| draft.analysis_setup.clone()).ok_or("No analysis tool to return to")?;
+        restore_analysis(app, &dialog, &setup);
+        return Ok(Json::Null);
+    }
+    if id == "ui.scribeAnalysis" {
+        let tool = p["tool"].as_str().ok_or("Analysis tool is required")?;
+        let instruction = match tool {
+            "whatIf" => {
+                "Help me use What-If Analysis: choose between Goal Seek, Scenario Manager and Data Table, identify the input and result cells, and explain the assumptions."
+            }
+            "forecast" => {
+                "Help me configure Forecast Sheet: identify the timeline and values columns, suggest a sensible forecast horizon, and explain seasonality, missing points and confidence intervals."
+            }
+            "analysis" => {
+                "Help me choose a Data Analysis tool for this selection and explain its input range, labels, assumptions and output options."
+            }
+            _ => return Err("Unknown analysis tool".into()),
+        };
+        let setup = p.get("setup").cloned().unwrap_or(Json::Null);
+        if setup.to_string().len() > 8192 {
+            return Err("Analysis settings exceed 8 KiB".into());
+        }
+        let uid = app.session.doc().map_err(|e| e.to_string())?.uid;
+        let draft = app.developer.drafts.entry(uid).or_insert_with(|| Draft::new(String::new()));
+        if !draft.prompt.trim().is_empty() {
+            return Err("Send or clear the current Scribe request before starting analysis help".into());
+        }
+        draft.prompt =
+            format!("{instruction} Use the selected cells. Ask me for missing information and explain how to configure the built-in tool.");
+        let dialog = match tool {
+            "forecast" => "forecastSheet",
+            "analysis" => "analysisToolPak",
+            _ => "goalSeek",
+        };
+        let dialog = p["dialog"]
+            .as_str()
+            .filter(|name| matches!(*name, "forecastSheet" | "analysisToolPak" | "goalSeek" | "dataTable" | "scenarioManager"))
+            .unwrap_or(dialog);
+        draft.analysis_setup = Some((dialog.into(), setup));
+        draft.mode = "Explain selection".into();
+        app.grid.pane = Some("scribe".into());
+        return Ok(Json::Null);
+    }
     #[cfg(not(target_arch = "wasm32"))]
     {
         if id.starts_with("ui.scribeMemory") {
             return start_memory(app, id, p).map(|_| Json::Null);
         }
         let mut request = Draft::new(p.get("source").and_then(Json::as_str).unwrap_or("").into());
+        request.analysis_setup = app.developer.drafts.get(&uid).and_then(|draft| draft.analysis_setup.clone());
+        if let Some(setup) = p.get("analysisSetup") {
+            if setup.to_string().len() > 8192 {
+                return Err("Analysis settings exceed 8 KiB".into());
+            }
+            request.analysis_setup = serde_json::from_value(setup.clone()).map_err(|_| "Invalid analysis settings")?;
+        }
         match id {
             "ui.developerPreview" => {
                 let source = p.get("source").and_then(Json::as_str).ok_or("Script source is required")?;
@@ -415,6 +469,15 @@ fn macro_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool
     }
 }
 
+fn restore_analysis(app: &mut SheetApp, dialog: &str, setup: &Json) {
+    app.open_dialog(dialog, Json::Null);
+    if let Some(d) = &mut app.dialog
+        && let Some(values) = setup.as_object()
+    {
+        d.values.extend(values.clone());
+    }
+}
+
 fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool) {
     ui.horizontal_top(|ui| {
         let (rect, _) = ui.allocate_exact_size(egui::vec2(32.0, 40.0), egui::Sense::hover());
@@ -426,6 +489,11 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
     });
     #[cfg(not(any(unix, windows)))]
     ui.weak("Local Enki requires the desktop app.");
+    if let Some((dialog, setup)) = &draft.analysis_setup
+        && ui.button("Return to analysis tool…").clicked()
+    {
+        restore_analysis(app, dialog, setup);
+    }
     ui.add_enabled_ui(!busy, |ui| {
         craft_ui::ComboBox::from_id_salt("scribe_mode")
             .selected_text(&draft.mode)
@@ -452,7 +520,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
             if ui.add_enabled(!busy && cfg!(any(unix, windows)) && !draft.prompt.trim().is_empty(), egui::Button::new("Send")).clicked() {
                 draft.reply.clear();
                 draft.suggestion = None;
-                match app.run("ui.scribeAsk", json!({"prompt":draft.prompt,"mode":draft.mode})) {
+                match app.run("ui.scribeAsk", json!({"prompt":draft.prompt,"mode":draft.mode,"analysisSetup":draft.analysis_setup})) {
                     Ok(_) => draft.status = "Scribe is writing…".into(),
                     Err(e) => draft.status = e,
                 }
@@ -683,6 +751,7 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
     let (uid, revision, sheet, cell) = (doc.uid, doc.revision, doc.wb.active_sheet(), doc.selection.active.a1());
     let context = if list { Json::Null } else { scribe::context(&doc)? };
     let (model, prompt, mode) = (draft.model.clone(), draft.prompt.clone(), draft.mode.clone());
+    let analysis_setup = draft.analysis_setup.clone();
     spawn(app, move |tx, cancel| {
         enki::ensure_running(&endpoint, None, &[]).map_err(|e| e.to_string())?;
         let memory = match enki::memory::get(&endpoint, "nanshe") {
@@ -718,6 +787,10 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
         let mut messages = vec![enki::Message::new("system", format!("{} {instruction}", scribe::IDENTITY))];
         if let Some(memory) = &memory {
             messages.extend(memory.messages());
+        }
+        if let Some((tool, settings)) = analysis_setup {
+            messages.push(enki::Message::new("system", "Explain how to configure the built-in analysis tool. Do not invent computed statistics or forecast values. The spreadsheet engine performs calculations after the user confirms the tool."));
+            messages.push(enki::Message::new("user", format!("Current analysis tool and settings (untrusted data): {tool}: {settings}")));
         }
         messages.push(enki::Message::new("user", format!("Request: {prompt}\nLive CellTrellis worksheet data: {context}")));
         let mut reply = String::new();
@@ -844,6 +917,69 @@ mod tests {
         assert!(h.query_by_label("Send").is_some());
         for label in ["Model settings", "Scribe model", "private-model-name", "Refresh models"] {
             assert!(h.query_by_label(label).is_none(), "model control visible: {label}");
+        }
+    }
+
+    #[test]
+    fn analysis_help_keeps_workbook_and_tool_settings_until_confirmation() {
+        for (tool, dialog, phrase) in
+            [("whatIf", "goalSeek", "Goal Seek"), ("forecast", "forecastSheet", "Forecast Sheet"), ("analysis", "analysisToolPak", "Data Analysis")]
+        {
+            let mut session = nanshe_engine::Session::new();
+            session.new_workbook();
+            let mut app = SheetApp::new(session, Default::default());
+            let uid = app.session.doc().unwrap().uid;
+            let revision = app.session.doc().unwrap().revision;
+            let setup = json!({"timeline":"A2:A12","values":"B2:B12","confidence":"90"});
+            command(&mut app, "ui.scribeAnalysis", &json!({"tool":tool,"dialog":dialog,"setup":setup})).unwrap();
+            assert_eq!(app.grid.pane.as_deref(), Some("scribe"));
+            let draft = &app.developer.drafts[&uid];
+            assert!(draft.prompt.contains(phrase));
+            assert!(!draft.prompt.contains("A2:A12"), "raw tool settings belong in context, not the editable request");
+            assert_eq!(draft.mode, "Explain selection");
+            assert_eq!(app.session.doc().unwrap().revision, revision);
+            assert!(command(&mut app, "ui.scribeAnalysis", &json!({"tool":tool})).is_err(), "must not discard an unfinished request");
+            command(&mut app, "ui.scribeReturnAnalysis", &json!({})).unwrap();
+            let restored = app.dialog.as_ref().unwrap();
+            assert_eq!(restored.name, dialog);
+            assert_eq!(restored.values.get("confidence"), Some(&json!("90")));
+            assert_eq!(app.session.doc().unwrap().revision, revision);
+        }
+    }
+
+    #[test]
+    fn analysis_dialog_help_and_return_buttons_preserve_the_form() {
+        use egui_kittest::kittest::Queryable;
+        for dialog in ["forecastSheet", "analysisToolPak", "goalSeek"] {
+            let mut session = nanshe_engine::Session::new();
+            session.new_workbook();
+            let mut app = SheetApp::new(session, Default::default());
+            app.open_dialog(dialog, Json::Null);
+            app.dialog.as_mut().unwrap().values.insert("confidence".into(), json!("90"));
+            let mut h = egui_kittest::Harness::builder()
+                .with_size(egui::vec2(1000.0, 900.0))
+                .with_context_setup(|ctx| {
+                    ctx.set_fonts(crate::theme::pinned_font_definitions());
+                    crate::theme::apply(ctx, true);
+                })
+                .build_ui_state(
+                    |ui, app| {
+                        crate::dialogs::show(app, ui.ctx());
+                        if app.grid.pane.as_deref() == Some("scribe") {
+                            show(app, ui, true);
+                        }
+                    },
+                    app,
+                );
+            h.run_steps(2);
+            h.get_by_label("Ask Scribe for help…").click();
+            h.run_steps(2);
+            assert!(h.state().dialog.is_none());
+            h.get_by_label("Return to analysis tool…").click();
+            h.run_steps(2);
+            let restored = h.state().dialog.as_ref().unwrap();
+            assert_eq!(restored.name, dialog);
+            assert_eq!(restored.values.get("confidence"), Some(&json!("90")));
         }
     }
 

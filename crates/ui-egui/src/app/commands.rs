@@ -138,6 +138,8 @@ impl SheetApp {
             | "ui.developerStop"
             | "ui.scribeModels"
             | "ui.scribeAsk"
+            | "ui.scribeAnalysis"
+            | "ui.scribeReturnAnalysis"
             | "ui.scribeMemoryRefresh"
             | "ui.scribeMemorySave"
             | "ui.scribeMemoryCompact"

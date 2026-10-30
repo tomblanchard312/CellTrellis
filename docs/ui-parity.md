@@ -1,5 +1,7 @@
 # UI parity
 
+> **Scribe update: 2026-10-29** · What-If Analysis has an Ask Scribe entry; Forecast Sheet, Goal Seek and Data Analysis dialogs offer contextual Scribe help. Requests use selected worksheet data and current tool settings, remain editable before Send, and return to the tool with settings retained. Scribe explains configuration; native tools perform calculations after confirmation. Native Linux validation; other native platforms remain unverified. Readiness estimates unchanged.
+
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-25 · **Change:** minor (AutoSum over a selected row puts its total to the right; earlier: macro interface on the Automate tab; ribbon catalog count 276 / 292) · **Target:** Microsoft Excel (Microsoft 365), Excel for Mac 16.113.4
 
 Interaction, controls and feel, against Excel. Part of [target-app-parity.md](target-app-parity.md).

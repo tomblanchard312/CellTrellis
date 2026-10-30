@@ -150,11 +150,30 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
         .open(&mut win_open);
     let window = match d.name.as_str() {
         "insertPicture" => window.default_height(240.0),
+        "forecastSheet" | "analysisToolPak" => {
+            window.vscroll(true).max_height((ctx.content_rect().height() - 160.0).max(200.0)).default_pos(ctx.content_rect().center())
+        }
         "advancedFilter" => window.default_height(0.0),
         _ => window,
     };
     window.show(ctx, |ui| {
             ui.set_min_width(width - 20.0);
+            let help = match d.name.as_str() {
+                "forecastSheet" => Some("forecast"),
+                "analysisToolPak" => Some("analysis"),
+                "goalSeek" | "scenarioManager" | "dataTable" => Some("whatIf"),
+                _ => None,
+            };
+            if let Some(tool) = help {
+                if ui.button("Ask Scribe for help…").on_hover_text("Use the selected cells and these settings to prepare a question. Review it in Scribe and press Send.").clicked() {
+                    match app.run("ui.scribeAnalysis", json!({"tool":tool,"dialog":d.name,"setup":d.values})) {
+                        Ok(_) => open = false,
+                        Err(e) => app.toast = Some((e, ui.input(|i| i.time))),
+                    }
+                }
+                ui.separator();
+            }
+
             match d.name.as_str() {
                 "formatCells" => format_cells(app, ui, &mut d, &mut confirm),
                 "dataValidation" => data_validation_form(ui, &mut d, &mut confirm, &mut open),
