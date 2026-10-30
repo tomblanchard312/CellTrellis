@@ -43,6 +43,11 @@ modules:
         CARGO_HOME: /run/build/nanshe/cargo
         CARGO_NET_OFFLINE: 'true'
     build-commands:
+      - test -f packaged-runtimes/manifest.json
+      - >-
+        python3 packaging/stage-runtimes.py --verify-only --rid "linux-$(case $(uname -m) in x86_64) echo x64;; *) echo arm64;; esac)"
+        --out packaged-runtimes --scripts bundle
+      - mkdir -p /app/lib/nanshe && cp -R packaged-runtimes /app/lib/nanshe/runtimes
       - cargo --offline build --release --locked -p nanshe -p nanshe-cli
       - install -Dm755 target/release/nanshe /app/bin/nanshe
       - install -Dm755 target/release/nanshe-cli /app/bin/nanshe-cli
@@ -66,4 +71,7 @@ modules:
           - corpus
           - build-flatpak
           - .flatpak-builder
+      - type: dir
+        path: ../../../target/runtime-stage/runtimes
+        dest: packaged-runtimes
       - cargo-sources.json

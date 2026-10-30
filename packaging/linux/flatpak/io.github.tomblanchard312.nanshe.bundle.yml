@@ -36,6 +36,11 @@ modules:
   - name: nanshe
     buildsystem: simple
     build-commands:
+      - test -f lib/nanshe/runtimes/manifest.json
+      - test -x lib/nanshe/runtimes/python/python
+      - test -x lib/nanshe/runtimes/R/bin/Rscript
+      - test -f lib/nanshe/runtimes/R/library/jsonlite/DESCRIPTION || test -f lib/nanshe/runtimes/R/site-library/jsonlite/DESCRIPTION
+      - mkdir -p /app/lib && cp -R lib/nanshe /app/lib/
       - install -Dm755 bin/nanshe /app/bin/nanshe
       # Headless CLI and MCP server: `flatpak run --command=nanshe-cli io.github.tomblanchard312.nanshe`.
       - install -Dm755 bin/nanshe-cli /app/bin/nanshe-cli

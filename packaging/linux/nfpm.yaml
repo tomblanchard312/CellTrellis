@@ -28,6 +28,9 @@ description: |-
 overrides:
   deb:
     depends:
+      - python3
+      - r-base-core
+      - r-cran-jsonlite
       - libc6 (>= 2.35)
       - libgcc-s1
       - libxkbcommon0
@@ -43,6 +46,9 @@ overrides:
       - xdg-desktop-portal
   rpm:
     depends:
+      - python3
+      - R-core
+      - R-jsonlite
       - libxkbcommon
       - (vulkan-loader or libglvnd-egl)
     recommends:
@@ -55,6 +61,8 @@ overrides:
       - xdg-desktop-portal
 
 contents:
+  - src: ${STAGE}/usr/lib/nanshe/
+    dst: /usr/lib/nanshe/
   - src: ${STAGE}/usr/bin/nanshe
     dst: /usr/bin/nanshe
     file_info: { mode: 0755 }

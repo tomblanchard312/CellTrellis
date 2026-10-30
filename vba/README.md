@@ -6,7 +6,8 @@ object model. MIT OR Apache-2.0; see the repository NOTICE for upstream and Nisa
 Build `dotnet build vba/NansheVba.sln -m:1` from the repository root. Test with
 `dotnet run --project vba/tests/Nanshe.Vba.Tests --no-build`.
 
-Set `NANSHE_VBA_RUNNER` to the built `CellTrellis.Vba` executable (`.exe` on Windows) and open
+Packaged apps locate their bundled runtime automatically. For a custom development build, set
+`NANSHE_VBA_RUNNER` to the built `Nanshe.Vba` executable (`.exe` on Windows) and open
 Developer → Code Editor in CellTrellis. The helper uses private stdin/stdout to preview commands in a
 copied workbook; only the user's Apply action changes the original.
 

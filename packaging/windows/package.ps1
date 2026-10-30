@@ -88,12 +88,11 @@ Remove-Item -Recurse -Force $Stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 Copy-Item (Join-Path $Bin 'nanshe.exe'), (Join-Path $Bin 'nanshe-cli.exe') $Stage
 
-$VbaRuntime = Join-Path $Stage 'runtimes\vba'
-Invoke-Native "publish self-contained VBA runtime ($Arch)" {
-  dotnet publish (Join-Path $Root 'vba\src\Nanshe.Vba') -c Release -r "win-$Arch" --self-contained true -o $VbaRuntime
+Invoke-Native 'stage complete scripting runtimes' {
+  python (Join-Path $Root 'packaging/stage-runtimes.py') --rid "win-$Arch" --out (Join-Path $Stage 'runtimes') --scripts bundle
 }
 
-& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'nanshe.exe') (Join-Path $Stage 'nanshe-cli.exe')
+& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'nanshe.exe') (Join-Path $Stage 'nanshe-cli.exe') (Join-Path $Stage 'runtimes\vba\Nanshe.Vba.exe')
 
 # ---- font notices for the MSI ------------------------------------------------------------------
 # The portable ZIP already carries these notices; stage the complete files before MSI creation too.

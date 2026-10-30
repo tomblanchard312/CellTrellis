@@ -116,6 +116,9 @@ echo "==> assembling $APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 # Executable and icon carry the display name (CFBundleExecutable / CFBundleIconFile).
 cp "$WORK/bin/nanshe" "$APP/Contents/MacOS/Nanshe"
+RUNTIME_RID="osx-$(case "$ARCH" in x86_64) echo x64;; aarch64) echo arm64;; *) echo universal;; esac)"
+python3 "$ROOT/packaging/stage-runtimes.py" --rid "$RUNTIME_RID" --out "$APP/Contents/MacOS/runtimes" --scripts bundle
+
 cp "$ROOT/assets/app-icon/nanshe.icns" "$APP/Contents/Resources/Nanshe.icns"
 # Bundled dependency font notices are installed before the app is signed.
 cp "$ROOT/NOTICE" "$ROOT/ATTRIBUTION.md" "$APP/Contents/Resources/"
@@ -129,6 +132,9 @@ printf 'APPL????' >"$APP/Contents/PkgInfo"
 
 # Sign inside-out: nested code first, then the bundle itself (no --deep on the final signature).
 # Today the only nested code is the main executable; frameworks/helpers would be signed here too.
+while IFS= read -r -d '' runtime_file; do
+  if file "$runtime_file" | grep -q 'Mach-O'; then sign --options runtime --entitlements "$HERE/vba-entitlements.plist" "$runtime_file"; fi
+done < <(find "$APP/Contents/MacOS/runtimes" -type f -print0)
 sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP/Contents/MacOS/Nanshe"
 sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP"
 codesign --verify --strict --deep --verbose=2 "$APP"

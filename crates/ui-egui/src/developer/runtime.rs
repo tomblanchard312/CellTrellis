@@ -20,11 +20,9 @@ pub(super) fn program(variable: &str, packaged: &str, fallback: &str) -> std::pa
     }
     if let Ok(exe) = std::env::current_exe()
         && let Some(parent) = exe.parent()
+        && let Some(path) = packaged_program(parent, packaged)
     {
-        let path = parent.join("runtimes").join(packaged);
-        if path.is_file() {
-            return path;
-        }
+        return path;
     }
     if let Some(paths) = std::env::var_os("PATH") {
         for dir in std::env::split_paths(&paths) {
@@ -43,13 +41,18 @@ pub(super) fn program(variable: &str, packaged: &str, fallback: &str) -> std::pa
     fallback.into()
 }
 
+fn packaged_program(parent: &Path, packaged: &str) -> Option<std::path::PathBuf> {
+    let name = if cfg!(windows) { packaged } else { packaged.strip_suffix(".exe").unwrap_or(packaged) };
+    [parent.join("runtimes").join(name), parent.join("../lib/nanshe/runtimes").join(name)].into_iter().find(|path| path.is_file())
+}
+
 pub(super) fn missing_runtime(language: &str) -> Option<String> {
     let (variable, packaged, fallback, help) = match language {
         "VBA" => (
             "NANSHE_VBA_RUNNER",
             "vba/Nanshe.Vba.exe",
             if cfg!(windows) { "Nanshe.Vba.exe" } else { "Nanshe.Vba" },
-            "Use the complete CellTrellis Windows package, including runtimes/vba, or configure NANSHE_VBA_RUNNER.",
+            "Reinstall the complete CellTrellis package, including its VBA runtime, or configure NANSHE_VBA_RUNNER.",
         ),
         "Python" => {
             ("NANSHE_PYTHON", "python/python.exe", if cfg!(windows) { "python" } else { "python3" }, "Install Python 3 and configure NANSHE_PYTHON.")
@@ -93,13 +96,24 @@ pub(super) fn script_preview(language: &str, source: &str, doc: DocState, cancel
         }
         "R" => {
             let file = RRunner::create()?;
-            let mut cmd = Command::new(program("NANSHE_RSCRIPT", "R/bin/Rscript.exe", "Rscript"));
+            let executable = program("NANSHE_RSCRIPT", "R/bin/Rscript.exe", "Rscript");
+            let mut cmd = Command::new(&executable);
+            configure_r_home(&mut cmd, &executable);
             cmd.arg("--vanilla").arg(&file.0);
             return run(cmd, source, "", doc, cancel);
         }
         _ => return Err("Unknown scripting language".into()),
     };
     run(command, source, "", doc, cancel)
+}
+
+fn configure_r_home(command: &mut Command, executable: &Path) {
+    if let Some(home) = executable.parent().and_then(Path::parent)
+        && home.file_name().is_some_and(|name| name == "R")
+        && home.join("library").is_dir()
+    {
+        command.env("R_HOME", home).env("R_LIBS_USER", home.join("library")).env("R_LIBS_SITE", home.join("site-library"));
+    }
 }
 
 // Rscript on Windows reparses -e quoting; a private script file keeps its JSON strings intact.
@@ -242,6 +256,38 @@ mod tests {
         let mut s = Session::new();
         s.new_workbook();
         s.doc().unwrap().clone()
+    }
+
+    #[test]
+    fn bundled_r_uses_its_own_home_and_libraries() {
+        let root = std::env::temp_dir().join(format!("celltrellis-r-home-{}", std::process::id()));
+        let home = root.join("runtimes/R");
+        std::fs::create_dir_all(home.join("library")).unwrap();
+        let executable = home.join("bin/Rscript");
+        let mut cmd = Command::new(&executable);
+        configure_r_home(&mut cmd, &executable);
+        assert!(cmd.get_envs().any(|(key, value)| key == "R_HOME" && value == Some(home.as_os_str())));
+        let mut system = Command::new("Rscript");
+        configure_r_home(&mut system, Path::new("/usr/bin/Rscript"));
+        assert_eq!(system.get_envs().count(), 0);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn packaged_vba_resolves_native_and_fhs_layouts() {
+        let root = std::env::temp_dir().join(format!("celltrellis-runtime-layout-{}", std::process::id()));
+        let bin = root.join("bin");
+        std::fs::create_dir_all(&bin).unwrap();
+        let name = if cfg!(windows) { "Nanshe.Vba.exe" } else { "Nanshe.Vba" };
+        let fhs = root.join("lib/nanshe/runtimes/vba").join(name);
+        std::fs::create_dir_all(fhs.parent().unwrap()).unwrap();
+        std::fs::write(&fhs, "fixture").unwrap();
+        assert_eq!(packaged_program(&bin, "vba/Nanshe.Vba.exe").unwrap().canonicalize().unwrap(), fhs.canonicalize().unwrap());
+        let adjacent = bin.join("runtimes/vba").join(name);
+        std::fs::create_dir_all(adjacent.parent().unwrap()).unwrap();
+        std::fs::write(&adjacent, "fixture").unwrap();
+        assert_eq!(packaged_program(&bin, "vba/Nanshe.Vba.exe"), Some(adjacent));
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

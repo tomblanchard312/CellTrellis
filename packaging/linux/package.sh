@@ -58,6 +58,12 @@ rm -rf "$WORK"
 # ---- stage an FHS tree (shared by every format) -------------------------------------------------
 install -Dm755 "$BIN/nanshe" "$STAGE/usr/bin/nanshe"
 install -Dm755 "$BIN/nanshe-cli" "$STAGE/usr/bin/nanshe-cli"
+
+RUNTIME_RID="linux-$(case "$ARCH" in x86_64) echo x64;; aarch64) echo arm64;; *) echo "$ARCH";; esac)"
+SCRIPT_MODE=system
+if [[ "$FORMATS" == *appimage* || "$FORMATS" == *tar* ]]; then SCRIPT_MODE=bundle; fi
+python3 "$ROOT/packaging/stage-runtimes.py" --rid "$RUNTIME_RID" --out "$STAGE/usr/lib/nanshe/runtimes" --scripts "$SCRIPT_MODE"
+
 "${CROSS_COMPILE:-}strip" "$STAGE/usr/bin/nanshe" "$STAGE/usr/bin/nanshe-cli" 2>/dev/null || true
 install -Dm644 "$HERE/$APP_ID.desktop" "$STAGE/usr/share/applications/$APP_ID.desktop"
 install -Dm644 "$HERE/$APP_ID.mime.xml" "$STAGE/usr/share/mime/packages/$APP_ID.xml"

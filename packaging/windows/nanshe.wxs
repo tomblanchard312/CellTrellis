@@ -4,7 +4,7 @@
   <?define HasCraftFontLicences=0 ?>
   <?endif?>
   <?ifndef HasVbaRuntime ?>
-  <?define HasVbaRuntime=0 ?>
+  <?define HasVbaRuntime=1 ?>
   <?endif?>
   <Package Name="CellTrellis" Manufacturer="Tom Blanchard" Version="$(var.Version)" UpgradeCode="DDB2D04D-57BC-4BE1-AB53-01CD68EC147A" Scope="perUserOrMachine" Compressed="yes" Language="1033">
     <SummaryInformation Description="CellTrellis spreadsheet" Manufacturer="Tom Blanchard" />
@@ -157,8 +157,8 @@
 
   <Fragment>
     <?if $(var.HasVbaRuntime) = 1 ?>
-    <ComponentGroup Id="NansheVbaFiles" Directory="NansheVbaRuntime">
-      <Files Include="$(var.BinDir)\runtimes\vba\**" />
+    <ComponentGroup Id="NansheVbaFiles" Directory="NansheRuntimes">
+      <Files Include="$(var.BinDir)\runtimes\**" />
     </ComponentGroup>
     <?endif?>
     <?if $(var.HasCraftFontLicences) = 1 ?>

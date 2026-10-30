@@ -54,6 +54,9 @@ rm -rf "$WORK"
 install -d "$TREE/bin" "$TREE/share/applications" "$TREE/share/metainfo" "$TREE/share/mime/packages" \
   "$TREE/share/icons" "$TREE/share/doc/nanshe"
 install -m 755 "$BIN/nanshe" "$BIN/nanshe-cli" "$TREE/bin/"
+RUNTIME_RID="freebsd-$(case "$ARCH" in x86_64|amd64) echo x64;; *) echo arm64;; esac)"
+python3 "$ROOT/packaging/stage-runtimes.py" --rid "$RUNTIME_RID" --out "$TREE/lib/nanshe/runtimes" --scripts bundle
+
 strip "$TREE/bin/nanshe" "$TREE/bin/nanshe-cli" 2>/dev/null || true
 install -m 644 "$LINUX/$APP_ID.desktop" "$TREE/share/applications/$APP_ID.desktop"
 install -m 644 "$LINUX/$APP_ID.mime.xml" "$TREE/share/mime/packages/$APP_ID.xml"

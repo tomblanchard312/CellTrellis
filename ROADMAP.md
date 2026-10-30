@@ -1,5 +1,7 @@
 # CellTrellis roadmap
 
+> **Runtime integration: 2026-10-30** · Complete VBA runtime staging and scripting dependency guards now cover native package builders and local installs; see [runtime packaging](docs/scripting-runtimes.md). Platform readiness estimates are unchanged.
+
 > **Scribe and template update: 2026-10-30** · Switching to coding, formula or chat mode leaves analysis-only guidance behind; generated analysis questions are cleared while user-written requests are kept. Built-in templates reuse the active window, asking Save / Don’t Save / Cancel before replacing unsaved work. Save failures and cancelled save pickers retain the original workbook. Readiness estimates unchanged.
 
 > **Scribe navigation fix: 2026-10-30** · Unsent analysis requests no longer block switching tools. Each tool retains its request and settings for the current workbook session; Close analysis help restores the ordinary Scribe request. A running generation must be stopped before switching context. Readiness estimates unchanged.

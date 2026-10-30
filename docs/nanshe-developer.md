@@ -33,16 +33,17 @@ export NANSHE_VBA_RUNNER="$PWD/vba/src/Nanshe.Vba/bin/Debug/net10.0/Nanshe.Vba"
 cargo run -p nanshe
 ```
 
-The Windows app artifact includes a self-contained helper in `runtimes/vba/`; extract the whole
-archive beside `nanshe.exe`. No separate .NET installation is required for that package. Cargo
+Complete native packages include a self-contained VBA helper and its notices; no user SDK is needed.
+The Windows language-integration CI artifact is a VBA helper only, not a full application package.
+See [runtime packaging](scripting-runtimes.md) for runtime staging and required portable bundle inputs. Cargo
 alone does not build the helper. For custom builds, set `NANSHE_VBA_RUNNER` to the helper
 executable and keep all its DLLs, runtime and portable Roslyn assemblies together. The compiler uses the official
 Microsoft.CodeAnalysis.VisualBasic 5.9.0 package so cross-published helpers do not load
 platform-specific assemblies from the build machine’s SDK. A missing runtime is
 shown in the Developer tab before Run is enabled.
 
-Python and R can also be supplied beside the app at `runtimes/python/python.exe` and
-`runtimes/R/bin/Rscript.exe`; explicit environment settings take priority. R still needs jsonlite.
+Portable packages must provide Python and R/jsonlite in their runtime tree; Linux system packages
+declare these dependencies. Explicit environment overrides remain available for custom runtimes.
 
 Spelling uses the bundled SCOWL English word list on Windows, Linux, macOS and the web;
 no operating-system dictionary installation is required. Custom dictionary entries remain in
