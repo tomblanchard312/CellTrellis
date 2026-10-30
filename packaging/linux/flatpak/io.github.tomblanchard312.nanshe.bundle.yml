@@ -17,6 +17,8 @@ runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 command: nanshe
 finish-args:
+  - --filesystem=xdg-run/sharedai
+  - --socket=pulseaudio
   # Display: Wayland first; X11 only when no Wayland compositor is running.
   - --socket=wayland
   - --socket=fallback-x11

@@ -18,6 +18,8 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
 command: nanshe
 finish-args:
+  - --filesystem=xdg-run/sharedai
+  - --socket=pulseaudio
   # Display: Wayland first; X11 only when no Wayland compositor is running.
   - --socket=wayland
   - --socket=fallback-x11

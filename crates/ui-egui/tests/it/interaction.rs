@@ -1132,3 +1132,16 @@ fn header_footer_dialog_opens_on_the_saved_header_and_footer() {
     let pr = &h.state().session.active().unwrap().wb.active().unwrap().print;
     assert_eq!((pr.header.as_str(), pr.footer.as_str()), ("&CNew", "&CConfidential"));
 }
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn voice_controls_open_and_reopen_without_recording() {
+    let mut h = harness(blank());
+    for _ in 0..2 {
+        h.get_by_label("Voice").click();
+        h.run_steps(2);
+        h.get_by_label("Dictate");
+        h.get_by_label("Voice").click();
+        h.run_steps(2);
+    }
+}
