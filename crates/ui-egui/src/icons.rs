@@ -9,7 +9,7 @@ use egui::{Color32, Painter, Pos2, Rect, Stroke, pos2, vec2};
 use crate::theme::{Cat, Tokens};
 
 /// Cached companion artwork; a malformed asset leaves the text fully usable.
-pub(crate) fn enki_badge(ui: &mut egui::Ui) {
+pub(crate) fn enki_badge(ui: &mut egui::Ui, size: f32) {
     let key = egui::Id::unique("enki.character.badge");
     let texture = ui.ctx().data(|data| data.get_temp::<egui::TextureHandle>(key)).or_else(|| {
         let rgba = image::load_from_memory(include_bytes!("../../../assets/icons/enki-character.png")).ok()?.into_rgba8();
@@ -19,7 +19,7 @@ pub(crate) fn enki_badge(ui: &mut egui::Ui) {
         Some(texture)
     });
     if let Some(texture) = texture {
-        ui.add(egui::Image::new((texture.id(), texture.size_vec2())).fit_to_exact_size(egui::vec2(36.0, 36.0))).on_hover_text("Enki");
+        ui.add(egui::Image::new((texture.id(), texture.size_vec2())).fit_to_exact_size(egui::vec2(size, size))).on_hover_text("Enki");
     }
 }
 
@@ -27,7 +27,7 @@ pub(crate) fn enki_label(ui: &mut egui::Ui, text: impl Into<egui::WidgetText>) -
     let text = text.into();
     if text.text().contains("Enki") {
         ui.horizontal_wrapped(|ui| {
-            enki_badge(ui);
+            enki_badge(ui, 36.0);
             ui.label(text)
         })
         .inner
@@ -990,7 +990,7 @@ mod enki_companion_tests {
         let ctx = egui::Context::default();
         let mut expected = None;
         for _ in 0..3 {
-            let mut output = ctx.run_ui(egui::RawInput::default(), enki_badge);
+            let mut output = ctx.run_ui(egui::RawInput::default(), |ui| enki_badge(ui, 36.0));
             let texture = ctx.data(|data| data.get_temp::<egui::TextureHandle>(egui::Id::unique("enki.character.badge"))).unwrap();
             if let Some(expected) = expected {
                 assert_eq!(texture.id(), expected);

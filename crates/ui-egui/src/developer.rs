@@ -541,7 +541,6 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
         crate::icons::paint(ui.painter(), rect, crate::icons::Icon::Scribe, ui.visuals().text_color());
         ui.vertical(|ui| {
             crate::icons::enki_label(ui, "Scribe · CellTrellis");
-            crate::icons::enki_label(ui, egui::RichText::new("Powered by Enki").small().weak());
             ui.weak("Ask a question, highlight cells, create formulas, or draft a macro. Review changes before applying them.");
         });
     });

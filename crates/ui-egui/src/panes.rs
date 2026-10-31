@@ -45,6 +45,14 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
             });
         });
         ui.separator();
+        if pane == "scribe" {
+            egui::Panel::bottom("scribe_enki_footer").exact_size(24.0).frame(egui::Frame::NONE).show_separator_line(false).show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    crate::icons::enki_badge(ui, 20.0);
+                    ui.label(egui::RichText::new("Powered by Enki").small().weak());
+                });
+            });
+        }
         egui::ScrollArea::vertical().show(ui, |ui| match pane.as_str() {
             "comments" => comments(app, ui),
             "developer" => crate::developer::show(app, ui, false),
