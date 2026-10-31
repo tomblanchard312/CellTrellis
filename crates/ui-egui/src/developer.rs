@@ -379,7 +379,7 @@ pub fn show(app: &mut SheetApp, ui: &mut egui::Ui, scribe: bool) {
         }
     }
     ui.separator();
-    ui.label(&draft.status);
+    crate::icons::enki_label(ui, &draft.status);
     app.developer.drafts.insert(uid, draft);
 }
 
@@ -413,7 +413,7 @@ fn macro_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool
         draft.reviewed = false;
         draft.preview = None;
     }
-    ui.label(format!("{} · active workbook", draft.language));
+    crate::icons::enki_label(ui, format!("{} · active workbook", draft.language));
     ui.weak("Edit a script, preview its changes, then apply them together.");
     ui.weak("Scripts run as your user. File and network access are outside the workbook preview.");
     let changed = ui
@@ -435,7 +435,7 @@ fn macro_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool
     }
     if draft.language == "VBA" {
         ui.horizontal(|ui| {
-            ui.label("Macro");
+            crate::icons::enki_label(ui, "Macro");
             ui.add_enabled(!busy, egui::TextEdit::singleline(&mut draft.macro_name).desired_width(130.0).char_limit(128))
                 .accessible_name("Macro name");
         });
@@ -476,7 +476,7 @@ fn macro_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool
     ui.weak("Script execution requires the desktop app and the selected language runtime.");
     if let Some(preview) = draft.preview.clone() {
         let commands = preview.get("commands").and_then(Json::as_array).cloned().unwrap_or_default();
-        ui.label(format!("{} engine calls in preview", commands.len()));
+        crate::icons::enki_label(ui, format!("{} engine calls in preview", commands.len()));
         egui::CollapsingHeader::new("Review changes and reads").show(ui, |ui| {
             for step in commands.iter().take(MAX_STEPS) {
                 ui.monospace(step.to_string());
@@ -540,12 +540,13 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
         let (rect, _) = ui.allocate_exact_size(egui::vec2(32.0, 40.0), egui::Sense::hover());
         crate::icons::paint(ui.painter(), rect, crate::icons::Icon::Scribe, ui.visuals().text_color());
         ui.vertical(|ui| {
-            ui.label("Scribe · CellTrellis");
+            crate::icons::enki_label(ui, "Scribe · CellTrellis");
+            crate::icons::enki_label(ui, egui::RichText::new("Powered by Enki").small().weak());
             ui.weak("Ask a question, highlight cells, create formulas, or draft a macro. Review changes before applying them.");
         });
     });
     #[cfg(not(any(unix, windows)))]
-    ui.weak("Local Enki requires the desktop app.");
+    crate::icons::enki_label(ui, egui::RichText::new("Local Enki requires the desktop app.").weak());
     if let Some((dialog, setup)) = &draft.analysis_setup
         && ui.button("Return to analysis tool…").clicked()
     {
@@ -597,9 +598,9 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
     }
     if let Some(proposal) = draft.suggestion.clone() {
         if let Some(commands) = proposal.get("commands").and_then(Json::as_array) {
-            ui.label("Proposed worksheet changes");
+            crate::icons::enki_label(ui, "Proposed worksheet changes");
             for command in commands {
-                ui.label(scribe::action_label(command));
+                crate::icons::enki_label(ui, scribe::action_label(command));
             }
         }
         if proposal.get("commands").is_some() && ui.add_enabled(!busy, egui::Button::new("Apply worksheet changes")).clicked() {
@@ -624,23 +625,29 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
 
 fn memory_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool) {
     egui::CollapsingHeader::new("Conversation and shared memory").show(ui, |ui| {
-        ui.weak("Saved locally by Enki and shared with Scribe in your other apps. Compact keeps a summary; pinned preferences are kept separately.");
+        crate::icons::enki_label(
+            ui,
+            egui::RichText::new(
+                "Saved locally by Enki and shared with Scribe in your other apps. Compact keeps a summary; pinned preferences are kept separately.",
+            )
+            .weak(),
+        );
         if let Some(memory) = &app.developer.memory {
             if !memory.summary.is_empty() {
-                ui.label("Conversation summary");
-                ui.label(&memory.summary);
+                crate::icons::enki_label(ui, "Conversation summary");
+                crate::icons::enki_label(ui, &memory.summary);
             }
             egui::ScrollArea::vertical().id_salt("scribe_history").max_height(160.0).show(ui, |ui| {
                 for turn in &memory.turns {
                     ui.strong(format!("You · {}", turn.app));
-                    ui.label(&turn.user);
+                    crate::icons::enki_label(ui, &turn.user);
                     ui.strong("Scribe");
-                    ui.label(answer(&turn.assistant));
+                    crate::icons::enki_label(ui, answer(&turn.assistant));
                     ui.separator();
                 }
             });
         }
-        ui.label("Preferences and style to remember");
+        crate::icons::enki_label(ui, "Preferences and style to remember");
         ui.add_enabled(
             !busy,
             egui::TextEdit::multiline(&mut app.developer.memory_notes).desired_rows(3).desired_width(f32::INFINITY).char_limit(2000),
@@ -668,7 +675,7 @@ fn memory_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
                 }
             }
         });
-        ui.label(&app.developer.memory_status);
+        crate::icons::enki_label(ui, &app.developer.memory_status);
     });
 }
 

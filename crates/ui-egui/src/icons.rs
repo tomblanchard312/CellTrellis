@@ -8,6 +8,34 @@ use egui::{Color32, Painter, Pos2, Rect, Stroke, pos2, vec2};
 
 use crate::theme::{Cat, Tokens};
 
+/// Cached companion artwork; a malformed asset leaves the text fully usable.
+pub(crate) fn enki_badge(ui: &mut egui::Ui) {
+    let key = egui::Id::unique("enki.character.badge");
+    let texture = ui.ctx().data(|data| data.get_temp::<egui::TextureHandle>(key)).or_else(|| {
+        let rgba = image::load_from_memory(include_bytes!("../../../assets/icons/enki-character.png")).ok()?.into_rgba8();
+        let pixels = egui::ColorImage::from_rgba_unmultiplied([rgba.width() as usize, rgba.height() as usize], rgba.as_raw());
+        let texture = ui.ctx().load_texture("Enki character", pixels, egui::TextureOptions::LINEAR);
+        ui.ctx().data_mut(|data| data.insert_temp(key, texture.clone()));
+        Some(texture)
+    });
+    if let Some(texture) = texture {
+        ui.add(egui::Image::new((texture.id(), texture.size_vec2())).fit_to_exact_size(egui::vec2(36.0, 36.0))).on_hover_text("Enki");
+    }
+}
+
+pub(crate) fn enki_label(ui: &mut egui::Ui, text: impl Into<egui::WidgetText>) -> egui::Response {
+    let text = text.into();
+    if text.text().contains("Enki") {
+        ui.horizontal_wrapped(|ui| {
+            enki_badge(ui);
+            ui.label(text)
+        })
+        .inner
+    } else {
+        ui.label(text)
+    }
+}
+
 const SCRIBE_PNG: &[u8] = include_bytes!("../../../assets/icons/scribe.png");
 
 fn scribe_texture(ctx: &egui::Context) -> Option<egui::TextureHandle> {
@@ -947,6 +975,30 @@ mod scribe_brand_tests {
             output.drop_without_applying_deltas();
             assert!(painted, "Scribe must paint the approved image, not the generic speech bubble");
             assert_eq!(scribe_texture(&ctx).unwrap().id(), texture.id());
+        }
+    }
+}
+
+#[cfg(test)]
+mod enki_companion_tests {
+    use super::*;
+    #[test]
+    fn companion_is_transparent_and_its_texture_is_reused() {
+        let rgba = image::load_from_memory(include_bytes!("../../../assets/icons/enki-character.png")).unwrap().into_rgba8();
+        assert_eq!(rgba.dimensions(), (256, 256));
+        assert!(rgba.pixels().any(|pixel| pixel[3] == 0));
+        let ctx = egui::Context::default();
+        let mut expected = None;
+        for _ in 0..3 {
+            let mut output = ctx.run_ui(egui::RawInput::default(), enki_badge);
+            let texture = ctx.data(|data| data.get_temp::<egui::TextureHandle>(egui::Id::unique("enki.character.badge"))).unwrap();
+            if let Some(expected) = expected {
+                assert_eq!(texture.id(), expected);
+            } else {
+                expected = Some(texture.id());
+            }
+            assert!(!output.shapes.is_empty());
+            output.textures_delta.clear();
         }
     }
 }
