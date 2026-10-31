@@ -50,3 +50,5 @@ not a signed CellTrellis release. The upstream self-update feed is disabled for 
 MIT OR Apache-2.0. Nanshe is copyright (c) 2026 ArtCraft Team and the Nanshe contributors;
 Nisaba-derived and Nanshe changes are copyright (c) 2026 Tom Blanchard. See [NOTICE](NOTICE) and
 [ATTRIBUTION.md](ATTRIBUTION.md). CellTrellis is not sponsored or endorsed by the ArtCraft team.
+
+Voice accessibility preview: see [dictation, transcription, translation and safe voice controls](docs/VOICE.md).
