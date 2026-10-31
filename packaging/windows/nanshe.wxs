@@ -144,6 +144,7 @@
 
     <Feature Id="Main" Title="CellTrellis" Level="1">
       <?if $(var.HasCraftFontLicences) = 1 ?>
+      <ComponentGroupRef Id="EnkiRuntimeFiles" />
       <ComponentGroupRef Id="CraftFontLicences" />
       <?endif?>
       <ComponentGroupRef Id="NansheFiles" />
@@ -156,6 +157,11 @@
     </Property><SetProperty Id="SAVEDDESKTOPSHORTCUT" Action="CraftLoadOption1U" Value="[CRAFT_OPTION_1_U]" After="CraftLoadOption1M" Sequence="both" Condition="ALLUSERS &lt;&gt; 1" /></Package>
 
   <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER"><Directory Id="EnkiRuntimeDirectory" Name="enki" /></DirectoryRef>
+    <ComponentGroup Id="EnkiRuntimeFiles" Directory="EnkiRuntimeDirectory">
+      <Files Include="$(var.BinDir)\enki\**" />
+    </ComponentGroup>
+
     <?if $(var.HasVbaRuntime) = 1 ?>
     <ComponentGroup Id="NansheVbaFiles" Directory="NansheRuntimes">
       <Files Include="$(var.BinDir)\runtimes\**" />

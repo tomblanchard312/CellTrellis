@@ -154,7 +154,17 @@ fn a_missing_daemon_says_so() {
 fn the_daemon_is_looked_for_in_the_private_helper_folder_first() {
     let c = daemon_candidates(Some(std::path::Path::new("/usr/bin/nisaba")), Some(std::ffi::OsStr::new("/opt/x:/usr/local/bin")));
     let c: Vec<String> = c.iter().map(|p| p.display().to_string()).collect();
-    assert_eq!(c, ["/usr/lib/nisaba/sharedai-daemon", "/usr/bin/sharedai-daemon", "/opt/x/sharedai-daemon", "/usr/local/bin/sharedai-daemon"]);
+    assert_eq!(
+        c,
+        [
+            "/usr/bin/enki/sharedai-daemon",
+            "/usr/lib/celltrellis/enki/sharedai-daemon",
+            "/usr/lib/nisaba/sharedai-daemon",
+            "/usr/bin/sharedai-daemon",
+            "/opt/x/sharedai-daemon",
+            "/usr/local/bin/sharedai-daemon"
+        ]
+    );
 }
 
 #[test]
