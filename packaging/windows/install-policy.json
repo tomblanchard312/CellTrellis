@@ -10,7 +10,17 @@
   "extensions": [],
   "payloads": [
     "nanshe-cli.exe",
-    "nanshe.exe"
+    "nanshe.exe",
+    "enki/sharedai-daemon.exe",
+    "enki/sharedai-worker.exe",
+    "enki/sharedai-sd.exe",
+    "enki/whisper-cli.exe",
+    "enki/sd_enki.dll",
+    "enki/runtime.json",
+    "enki/BINARY-DISTRIBUTION-LICENSE.txt",
+    "enki/THIRD-PARTY-NOTICES.txt",
+    "enki/NATIVE-LICENSES.txt",
+    "enki/WHISPER-LICENSE.txt"
   ],
   "registry": [
     [

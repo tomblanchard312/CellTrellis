@@ -51,6 +51,7 @@ modules:
       # Already has the release's version and date substituted by package.sh.
       - install -Dm644 share/metainfo/io.github.tomblanchard312.nanshe.metainfo.xml /app/share/metainfo/io.github.tomblanchard312.nanshe.metainfo.xml
       - mkdir -p /app/share/icons /app/share/doc && cp -R share/icons/hicolor /app/share/icons/ && cp -R share/doc/nanshe /app/share/doc/
+      - mkdir -p /app/lib/celltrellis && cp -R lib/celltrellis/enki /app/lib/celltrellis/enki
     sources:
       - type: dir
         path: stage

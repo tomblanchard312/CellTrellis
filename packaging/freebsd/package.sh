@@ -64,6 +64,7 @@ sed -e "s/@VERSION@/$VERSION/g" -e "s/@DATE@/$NANSHE_BUILD_DATE/g" \
   "$LINUX/$APP_ID.metainfo.xml.in" >"$TREE/share/metainfo/$APP_ID.metainfo.xml"
 cp -R "$ROOT/assets/app-icon/hicolor" "$TREE/share/icons/"
 copy_docs "$TREE/share/doc/nanshe"
+python3 "$ROOT/packaging/stage-enki.py" --target "${CARGO_BUILD_TARGET:-$(rustc -vV | sed -n 's/^host: //p')}" --out "$TREE/lib/celltrellis/enki"
 
 tar -C "$WORK" -czf "$DIST/$BASENAME.tar.gz" "$BASENAME"
 echo "wrote $DIST/$BASENAME.tar.gz"
