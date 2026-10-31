@@ -46,7 +46,8 @@ impl<'a> Package<'a> {
         let mut names = HashMap::new();
         for i in 0..zip.len() {
             if let Some(n) = zip.name_for_index(i) {
-                names.entry(normalize(n)).or_insert(i);
+                let n = n.map_err(|e| IoError::Zip(e.to_string()))?;
+                names.entry(normalize(&n)).or_insert(i);
             }
         }
         Ok(Package { zip, names, total: 0 })
@@ -135,7 +136,8 @@ pub fn oversized_part(bytes: &[u8]) -> Option<(String, u64)> {
     let mut zip = zip::ZipArchive::new(Cursor::new(bytes)).ok()?;
     (0..zip.len().min(MAX_ENTRIES)).find_map(|i| {
         let f = zip.by_index_raw(i).ok()?;
-        (f.size() > MAX_PART).then(|| (f.name().to_string(), f.size()))
+        let name = f.name().ok()?;
+        (f.size() > MAX_PART).then(|| (name.into_owned(), f.size()))
     })
 }
 

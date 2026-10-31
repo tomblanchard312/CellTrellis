@@ -19,25 +19,24 @@ This is CellTrellis's implementation of the shared [release playbook](release-pl
 | Web app dir `apps/nanshe-web` | `packaging/web/package.sh` |
 | App colour `#1f9d55` (ink `#147a40`), **proposed** | `assets/app-icon/README.md`, metainfo `<branding>` |
 
-## Prerequisites still owned by the app crates
+## Application release prerequisites
 
-The pipeline references crates that don't exist yet; the first release run fails until they do:
+The `apps/nanshe` and `apps/nanshe-web` crates are workspace members, and
+`apps/nanshe-cli` supports `--version`. The `cargo xtask` alias is defined in
+`.cargo/config.toml`. The current app-specific release setup includes:
 
-- **`apps/nanshe`** (the GUI binary `nanshe`) and **`apps/nanshe-web`** (trunk
-  site) must be workspace members. `apps/nanshe-cli` exists and supports `--version`.
-- **Windows resources:** move `packaging/windows/app-build.rs.in` to `apps/nanshe/build.rs`
-  and add `winresource = "0.1"` under `[build-dependencies]` (instructions at the top of the
-  file). `package.ps1` sets `NANSHE_REQUIRE_WINRES=1`, so a release build without the icon
-  fails, and it checks that `nanshe.exe` is a GUI-subsystem binary, so `main.rs` needs
-  `#![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]`.
-- **Build info:** CI exports `NANSHE_BUILD_SHA` and `NANSHE_BUILD_DATE`; read them
-  with `option_env!` (fallback: "dev build") for `--version` and *Help › About CellTrellis*.
-- **Runtime icon:** embed `assets/app-icon/nanshe-macos-512.png` (macOS Dock) and
+- **Windows resources:** `apps/nanshe/build.rs` embeds the icon and version information with
+  `winresource` (instructions at the top of the file). `package.ps1` sets
+  `NANSHE_REQUIRE_WINRES=1`, so a release build without the icon fails, and it checks that
+  `nanshe.exe` is a GUI-subsystem binary. `apps/nanshe/src/main.rs` sets
+  `windows_subsystem = "windows"` for release builds.
+- **Version information:** `nanshe --version`, `nanshe-cli --version` and the About dialog
+  use `env!("CARGO_PKG_VERSION")` from `[workspace.package]`. `packaging/env.sh` also exports
+  `NANSHE_BUILD_SHA` and `NANSHE_BUILD_DATE` for artifact metadata.
+- **Runtime icon:** `apps/nanshe/src/main.rs` embeds
+  `assets/app-icon/nanshe-macos-512.png` (macOS Dock) and
   `hicolor/256x256/apps/io.github.tomblanchard312.nanshe.png` (Windows/Linux) as the window icon, and
-  use `io.github.tomblanchard312.nanshe` as the Wayland app id / `StartupWMClass`.
-- **`cargo xtask` alias:** the docs use `cargo xtask …`, which needs
-  `.cargo/config.toml` with `[alias] xtask = "run --package xtask --"`. Until it exists, use
-  `cargo run -p xtask -- …`. The workflows already call `cargo run -p xtask` directly.
+  uses `io.github.tomblanchard312.nanshe` as the Wayland app id / `StartupWMClass`.
 
 ## Cutting a release
 
@@ -289,7 +288,8 @@ row in `ATTRIBUTION.md` (`cargo xtask assets`).
   installs, runs and uninstalls the MSI on a Windows 11 ARM64 runner.
 - `.github/workflows/freebsd.yml`: FreeBSD build + tests (manual run from `release`).
 
-**Only the `release` branch builds.** No build workflow runs on `main` or pull requests; every
-build job checks `github.ref == 'refs/heads/release'`, so a manual run from another branch is
-skipped. Only `packaging-lint.yml` (no build, no secrets) runs on `main` and PRs.
+**CI and release builds.** `.github/workflows/ci.yml` runs the shared `cargo xtask ci` gate on
+every push to `main` and every pull request. Release artifacts are built on `release` pushes or
+manually; manual runs from other branches are dry runs as described above. `packaging-lint.yml`
+also runs on `main` and PRs.
 - Locally: `cargo xtask ci` (fmt, clippy, tests, assets, layers, wasm, parity check).
