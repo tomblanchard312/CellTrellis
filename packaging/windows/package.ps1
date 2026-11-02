@@ -96,6 +96,9 @@ Invoke-Native 'stage complete scripting runtimes' {
 
 # ---- font notices for the MSI ------------------------------------------------------------------
 # The portable ZIP already carries these notices; stage the complete files before MSI creation too.
+Invoke-Native 'stage binary-only Enki runtime' {
+  python (Join-Path $Root 'packaging/stage-enki.py') --target $Target --out (Join-Path $Stage 'enki')
+}
 $Docs = Join-Path $Stage 'font-licences'
 New-Item -ItemType Directory -Force -Path $Docs | Out-Null
 # Bundled dependency font notices are required even without optional craft-fonts.
@@ -128,6 +131,7 @@ $Portable = Join-Path $TargetDir "windows-package\nanshe-$Version-windows-$Arch-
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
+Copy-Item -Recurse (Join-Path $Stage 'enki') (Join-Path $Portable 'enki')
 Copy-Item (Join-Path $Stage 'runtimes') $Portable -Recurse
 foreach ($f in 'README.md', 'LICENSE', 'LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE', 'ATTRIBUTION.md') {
   $p = Join-Path $Root $f

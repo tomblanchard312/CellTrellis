@@ -210,9 +210,12 @@ fn cmd_ci() -> Result<(), String> {
         (
             "runtime-packaging",
             Box::new(|| {
-                let mut c = Command::new(if cfg!(windows) { "python" } else { "python3" });
-                c.current_dir(root()).arg("packaging/test_runtime_packaging.py");
-                run(c, "runtime packaging regression checks")
+                for script in ["packaging/test_runtime_packaging.py", "packaging/test_enki_runtime.py"] {
+                    let mut c = Command::new(if cfg!(windows) { "python" } else { "python3" });
+                    c.current_dir(root()).arg(script);
+                    run(c, "runtime packaging regression checks")?;
+                }
+                Ok(())
             }),
         ),
         (

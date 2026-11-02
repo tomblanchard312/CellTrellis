@@ -351,6 +351,10 @@ pub fn daemon_candidates(exe: Option<&std::path::Path>, path: Option<&std::ffi::
     if let Some(exe) = exe
         && let Some(dir) = exe.parent()
     {
+        out.push(dir.join("enki").join(name));
+        if let Some(prefix) = dir.parent() {
+            out.push(prefix.join("lib/celltrellis/enki").join(name));
+        }
         if let (Some(prefix), Some(stem)) = (dir.parent(), exe.file_stem()) {
             out.push(prefix.join("lib").join(stem).join(name));
         }
