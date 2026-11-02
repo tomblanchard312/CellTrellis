@@ -27,6 +27,8 @@ impl SheetApp {
     /// Constructs a `SheetApp` with default UI, grid, printing, control and screenshot state and the caller's session and services.
     pub fn new(session: Session, services: Services) -> SheetApp {
         SheetApp {
+            #[cfg(not(target_arch = "wasm32"))]
+            speech: enki_speech_ui::SpeechTools::new("celltrellis"),
             session,
             developer: Default::default(),
             ui: UiState::default(),
@@ -240,6 +242,9 @@ impl SheetApp {
         macro_ui::question_box(self, &ctx);
         widgets::message_box(self, &ctx);
         widgets::toast(self, &ctx);
+        #[cfg(not(target_arch = "wasm32"))]
+        crate::speech::show(self, ui.ctx());
+
         // Requests are admitted in `logic`, for the root viewport, so only its pass issues them.
         if ctx.viewport_id() == egui::ViewportId::ROOT {
             control::issue_screenshots(self, &ctx);

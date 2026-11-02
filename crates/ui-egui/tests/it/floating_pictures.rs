@@ -22,7 +22,9 @@ fn picture_textures(h: &egui_kittest::Harness<'static, SheetApp>) -> Vec<Texture
         .shapes
         .iter()
         .filter_map(|shape| match &shape.shape {
-            Shape::Mesh(mesh) if mesh.texture_id != TextureId::default() => Some(mesh.texture_id),
+            Shape::Mesh(mesh) if mesh.texture_id != TextureId::default() && h.state().grid.rect.is_some_and(|r| r.intersects(shape.clip_rect)) => {
+                Some(mesh.texture_id)
+            }
             _ => None,
         })
         .collect()

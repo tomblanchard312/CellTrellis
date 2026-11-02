@@ -50,3 +50,7 @@ web-sys = { version = "0.3", features = ["Window", "Navigator", "Performance"] }
 [build-dependencies]
 serde_json = { workspace = true }
 toml = "1"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies.enki-speech-ui]
+git = "https://github.com/tomblanchard312/Qanloom.git"
+rev = "719d09989e86593ed84c6129d829df6a2e8ab1d0"
