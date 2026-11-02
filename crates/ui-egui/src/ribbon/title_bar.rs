@@ -129,6 +129,8 @@ pub fn title_bar(app: &mut SheetApp, ui: &mut Ui) {
                 if small_button(ui, Icon::Scribe, "Scribe", "Scribe", false).clicked() {
                     app.run_or_alert("view.scribe", json!({}));
                 }
+                #[cfg(not(target_arch = "wasm32"))]
+                app.speech.button(ui, app.ui.language.tr("Voice"));
                 let share = small_button(ui, Icon::Share, "Share", "Share: export or save a copy", true);
                 egui::Popup::menu(&share).show(|ui| {
                     if ui.button("Export as PDF…").clicked() {

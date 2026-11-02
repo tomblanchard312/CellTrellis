@@ -192,6 +192,8 @@ pub struct Perf {
 }
 
 pub struct SheetApp {
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) speech: enki_speech_ui::SpeechTools,
     pub session: Session,
     pub developer: developer::State,
     pub ui: UiState,
@@ -304,3 +306,6 @@ pub fn clean_error(e: &str) -> String {
 pub fn cell(r: u32, c: u32) -> CellRef {
     CellRef::new(r, c)
 }
+
+#[cfg(not(target_arch = "wasm32"))]
+mod speech;

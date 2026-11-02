@@ -5117,3 +5117,12 @@ fn unique_nonce() -> u64 {
     static N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
     N.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
 }
+
+#[test]
+fn reviewed_speech_stays_literal_and_undoable() {
+    let mut s = s();
+    s.execute("cell.set", json!({"input":"'=1+2"})).unwrap();
+    assert_eq!(v(&s, "A1"), Value::Text("=1+2".into()));
+    s.execute("edit.undo", json!({})).unwrap();
+    assert_eq!(v(&s, "A1"), Value::Empty);
+}
