@@ -1,4 +1,4 @@
-//! A small, blocking client for the [SharedAI](https://github.com/tomblanchard312/Enki)
+//! A small, blocking client for the [SharedAI](https://github.com/tomblanchard312/Oqelith)
 //! daemon: list its models and stream a chat reply.
 //!
 //! SharedAI runs models on the user's own machine. Its wire contract (docs/INFERENCE.md there) is

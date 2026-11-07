@@ -3,7 +3,7 @@
 > **Product name:** CellTrellis (formerly Nanshe). Existing application IDs, settings directories, command names and repository URLs remain compatible.
 
 A Rust spreadsheet with a Developer workspace for **VBA, Python and R**, and **Scribe**, a local
-assistant powered by [Enki](https://github.com/tomblanchard312/Enki).
+assistant powered by [Oqelith](https://github.com/tomblanchard312/Oqelith).
 
 CellTrellis is a fork of [GridCraft](https://github.com/storytold/gridcraft) by the ArtCraft team.
 It keeps CellTrellis's engine, command protocol, file formats and internal crate names so upstream
